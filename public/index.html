@@ -487,63 +487,7 @@
             if (!updatedData[COL_TITLE] || !updatedData[COL_DATE] || !updatedData.rowNum) {
                 showEditFormFeedback("Titel & Datum sind Pflichtfelder.", false); saveSpinner.classList.add('d-none'); saveEventButton.disabled = false; return;
             }
-        }
-            async function handleDeleteEvent() {
-                if (!deleteEventButton || !deleteSpinner || !editModal) return;
-
-                const rowNumInput = document.getElementById('edit-rowNum');
-                const rowNum = rowNumInput ? parseInt(rowNumInput.value, 10) : null;
-                const title = document.getElementById('edit-title')?.value || 'dieses Event'; // Für Bestätigungsnachricht
-
-                if (!rowNum) {
-                    showEditFormFeedback("Fehler: Zeilennummer zum Löschen nicht gefunden.", false);
-                    return;
-                }
-
-                // *** WICHTIG: Bestätigungsdialog ***
-                if (confirm(`Möchtest du das Event "${title}" wirklich unwiderruflich löschen?`)) {
-                    // Zeige Ladezustand
-                    deleteSpinner.classList.remove('d-none');
-                    deleteEventButton.disabled = true;
-                    if (saveEventButton) saveEventButton.disabled = true; // Auch Speichern-Button deaktivieren
-                    clearEditFormFeedback();
-                    hideMessages();
-
-                    try {
-                        const response = await fetch('/api/events/' + rowNum, {
-                            method: 'DELETE' // HTTP DELETE Methode verwenden
-                        });
-
-                        const data = await response.json(); // Versuche immer, JSON zu parsen
-
-                        if (!response.ok) {
-                            // Fehler vom Server (z.B. 4xx, 5xx)
-                            throw new Error(data.message || data.error || `HTTP Fehler ${response.status}`);
-                        }
-
-                        // Erfolg
-                        deleteSpinner.classList.add('d-none');
-                        // Buttons bleiben deaktiviert, da Modal schliesst
-                        editModal.hide(); // Modal schliessen
-                        showSuccess(data.message || "Event erfolgreich gelöscht.");
-                        refreshData(); // Liste neu laden
-
-                    } catch (error) {
-                        // Fehler (Netzwerk, Serverfehler, etc.)
-                        console.error("Fehler beim Löschen:", error);
-                        deleteSpinner.classList.add('d-none');
-                        deleteEventButton.disabled = false; // Buttons wieder aktivieren bei Fehler
-                        if (saveEventButton) saveEventButton.disabled = false;
-                        showEditFormFeedback("Fehler beim Löschen: " + error.message, false); // Fehler im Modal anzeigen
-                    }
-                } else {
-                    // Benutzer hat "Abbrechen" im Dialog geklickt
-                    console.log("Löschvorgang abgebrochen.");
-                }
-            }
-
-            //
-
+  
 
             // Fetch an Backend senden
             fetch('/api/events/' + updatedData.rowNum, { // Verwende rowNum in der URL
@@ -625,6 +569,60 @@
                     showError(err); // Zeige Fehler im UI
                 });
         }
+
+    async function handleDeleteEvent() {
+    if (!deleteEventButton || !deleteSpinner || !editModal) return;
+
+    const rowNumInput = document.getElementById('edit-rowNum');
+    const rowNum = rowNumInput ? parseInt(rowNumInput.value, 10) : null;
+    const title = document.getElementById('edit-title')?.value || 'dieses Event'; // Für Bestätigungsnachricht
+
+    if (!rowNum) {
+        showEditFormFeedback("Fehler: Zeilennummer zum Löschen nicht gefunden.", false);
+        return;
+    }
+
+    // *** WICHTIG: Bestätigungsdialog ***
+    if (confirm(`Möchtest du das Event "${title}" wirklich unwiderruflich löschen?`)) {
+        // Zeige Ladezustand
+        deleteSpinner.classList.remove('d-none');
+        deleteEventButton.disabled = true;
+        if (saveEventButton) saveEventButton.disabled = true; // Auch Speichern-Button deaktivieren
+        clearEditFormFeedback();
+        hideMessages();
+
+        try {
+            const response = await fetch('/api/events/' + rowNum, {
+                method: 'DELETE' // HTTP DELETE Methode verwenden
+            });
+
+            const data = await response.json(); // Versuche immer, JSON zu parsen
+
+            if (!response.ok) {
+                // Fehler vom Server (z.B. 4xx, 5xx)
+                throw new Error(data.message || data.error || `HTTP Fehler ${response.status}`);
+            }
+
+            // Erfolg
+            deleteSpinner.classList.add('d-none');
+            // Buttons bleiben deaktiviert, da Modal schliesst
+            editModal.hide(); // Modal schliessen
+            showSuccess(data.message || "Event erfolgreich gelöscht.");
+            refreshData(); // Liste neu laden
+
+        } catch (error) {
+            // Fehler (Netzwerk, Serverfehler, etc.)
+            console.error("Fehler beim Löschen:", error);
+            deleteSpinner.classList.add('d-none');
+            deleteEventButton.disabled = false; // Buttons wieder aktivieren bei Fehler
+            if (saveEventButton) saveEventButton.disabled = false;
+            showEditFormFeedback("Fehler beim Löschen: " + error.message, false); // Fehler im Modal anzeigen
+        }
+    } else {
+        // Benutzer hat "Abbrechen" im Dialog geklickt
+        console.log("Löschvorgang abgebrochen.");
+    }
+    }
         // --- *** ENDE fetch Refresh Data *** ---
 
 
