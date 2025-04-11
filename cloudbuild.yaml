@@ -41,7 +41,7 @@ images:
 # Optionale Konfiguration für Substitutionen (Standardwerte können im Trigger überschrieben werden)
 substitutions:
   _SERVICE_NAME: 'ebaplanner' 
-  _REGION: 'europe-west6'
+  _REGION: 'europe-west1'
   _REPOSITORY: 'mein-repo'
 
 options:
