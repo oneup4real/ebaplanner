@@ -320,4 +320,62 @@
       font-weight: 600;
       color: #d63384; /* Bootstrap Pink */
   }
-  /* --- ENDE Styling Hilfe --- */
+  
+  .event-kachel {
+    cursor: pointer; /* Zeigt an, dass die Kachel klickbar ist */
+    /* Optional: leichter Übergang für Hover-Effekte falls gewünscht */
+    /* transition: box-shadow 0.2s ease-in-out; */
+}
+
+/* Verhindert versehentliches Textauswählen beim Klicken */
+.event-kachel {
+  -webkit-user-select: none; /* Safari */
+  -ms-user-select: none; /* IE 10+ */
+  user-select: none;
+}
+/* Erlaubt aber Textauswahl im Detailbereich */
+.event-kachel .event-details {
+  -webkit-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+
+
+/* Basis-Styling für den Detailbereich (versteckt) */
+.event-kachel .event-details {
+    max-height: 0; /* Wichtig: Startet komplett eingeklappt */
+    overflow: hidden; /* Versteckt Inhalt, der über max-height hinausgeht */
+    transition: max-height 0.5s ease-in-out, /* Animiert die Höhe */
+                margin-top 0.5s ease-in-out, /* Animiert den oberen Abstand */
+                padding-top 0.5s ease-in-out, /* Animiert den Innenabstand oben */
+                border-top-width 0.3s ease-in-out; /* Lässt Border einblenden */
+    /* Standardwerte, wenn eingeklappt */
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none; /* Keine Border, wenn eingeklappt */
+    opacity: 0; /* Optional: Sanfteres Ein-/Ausblenden des Inhalts */
+    transition: max-height 0.5s ease-in-out, margin-top 0.5s ease-in-out, padding-top 0.5s ease-in-out, border-top-width 0.3s ease-in-out, opacity 0.4s ease-in-out 0.1s; /* Opacity leicht verzögert */
+
+}
+
+/* Styling für den Detailbereich, wenn die Kachel expandiert ist */
+.event-kachel.expanded .event-details {
+    max-height: 1000px; /* Ausreichend grosser Wert, damit aller Inhalt Platz hat. Anpassen bei Bedarf! */
+    /* Werte, wenn ausgeklappt */
+    margin-top: 1rem;  /* Abstand zum oberen Teil der Kachel */
+    padding-top: 1rem; /* Innenabstand oben */
+    border-top: 1px solid rgba(197, 201, 205, 0.8); /* Sichtbare Trennlinie */
+    opacity: 1; /* Inhalt sichtbar machen */
+}
+
+/* Styling für den Inhalt im Detailbereich (optional) */
+.event-kachel .event-details h6 {
+    font-weight: 600;
+    color: #0056b3; /* Dunkleres Blau */
+    margin-bottom: 0.5rem;
+}
+
+.event-kachel .event-details p {
+    color: #495057; /* Dunkles Grau */
+    line-height: 1.5;
+}

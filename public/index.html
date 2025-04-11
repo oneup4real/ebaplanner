@@ -390,9 +390,36 @@
             events.forEach(event => {
                 let eventMonthYear = null; if (event.sortableDate) { eventMonthYear = event.sortableDate.substring(0, 7); if (eventMonthYear !== currentMonthYear) { currentMonthYear = eventMonthYear; try { const mhDate = new Date(currentMonthYear + '-01T00:00:00Z'); const mhString = mhDate.toLocaleDateString('de-CH', { month: 'long', year: 'numeric', timeZone: 'Europe/Zurich' }); const sep = document.createElement('h2'); sep.className = 'mt-4 mb-3 h4 text-secondary month-separator'; sep.textContent = mhString; listElement.appendChild(sep); } catch (e) { } } }
                 const eventElement = document.createElement('div'); eventElement.classList.add('list-group-item', 'mb-3', 'p-3');
-                const title = String(event[COL_TITLE] || ''); const eventType = String(event[COL_EVENT_TYPE] || '').trim(); const description = String(event[COL_DESCRIPTION] || ''); const startTime = String(event[COL_START_TIME] || '').substring(0, 5); const endTime = String(event[COL_END_TIME] || '').substring(0, 5); const resources = String(event[COL_RESOURCES] || ''); const responsible = String(event[COL_RESPONSIBLE] || ''); let displayDate = 'Kein Datum'; const dateSrc = event.sortableDate; if (dateSrc) { try { const d = new Date(dateSrc + 'T00:00:00Z'); if (!isNaN(d)) displayDate = d.toLocaleDateString('de-CH', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Europe/Zurich' }); else displayDate = event[COL_DATE] || 'Ungültig'; } catch (e) { displayDate = event[COL_DATE] || 'Fehler'; } } else { displayDate = event[COL_DATE] || 'Fehlt'; } let timeString = ''; if (startTime && endTime) timeString = `${startTime} - ${endTime} Uhr`; else if (startTime) timeString = `Ab ${startTime} Uhr`; else timeString = 'Keine Zeit';
+                eventElement.classList.add('list-group-item', 'mb-3', 'p-3', 'event-kachel');
+                eventElement.dataset.rowNum = event.rowNum; // Für spätere Referenz (optional)
+                const title = String(event[COL_TITLE] || ''); const eventType = String(event[COL_EVENT_TYPE] || '').trim(); const description = String(event[COL_DESCRIPTION] || ''); const startTime = String(event[COL_START_TIME] || '').substring(0, 5); const endTime = String(event[COL_END_TIME] || '').substring(0, 5); const resources = String(event[COL_RESOURCES] || ''); const responsible = String(event[COL_RESPONSIBLE] || ''); const participantInfo = String(event[COL_PARTICIPANT_INFO] || ''); let displayDate = 'Kein Datum'; const dateSrc = event.sortableDate; if (dateSrc) { try { const d = new Date(dateSrc + 'T00:00:00Z'); if (!isNaN(d)) displayDate = d.toLocaleDateString('de-CH', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Europe/Zurich' }); else displayDate = event[COL_DATE] || 'Ungültig'; } catch (e) { displayDate = event[COL_DATE] || 'Fehler'; } } else { displayDate = event[COL_DATE] || 'Fehlt'; } let timeString = ''; if (startTime && endTime) timeString = `${startTime} - ${endTime} Uhr`; else if (startTime) timeString = `Ab ${startTime} Uhr`; else timeString = 'Keine Zeit';
                 let typeBadgeHTML = ''; if (eventType === 'Privat') typeBadgeHTML = `<span class="badge rounded-pill bg-danger">Privat</span>`; else if (eventType === 'Öffentlich') typeBadgeHTML = `<span class="badge rounded-pill bg-success">Öffentlich</span>`;
-                eventElement.innerHTML = ` ${typeBadgeHTML ? `<div class="mb-2">${typeBadgeHTML}</div>` : ''} <div class="d-flex justify-content-between align-items-start"> <h5 class="mb-1 flex-grow-1">${title || 'Unbenanntes Event'}</h5> <button type="button" class="btn btn-sm btn-outline-secondary ms-2 edit-event-btn" data-row="${event.rowNum}" aria-label="Bearbeiten"><i class="bi bi-pencil"></i></button> </div> <div class="row align-items-center mt-2"> <div class="col-6"> <div class="d-flex flex-column"> <small class="fw-bold">${displayDate}</small> <small class="mb-2">${timeString}</small> <small>${responsible ? `<strong class="me-1">Verantwortlich:</strong>${responsible}` : ''}</small> </div> </div> <div class="col-6 border-start ps-3"> <div class="d-flex flex-column"> ${description ? `<p class="mb-1 small"><strong class="me-1">Beschreibung:</strong>${description}</p>` : '<p class="mb-1 small">&nbsp;</p>'} <small>${resources ? `<strong class="me-1">Ressourcen:</strong>${resources}` : ''}</small> </div> </div> </div>`;
+                eventElement.innerHTML = ` ${typeBadgeHTML ? `<div class="mb-2">${typeBadgeHTML}</div>` : ''}
+                <div class="d-flex justify-content-between align-items-start">
+                    <h5 class="mb-1 flex-grow-1">${title || 'Unbenanntes Event'}</h5>
+                    <button type="button" class="btn btn-sm btn-outline-secondary ms-2 edit-event-btn" data-row="${event.rowNum}" aria-label="Bearbeiten"><i class="bi bi-pencil"></i></button>
+                </div>
+                <div class="row align-items-center mt-2">
+                    <div class="col-6">
+                        <div class="d-flex flex-column">
+                            <small class="fw-bold">${displayDate}</small>
+                            <small class="mb-2">${timeString}</small>
+                            <small>${responsible ? `<strong class="me-1">Verantwortlich:</strong>${responsible}` : ''}</small>
+                        </div>
+                    </div>
+                    <div class="col-6 border-start ps-3">
+                        <div class="d-flex flex-column">
+                             ${description ? `<p class="mb-1 small"><strong class="me-1">Beschreibung:</strong>${description}</p>` : '<p class="mb-1 small">&nbsp;</p>'}
+                             <small>${resources ? `<strong class="me-1">Ressourcen:</strong>${resources}` : ''}</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="event-details mt-3 pt-3 border-top">
+                    <h6>Zusätzliche Informationen für Teilnehmer:</h6>
+                    <p class="small mb-0">${participantInfo ? participantInfo.replace(/\n/g, '<br>') : 'Keine Zusatzinfos vorhanden.'}</p>
+                    </div>
+                `;
                 listElement.appendChild(eventElement);
             });
         }
@@ -642,9 +669,11 @@
             searchTermInput.addEventListener('input', applyFiltersAndRender); monthFilterSelect.addEventListener('change', applyFiltersAndRender); yearFilterSelect.addEventListener('change', applyFiltersAndRender); typeFilterSelect.addEventListener('change', applyFiltersAndRender);
             resetFiltersButton.addEventListener('click', resetAllFilters);
             addForm.addEventListener('submit', handleAddEventSubmit); // Ruft jetzt fetch-Version auf
-            listElement.addEventListener('click', function (event) { const btn = event.target.closest('.edit-event-btn'); if (btn) { const row = parseInt(btn.getAttribute('data-row'), 10); if (row) promptForEditPassword(row); } }); // Ruft jetzt fetch-Version auf
+            //listElement.addEventListener('click', function (event) { const btn = event.target.closest('.edit-event-btn'); if (btn) { const row = parseInt(btn.getAttribute('data-row'), 10); if (row) promptForEditPassword(row); } }); // Ruft jetzt fetch-Version auf
             saveEventButton.addEventListener('click', handleSaveChanges); // Ruft jetzt fetch-Version auf
             deleteEventButton.addEventListener('click', handleDeleteEvent); // Ruft jetzt fetch-Version auf
+            // *** NEU: Event Listener für Klicks auf Kacheln (ersetzt alten Edit-Listener) ***
+            listElement.addEventListener('click', handleTileClick);
 
 
             // Initiales Setup
