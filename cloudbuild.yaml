@@ -40,9 +40,9 @@ images:
 
 # Optionale Konfiguration für Substitutionen (Standardwerte können im Trigger überschrieben werden)
 substitutions:
-  _SERVICE_NAME: 'https://ebaplanner-311683404823.europe-west1.run.app' 
+  _SERVICE_NAME: 'ebaplanner' 
   _REGION: 'europe-west1'
-  _REPOSITORY: 'europe-west1-docker.pkg.dev/eba-bar-event-planner/mein-repo/ebaplanner'
+  _REPOSITORY: 'mein-repo'
 
 options:
   logging: CLOUD_LOGGING_ONLY
