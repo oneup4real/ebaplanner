@@ -1,0 +1,48 @@
+steps:
+  # 1. Image bauen mit Dockerfile
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      [
+        'build',
+        '-t',
+        '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}:$SHORT_SHA',
+        '.', # Kontext ist das aktuelle Verzeichnis
+      ]
+
+  # 2. Image in Artifact Registry hochladen
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      [
+        'push',
+        '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}:$SHORT_SHA',
+      ]
+
+  # 3. Neues Image auf Cloud Run bereitstellen
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      [
+        'run',
+        'deploy',
+        '${_SERVICE_NAME}', # Name Ihres Cloud Run Service
+        '--image',
+        '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}:$SHORT_SHA',
+        '--region',
+        '${_REGION}',
+        '--platform',
+        'managed', # Oder 'gke' wenn Sie Anthos verwenden
+        '--quiet', # Unterdrückt interaktive Nachfragen
+      ]
+
+# Definition des zu verwendenden Images für die Schritte oben
+images:
+  - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE_NAME}:$SHORT_SHA'
+
+# Optionale Konfiguration für Substitutionen (Standardwerte können im Trigger überschrieben werden)
+substitutions:
+  _SERVICE_NAME: 'https://ebaplanner-311683404823.europe-west1.run.app' 
+  _REGION: 'europe-west1'
+  _REPOSITORY: 'europe-west1-docker.pkg.dev/eba-bar-event-planner/mein-repo/ebaplanner'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
