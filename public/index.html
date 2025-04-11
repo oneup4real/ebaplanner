@@ -487,6 +487,7 @@
             if (!updatedData[COL_TITLE] || !updatedData[COL_DATE] || !updatedData.rowNum) {
                 showEditFormFeedback("Titel & Datum sind Pflichtfelder.", false); saveSpinner.classList.add('d-none'); saveEventButton.disabled = false; return;
             }
+        }
             async function handleDeleteEvent() {
                 if (!deleteEventButton || !deleteSpinner || !editModal) return;
 
