@@ -1,0 +1,323 @@
+
+  /* Grundlegende Stile und Farbverlauf (Dezenter) */
+  body {
+    /* Verwendung von HSL zur einfacheren Anpassung von Sättigung(S) und Helligkeit(L) */
+    background: linear-gradient(135deg,
+      hsl(33, 70%, 75%),  /* Helleres, weniger gesättigtes Orange */
+      hsl(225, 50%, 80%), /* Helleres, weniger gesättigtes Blau */
+      hsl(330, 70%, 85%)  /* Helleres, weniger gesättigtes Pink */
+    );
+    background-attachment: fixed; /* Hält den Verlauf beim Scrollen fest */
+    min-height: 100vh; /* Stellt sicher, dass der Verlauf die ganze Höhe einnimmt */
+    /* Standardtextfarbe eher dunkel, da Hintergrund heller wird */
+    color: #343a40;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; /* Modernere Schriftart */
+    padding-top: 1rem; /* Etwas Abstand oben, damit Inhalt nicht am Rand klebt */
+  }
+
+  .container {
+     /* Optional: Maximale Breite für sehr große Bildschirme, verbessert Lesbarkeit */
+     /* max-width: 1200px; */
+  }
+
+  /* Hauptüberschrift */
+  h1 {
+    /* Bleibt hell für Kontrast zum Gradient */
+    color: #ffffff;
+    text-align: center;
+    margin-bottom: 2rem; /* Mehr Abstand nach unten */
+    font-weight: 400; /* Etwas kräftiger als 300 */
+    letter-spacing: 0.5px;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5); /* Etwas dezenterer Schatten */
+  }
+
+  /* Filterleiste */
+  #filter-bar {
+    background-color: rgba(255, 255, 255, 0.85); /* Etwas weniger transparent */
+    backdrop-filter: blur(4px); /* Leichter Blur */
+    -webkit-backdrop-filter: blur(4px); /* Safari */
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 10px; /* Abgerundete Ecken */
+    padding: 1.5rem; /* Mehr Innenabstand */
+    margin-bottom: 2.5rem; /* Mehr Abstand nach unten */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); /* Noch leichterer Schatten */
+  }
+  #filter-bar label {
+     color: #212529; /* Schwarz für max. Lesbarkeit */
+     font-weight: 500;
+     margin-bottom: 0.3rem;
+     font-size: 0.9rem;
+  }
+  #filter-bar .form-control,
+  #filter-bar .form-select {
+     background-color: rgba(255, 255, 255, 0.95); /* Fast opak */
+     border: 1px solid #ced4da; /* Standard Bootstrap Rahmen */
+     color: #212529;
+     font-size: 0.9rem;
+  }
+   #filter-bar .btn-secondary { /* Reset Button */
+     background: #6c757d; /* Standard Grau */
+     border: 1px solid #6c757d;
+     color: #fff;
+     font-weight: 500;
+     transition: all 0.2s ease;
+  }
+   #filter-bar .btn-secondary:hover {
+      background: #5a6268;
+      border-color: #545b62;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+      transform: translateY(-1px);
+   }
+
+  /* Event-Liste - Glassmorphism Kacheln */
+  #event-liste .list-group-item {
+    background: rgba(255, 255, 255, 0.45); /* DEUTLICH weniger transparent (war 0.15) */
+    border-radius: 15px; /* Deutlich rundere Ecken */
+    border: 1px solid rgba(255, 255, 255, 0.3); /* Rahmen etwas opak */
+    backdrop-filter: blur(8px); /* Blur kann etwas reduziert werden */
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 6px 20px 0 rgba(100, 100, 150, 0.18); /* Angepasster Schatten */
+    color: #212529; /* Sicherstellen, dass Text dunkel ist */
+    padding: 1.5rem; /* Mehr Innenabstand */
+    transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease; /* Übergänge */
+    margin-bottom: 1.5rem; /* Abstand zwischen Kacheln */
+  }
+
+  #event-liste .list-group-item:hover {
+     background: rgba(255, 255, 255, 0.6); /* Hover auch weniger transparent */
+     transform: translateY(-4px); /* Etwas weniger Schweben */
+     box-shadow: 0 10px 25px 0 rgba(100, 100, 150, 0.25);
+  }
+
+  /* Textfarben innerhalb der Kacheln (an dunklen Text angepasst) */
+   #event-liste .list-group-item h5 {
+      color: #004a9f; /* Noch etwas dunkleres Blau */
+      font-weight: 600;
+   }
+   #event-liste .list-group-item small,
+   #event-liste .list-group-item p {
+      color: #343a40; /* Standard dunkles Grau */
+   }
+   #event-liste .list-group-item .text-muted {
+      /* text-muted sollte hier nicht mehr nötig sein, da Standardtext schon dunkel ist.
+         Falls doch verwendet, muss es dunkel sein: */
+      color: #5a6268 !important;
+   }
+   #event-liste .list-group-item .fw-bold {
+       /* Standard Schwarz oder dunkles Grau für Fettdruck */
+       color: #212529 !important;
+   }
+   #event-liste .list-group-item strong { /* Für "Beschreibung:", "Ressourcen:", "Verantwortlich:" Labels */
+        color: #495057; /* Dunkleres Grau */
+        font-weight: 600; /* Etwas fetter */
+     }
+
+
+  /* Style für die vertikale Trennlinie in den Kacheln */
+  #event-liste .list-group-item .border-start {
+    border-left-width: 1px !important; /* Stellt sicher, dass Bootstrap überschrieben wird */
+    /* !important hier entfernt, Bootstrap Standard sollte ausreichen wenn spezfisch genug */
+    border-color: rgba(197, 201, 205, 1); /* Dunkle, leicht transparente Linie */
+  }
+
+  /* Optional: Textumbruch innerhalb der Spalten verbessern */
+  #event-liste .col-6 {
+      overflow-wrap: break-word; /* Lange Wörter umbrechen */
+      word-wrap: break-word;
+      word-break: break-word; /* Notfalls Wortumbruch erzwingen */
+  }
+
+
+  /* Monats-Trenner (Dunkler, klarer lesbar) */
+  .month-separator {
+    color: #212529; /* Schwarz oder sehr dunkles Grau */
+    text-shadow: none; /* Kein Schatten für dunklen Text */
+    border-bottom: 1px solid #adb5bd; /* Dunklerer grauer Rahmen */
+    padding-bottom: 0.75rem;
+    margin-top: 3rem; /* Mehr Abstand zum vorherigen Monat */
+    margin-bottom: 1.5rem; /* Abstand zur ersten Kachel des Monats */
+    font-weight: 500; /* Etwas fetter für bessere Lesbarkeit */
+    letter-spacing: 0.5px;
+  }
+
+  /* Ladeanzeige / Fehler (Anpassung an helleren Hintergrund) */
+  #loading {
+     border-radius: 15px;
+     /* Leicht transparent, um Hintergrund durchscheinen zu lassen */
+     background: rgba(255, 255, 255, 0.4);
+     backdrop-filter: blur(5px);
+     -webkit-backdrop-filter: blur(5px);
+     padding: 2rem;
+  }
+  #loading span {
+     color: #343a40; /* Dunkler Text */
+     text-shadow: none;
+     font-weight: 500;
+  }
+   #loading .spinner-border {
+      border-color: rgba(108, 117, 125, 0.5); /* Grauer Spinner */
+      border-right-color: transparent; /* Macht den Spinner "rund" */
+      width: 2rem;
+      height: 2rem;
+   }
+
+  #error-message {
+    background-color: rgba(220, 53, 69, 0.8); /* Roter Glas-Effekt */
+    color: #ffffff; /* Weißer Text für Kontrast */
+    border: 1px solid rgba(220, 53, 69, 0.4);
+    border-radius: 10px;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+  }
+  #success-message { /* Styling für Erfolgsmeldung */
+      background-color: rgba(25, 135, 84, 0.8); /* Grüner Glas-Effekt (Bootstrap Success Farbe) */
+      color: #ffffff;
+      border: 1px solid rgba(25, 135, 84, 0.4);
+      border-radius: 10px;
+      backdrop-filter: blur(5px);
+     -webkit-backdrop-filter: blur(5px);
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+      margin-top: 1rem; /* Standard Bootstrap Abstand */
+  }
+
+
+   /* 'Keine Events'-Nachricht (Anpassung an helleren Hintergrund) */
+  #event-liste p.text-muted.text-center {
+      background-color: rgba(255, 255, 255, 0.45); /* Gleiche Opazität wie Kacheln */
+      border-radius: 15px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      padding: 1.5rem;
+      color: #343a40 !important; /* Dunkler Text */
+      text-shadow: none;
+  }
+
+
+   /* Styles für Logo (Links) & Menü Button (Rechts) & Dropdown */
+   #logo-image {
+      position: fixed; top: 15px; left: 15px; z-index: 1050;
+      max-height: 50px; width: auto; opacity: 0.75; transition: opacity 0.3s ease;
+  }
+  #logo-image:hover { opacity: 1; }
+
+   .menu-top-right { position: fixed; top: 15px; right: 15px; z-index: 1051; }
+   .btn-menu-toggle { background-color: rgba(255, 255, 255, 0.5); border: 1px solid rgba(255, 255, 255, 0.3); color: #343a40; width: 45px; height: 45px; border-radius: 50%; padding: 0; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: background-color 0.3s ease; }
+   .btn-menu-toggle:hover, .btn-menu-toggle:focus { background-color: rgba(255, 255, 255, 0.8); color: #000; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
+   .btn-menu-toggle i { font-size: 1.5rem; }
+   .dropdown-menu { background-color: rgba(255, 255, 255, 0.9); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); border: 1px solid rgba(0, 0, 0, 0.1); box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); border-radius: 10px; margin-top: 0.5rem !important; }
+   .dropdown-item { color: #343a40; display: flex; align-items: center; padding: 0.6rem 1.1rem; font-weight: 500; }
+   .dropdown-item i { color: #0d6efd; margin-right: 0.75rem; font-size: 1.1rem; width: 20px; text-align: center; }
+   .dropdown-item:hover, .dropdown-item:focus { background-color: rgba(0, 123, 255, 0.1); color: #0056b3; }
+
+
+   /* Styling für die "Event erfassen" Ansicht */
+   #add-form-view h1 { margin-top: 1rem; }
+   .add-form-container { background: rgba(255, 255, 255, 0.6); border-radius: 15px; border: 1px solid rgba(255, 255, 255, 0.3); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: 0 6px 20px 0 rgba(100, 100, 150, 0.18); color: #212529; margin-top: 1rem; padding: 2rem; }
+   .add-form-container label { font-weight: 500; margin-bottom: 0.3rem; font-size: 0.9rem; color: #343a40; }
+   /* Styling für Inputs (OHNE Checkboxen direkt) */
+   .add-form-container .form-control,
+   .add-form-container .form-select {
+       background-color: rgba(255, 255, 255, 0.8);
+       border: 1px solid #ced4da;
+       color: #212529;
+       font-size: 1rem;
+   }
+   /* == Checkbox Styling (Korrigiert für Sichtbarkeit) == */
+    .add-form-container .form-check {
+        margin-bottom: 0.5rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+    }
+    .add-form-container .form-check-input {
+        pointer-events: auto !important; cursor: pointer;
+        width: 1.1em; height: 1.1em; margin-top: 0.1em; vertical-align: top; margin-right: 0.5em;
+        border: 1px solid var(--bs-border-color); background-color: var(--bs-body-bg);
+        transition: box-shadow 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+        -webkit-appearance: none; appearance: none; /* Wichtig für custom background-image */
+    }
+    .add-form-container .form-check-input:focus { border-color: #86b7fe; outline: 0; box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25); }
+    /* Checked state: Hintergrund WEISS, Haken SCHWARZ */
+    .add-form-container .form-check-input:checked {
+        background-color: #fff !important; border-color: #adb5bd !important;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23000' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/%3e%3c/svg%3e") !important;
+        background-size: 70% 70%; background-position: center; background-repeat: no-repeat;
+    }
+    .add-form-container .form-check-label { font-size: 0.95rem; color: #343a40; pointer-events: auto !important; cursor: pointer; display: inline-block; }
+   /* == ENDE Checkbox Styling == */
+
+   .add-form-container .form-text { font-size: 0.8rem; color: #5a6268; }
+   .add-form-container .btn-success { font-weight: 500; padding: 0.5rem 1.25rem; background: linear-gradient(135deg, #198754, #146c43); border: none; }
+   .add-form-container .btn-success:hover { background: linear-gradient(135deg, #146c43, #105635); box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+   #add-form-feedback.alert { font-size: 0.9rem; padding: 0.75rem 1rem; margin-bottom: 0; border-radius: 8px; text-align: center; font-weight: 500; }
+   /* Edit Button */
+   .edit-event-btn { padding: 0.2rem 0.5rem; font-size: 0.8rem; line-height: 1; }
+   .edit-event-btn i { vertical-align: middle; }
+   /* Styling für Edit Modal Feedback */
+   #edit-form-feedback.alert { font-size: 0.9rem; padding: 0.75rem 1rem; margin-bottom: 0; border-radius: 8px; text-align: center; font-weight: 500; }
+
+   /* Event Typ Badge Styling (in Kachel) */
+    #event-liste .list-group-item .badge {
+      font-size: 0.75em;
+      font-weight: 600; /* Etwas fetter für Lesbarkeit */
+      padding: 0.3em 0.65em;
+      vertical-align: text-top; /* Oder baseline, je nach Geschmack */
+  }
+
+  /* --- NEU: Styling für Hilfe-Ansicht --- */
+  .help-view-container {
+    /* Style ähnlich wie Add-Form für Konsistenz */
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 6px 20px 0 rgba(100, 100, 150, 0.18);
+    color: #212529;
+    margin-top: 1rem;
+    padding: 2rem; /* Innenabstand */
+    word-wrap: break-word; /* Textumbruch */
+  }
+  .help-view-container h2 {
+      color: #004a9f; /* Titel Farbe */
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid rgba(0,0,0,0.1);
+  }
+  .help-view-container h3 {
+      color: #0056b3; /* Etwas helleres Blau */
+      font-weight: 500;
+      margin-top: 2rem;
+      margin-bottom: 0.75rem;
+  }
+  .help-view-container h4 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #343a40;
+      margin-top: 1rem;
+      margin-bottom: 0.5rem;
+  }
+  .help-view-container p,
+  .help-view-container li {
+      line-height: 1.6;
+      color: #343a40;
+      margin-bottom: 1rem;
+  }
+   .help-view-container a {
+      color: #0d6efd; /* Standard Link Farbe */
+      text-decoration: underline;
+  }
+  .help-view-container a:hover { color: #0a58ca; }
+  .help-view-container ul { padding-left: 2rem; }
+  .help-view-container code { /* Passwort hervorheben */
+      background-color: rgba(0,0,0,0.07);
+      padding: 0.2em 0.5em;
+      border-radius: 4px;
+      font-family: monospace;
+      font-weight: 600;
+      color: #d63384; /* Bootstrap Pink */
+  }
+  /* --- ENDE Styling Hilfe --- */

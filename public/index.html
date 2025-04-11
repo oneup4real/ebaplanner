@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <base target="_top">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EBA BAR Event Liste & Erfassung</title> <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="/stylesheet.css">
+    </head>
+<body>
+
+    <div class="dropdown menu-top-right">
+        <button class="btn btn-menu-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-list"></i>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
+            <li><a class="dropdown-item" href="#" id="menu-show-list"><i class="bi bi-calendar-event-fill me-2"></i>Event Übersicht</a></li>
+            <li><a class="dropdown-item" href="#" id="menu-show-add-form"><i class="bi bi-plus-circle-fill me-2"></i>Event erfassen</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="#" id="menu-show-help"><i class="bi bi-info-circle-fill me-2"></i>Grundsätze und Hilfe</a></li>
+        </ul>
+    </div>
+
+    <div class="container mt-4 mb-5">
+
+        <div id="event-view">
+            <h1 class="mb-4">EBA BAR Event Liste</h1>
+            <div id="filter-bar">
+                 <div class="row g-3 align-items-end">
+                    <div class="col-md-4 col-sm-12"> <label for="search-term" class="form-label">Suche (Titel/Beschreibung)</label>
+                        <input type="text" class="form-control form-control-sm" id="search-term" placeholder="Suchbegriff eingeben...">
+                    </div>
+                    <div class="col-md-2 col-sm-6">
+                         <label for="type-filter" class="form-label">Typ</label>
+                         <select class="form-select form-select-sm" id="type-filter">
+                             <option value="" selected>Alle</option>
+                             <option value="Öffentlich">Öffentlich</option>
+                             <option value="Privat">Privat</option>
+                         </select>
+                    </div>
+                    <div class="col-md-5 col-sm-6"> <label class="form-label">Monat / Jahr</label>
+                         <div class="input-group input-group-sm">
+                             <select class="form-select form-select-sm" id="month-filter"> <option value="" selected>Monat (Alle)</option> <option value="01">Januar</option><option value="02">Februar</option><option value="03">März</option><option value="04">April</option><option value="05">Mai</option><option value="06">Juni</option><option value="07">Juli</option><option value="08">August</option><option value="09">September</option><option value="10">Oktober</option><option value="11">November</option><option value="12">Dezember</option> </select>
+                             <select class="form-select form-select-sm" id="year-filter"> <option value="" selected>Jahr (Alle)</option> </select>
+                         </div>
+                    </div>
+                    <div class="col-md-1 col-sm-12 d-grid">
+                        <button class="btn btn-secondary btn-sm" id="reset-filters" type="button">Reset</button>
+                    </div>
+                </div>
+            </div>
+            <div id="event-liste" class="list-group mt-4"> <div id="loading" class="d-flex justify-content-center align-items-center p-5"> <div class="spinner-border" role="status"><span class="visually-hidden">Lade Events...</span></div> <span class="ms-3">Lade Events...</span> </div>
+            </div>
+        </div>
+
+        <div id="add-form-view" class="d-none">
+             <h1 class="mb-4">Neues Event erfassen</h1>
+             <div class="add-form-container p-4 rounded">
+                 <form id="addEventForm">
+                    <div class="mb-3"> <label for="add-title" class="form-label">Event Titel*</label> <input type="text" class="form-control" id="add-title" required> </div>
+                    <div class="row mb-3"> <div class="col-md-4"> <label for="add-date" class="form-label">Datum*</label> <input type="date" class="form-control" id="add-date" required> </div> <div class="col-md-4"> <label for="add-startTime" class="form-label">Startzeit (HH:MM)</label> <input type="time" class="form-control" id="add-startTime"> </div> <div class="col-md-4"> <label for="add-endTime" class="form-label">Endzeit (HH:MM)</label> <input type="time" class="form-control" id="add-endTime"> </div> </div>
+                    <div class="mb-3"> <label for="add-description" class="form-label">Beschreibung</label> <textarea class="form-control" id="add-description" rows="3"></textarea> </div>
+                    <div class="mb-3"> <label class="form-label">Event Typ*</label> <div> <div class="form-check form-check-inline"> <input class="form-check-input" type="radio" name="add-event-type" id="add-type-public" value="Öffentlich" checked required> <label class="form-check-label" for="add-type-public">Öffentlich</label> </div> <div class="form-check form-check-inline"> <input class="form-check-input" type="radio" name="add-event-type" id="add-type-private" value="Privat" required> <label class="form-check-label" for="add-type-private">Privat</label> </div> </div> </div>
+                    <div class="mb-3"> <label class="form-label">Benötigte Ressourcen <small class="text-muted">(Mehrfachauswahl möglich)</small></label> <div id="add-resources-checkboxes"> <div class="form-check"><input class="form-check-input" type="checkbox" name="add-resources" value="Retro Game Station" id="add-res-retro"><label class="form-check-label" for="add-res-retro">Retro Game Station</label></div> <div class="form-check"><input class="form-check-input" type="checkbox" name="add-resources" value="Beamer und Sofa" id="add-res-beamersofa"><label class="form-check-label" for="add-res-beamersofa">Beamer und Sofa</label></div> <div class="form-check"><input class="form-check-input" type="checkbox" name="add-resources" value="Flipperkasten" id="add-res-flipper"><label class="form-check-label" for="add-res-flipper">Flipperkasten</label></div> <div class="form-check"><input class="form-check-input" type="checkbox" name="add-resources" value="1-2 Tische" id="add-res-tische12"><label class="form-check-label" for="add-res-tische12">1-2 Tische</label></div> <div class="form-check"><input class="form-check-input" type="checkbox" name="add-resources" value="2-4 Tische" id="add-res-tische24"><label class="form-check-label" for="add-res-tische24">2-4 Tische</label></div> <div class="form-check"><input class="form-check-input" type="checkbox" name="add-resources" value="4-6 Tische" id="add-res-tische46"><label class="form-check-label" for="add-res-tische46">4-6 Tische</label></div> </div> </div>
+                    <div class="mb-3"> <label for="add-responsible" class="form-label">Verantwortlich</label> <input type="text" class="form-control" id="add-responsible" aria-describedby="responsibleHelp"> <div id="responsibleHelp" class="form-text">(Vorname, Name, Telefonnummer, Adresse)</div> </div>
+                    <div class="d-flex justify-content-end"> <button type="submit" class="btn btn-success" id="addEventButton"> <span class="spinner-border spinner-border-sm d-none me-1"></span><i class="bi bi-plus-lg me-1"></i> Event hinzufügen </button> </div>
+                    <div id="add-form-feedback" class="mt-3"></div>
+                </form>
+             </div>
+        </div>
+
+        <div id="help-view" class="d-none">
+            <h1 class="mb-4">Grundsätze und Hilfe</h1>
+            <div class="help-view-container p-4 rounded">
+               
+                <h2>Genossenschaftsraum - Unsere Vision</h2> <p>Der Genossenschaftsraum ist unser gemeinsames Wohnzimmer - ein Treffpunkt, wo wir uns begegnen, austauschen und zusammen aktiv sein können. Er soll Gemeinschaft, Kreativität und ein faires Miteinander fördern. Offenheit und Respekt sind uns dabei wichtig.</p>
+                <h3 class="mt-4">Die wichtigsten Regeln - Einfach und klar</h3> <h4>Immer offen für alle</h4> <p>Der Genossenschaftsraum gehört uns allen und kann von jedem Mitglied jederzeit genutzt werden. Es gibt keine privaten Feiern oder exklusiven Reservierungen - der Raum selbst bleibt immer für alle zugänglich, auch während geplanter Aktivitäten/Events.</p>
+                <h4>Aktivitäten planen & Ressourcen koordinieren:</h4> <p>Du planst eine Aktivität, die bestimmte Geräte braucht (z.B. Beamer, Töggelikasten, Flipper, Game Station)? Trage sie bitte in den Kalender ein! Das hilft allen zu sehen, wann diese speziellen Ressourcen voraussichtlich genutzt werden, um Enttäuschungen oder Konflikte zu vermeiden.</p>
+                <h4>Fairness & Rücksicht:</h4> <p>Wir gehen respektvoll miteinander um. Auch wenn eine Veranstaltung läuft, darf jedes Mitglied den Raum betreten. Achtet aufeinander, damit sich niemand gestört fühlt und alle den Raum nutzen können.</p>
+                <h4>Sauberkeit & Ordnung:</h4> <p>Wir halten unseren Raum gemeinsam schön! Wer den Raum nutzt, hinterlässt ihn sauber und ordentlich. Möbel und Gegenstände kommen zurück an ihren Platz.</p>
+                <h4>Lautstärke im Griff:</h4> <p>Denkt an die Nachbarn und andere Nutzer. Besonders abends gilt: Keine laute Musik oder Gespräche draussen, die stören könnten.</p>
+                <h4>Sorgfalt & Verantwortung:</h4> <p>Jeder passt auf sich und die Einrichtung auf. Geht etwas kaputt, melde es bitte sofort der Genossenschaft. Mit Tischen, Stühlen und Technik gehen wir sorgsam um und lassen alles im Raum. Nach Gebrauch stellen wir Tische und Stühle wieder so hin, wie sie vorher standen.</p>
+                <h3 class="mt-4">So nutzt du den Raum - Kurz erklärt:</h3> <h4>Du möchtest eine Veranstaltung planen (besonders mit Geräten wie Beamer, Töggeli etc.)?</h4> <p>Super! Damit alle Bescheid wissen und spezielle Ressourcen koordiniert werden können, trage deine Aktivität bitte hier ein.</p>
+                <h4>Du möchtest an einer eingetragenen Veranstaltung teilnehmen?</h4> <p>Einfach vorbeikommen und mitmachen! Eine Tabelle mit allen Aktivitäten findest du in der Event Tabelle (Event Übersicht).</p>
+                <h4>Du möchtest den Raum spontan für dich nutzen (z.B. zum Lesen, Arbeiten)?</h4> <p>Klar, das geht! Schau kurz in die Tabelle (Event Übersicht), ob eine grössere Aktivität mit spezifischen Ressourcen geplant ist, die du stören könntest. Ansonsten einfach reinkommen und Rücksicht nehmen.</p>
+                <h3 class="mt-4">Zusammenfassung der Links & Infos:</h3> <ul> <li><strong>Passwort (Erfassen/Editieren):</strong> <code>******</code></li> </ul>
+                <h3 class="mt-4">Weiterentwicklung & Fragen</h3> <p>Hast du Ideen, wie wir den Raum noch besser nutzen können? Teile sie uns über <a href="mailto:event@eba-zuerich.ch">event@eba-zuerich.ch</a> mit.</p>
+            </div>
+        </div>
+
+        <div id="error-message" class="alert alert-danger mt-4 d-none" role="alert"></div>
+        <div id="success-message" class="alert alert-success mt-4 d-none" role="alert"></div>
+
+    </div> <div class="modal fade" id="editEventModal" tabindex="-1">
+         <div class="modal-dialog modal-lg">
+             <div class="modal-content">
+                 <div class="modal-header">
+                     <h5 class="modal-title" id="editEventModalLabel">Event bearbeiten</h5>
+                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                 </div>
+                 <div class="modal-body">
+                     <form id="editEventForm">
+                         <input type="hidden" id="edit-rowNum">
+                         <div class="mb-3"> <label for="edit-title" class="form-label">Event Titel*</label> <input type="text" class="form-control" id="edit-title" required> </div>
+                         <div class="row mb-3"> <div class="col-md-4"> <label for="edit-date" class="form-label">Datum*</label> <input type="date" class="form-control" id="edit-date" required> </div> <div class="col-md-4"> <label for="edit-startTime" class="form-label">Startzeit (HH:MM)</label> <input type="time" class="form-control" id="edit-startTime"> </div> <div class="col-md-4"> <label for="edit-endTime" class="form-label">Endzeit (HH:MM)</label> <input type="time" class="form-control" id="edit-endTime"> </div> </div>
+                         <div class="mb-3"> <label for="edit-description" class="form-label">Beschreibung</label> <textarea class="form-control" id="edit-description" rows="3"></textarea> </div>
+                         <div class="mb-3"> <label class="form-label">Event Typ*</label> <div> <div class="form-check form-check-inline"> <input class="form-check-input" type="radio" name="edit-event-type" id="edit-type-public" value="Öffentlich" required> <label class="form-check-label" for="edit-type-public">Öffentlich</label> </div> <div class="form-check form-check-inline"> <input class="form-check-input" type="radio" name="edit-event-type" id="edit-type-private" value="Privat" required> <label class="form-check-label" for="edit-type-private">Privat</label> </div> </div> </div>
+                         <div class="mb-3"> <label for="edit-resources" class="form-label">Ressourcen <small class="text-muted">(Komma-getrennt)</small></label> <input type="text" class="form-control" id="edit-resources"> </div>
+                         <div class="mb-3"> <label for="edit-responsible" class="form-label">Verantwortlich</label> <input type="text" class="form-control" id="edit-responsible" aria-describedby="responsibleHelpEdit"> <div id="responsibleHelpEdit" class="form-text">(Vorname, Name, Telefonnummer, Adresse)</div> </div>
+                         <div id="edit-form-feedback" class="mt-3"></div>
+                     </form>
+                 </div>
+                 <div class="modal-footer">
+                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+                     <button type="button" class="btn btn-primary" id="saveEventButton"> <span class="spinner-border spinner-border-sm d-none me-1"></span> Änderungen speichern </button>
+                 </div>
+             </div>
+         </div>
+     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Konstanten für Spaltennamen (unverändert)
+        const COL_DATE = 'Wann findet der Event statt?';
+        const COL_TITLE = 'Event Titel';
+        const COL_START_TIME = 'Wann starter der Event?';
+        const COL_END_TIME = 'Wann ist der Event zu Ende?';
+        const COL_DESCRIPTION = 'Um was geht es bei dem Event?';
+        const COL_RESOURCES = 'Welche Ressourcen brauchst du?';
+        const COL_RESPONSIBLE = 'Wer ist für den Event Verantwortlich?';
+        const COL_EVENT_TYPE = 'Event Typ';
+
+        // Globale Variable für Events (unverändert)
+        let allEvents = [];
+
+        // DOM Referenzen (Initialisierung in DOMContentLoaded, unverändert)
+        let eventView, addFormView, helpView, listElement, loadingElement, errorElement, successElement;
+        let searchTermInput, monthFilterSelect, yearFilterSelect, resetFiltersButton, typeFilterSelect;
+        let addForm, addEventButton, addSpinner, addFormFeedback;
+        let menuShowList, menuShowAddForm, menuShowHelp;
+        let editModalElement, editModal, editForm, saveEventButton, saveSpinner, editFormFeedback;
+
+        /** Zeigt die spezifizierte Ansicht an (Logik unverändert) */
+        function showView(viewId) {
+             if (!eventView || !addFormView || !helpView) { console.error("View-Elemente nicht gefunden!"); return; }
+             hideMessages();
+             eventView.classList.add('d-none');
+             addFormView.classList.add('d-none');
+             helpView.classList.add('d-none');
+             if (viewId === 'event-view') { eventView.classList.remove('d-none'); }
+             else if (viewId === 'add-form-view') { addFormView.classList.remove('d-none'); if (addForm) addForm.reset(); clearAddFormFeedback(); }
+             else if (viewId === 'help-view') { helpView.classList.remove('d-none'); }
+        }
+
+        // --- *** GEÄNDERT: Passwortabfrage mit fetch *** ---
+        /** Passwortabfrage und Anzeige des Add-Formulars */
+        function promptForAddPassword() {
+            const password = prompt("Passwort für Event-Erfassung:");
+            if (password === null) return; // User cancelled
+            showLoadingFeedback("Prüfe Passwort..."); // Ladeanzeige starten
+
+            fetch('/api/auth/check', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: password })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    // Versuche, Fehlerdetails zu extrahieren, wenn Server 4xx/5xx sendet
+                    return response.json().then(errData => {
+                        throw new Error(errData.error || `HTTP Fehler ${response.status}`);
+                    }).catch(() => { // Falls Body kein JSON ist
+                         throw new Error(`HTTP Fehler ${response.status}`);
+                    });
+                }
+                return response.json(); // Antwort als JSON parsen
+            })
+            .then(data => {
+                hideMessages(); // Ladeanzeige ausblenden
+                if (data && data.isValid) {
+                    showView('add-form-view'); // Zeige Formular bei Erfolg
+                } else {
+                    showError({ message: "Falsches Passwort." }); // Zeige Fehler bei isValid=false
+                }
+            })
+            .catch(error => {
+                hideMessages(); // Ladeanzeige ausblenden
+                console.error("Fehler bei Passwortprüfung:", error);
+                showError(error); // Zeige Netzwerk- oder Serverfehler
+            });
+        }
+
+        /** Passwortabfrage und Öffnen des Edit-Modals */
+        function promptForEditPassword(rowNum) {
+             const password = prompt("Passwort für Event-Bearbeitung:");
+             if (password === null) return; // User cancelled
+             showLoadingFeedback("Prüfe Passwort..."); // Ladeanzeige starten
+
+             fetch('/api/auth/check', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: password })
+             })
+             .then(response => {
+                if (!response.ok) {
+                     return response.json().then(errData => {
+                        throw new Error(errData.error || `HTTP Fehler ${response.status}`);
+                     }).catch(() => { throw new Error(`HTTP Fehler ${response.status}`); });
+                }
+                return response.json();
+             })
+             .then(data => {
+                 hideMessages(); // Ladeanzeige ausblenden
+                 if (data && data.isValid) {
+                     openEditModal(rowNum); // Öffne Modal bei Erfolg
+                 } else {
+                     showError({ message: "Falsches Passwort." });
+                 }
+             })
+             .catch(error => {
+                 hideMessages(); // Ladeanzeige ausblenden
+                 console.error("Fehler bei Passwortprüfung:", error);
+                 showError(error);
+             });
+        }
+        // --- *** ENDE fetch Passwortprüfung *** ---
+
+        // --- Funktionen für Filter und Anzeige (Logik unverändert) ---
+        function populateFilters(events) { /* ... Logik unverändert ... */
+            if (!yearFilterSelect) return;
+            const years = new Set(); events.forEach(event => { if(event.sortableDate) years.add(event.sortableDate.substring(0,4)); });
+            const sortedYears = Array.from(years).sort((a,b)=>b.localeCompare(a)); yearFilterSelect.innerHTML = '<option value="" selected>Jahr (Alle)</option>';
+            sortedYears.forEach(year => { const opt=document.createElement('option'); opt.value=year; opt.textContent=year; yearFilterSelect.appendChild(opt); });
+        }
+        function applyFiltersAndRender() { /* ... Logik unverändert (inkl. typeMatch) ... */
+            if (!searchTermInput || !monthFilterSelect || !yearFilterSelect || !typeFilterSelect || !allEvents) { console.error("Filter-Inputs/Events nicht bereit."); return; }
+            const searchTerm = searchTermInput.value.toLowerCase().trim(); const selectedMonth = monthFilterSelect.value; const selectedYear = yearFilterSelect.value; const selectedType = typeFilterSelect.value; // Typ-Filter lesen
+            const filteredEvents = allEvents.filter(event => { const title=String(event[COL_TITLE]||'').toLowerCase(); const desc=String(event[COL_DESCRIPTION]||'').toLowerCase(); const searchMatch=searchTerm===''||title.includes(searchTerm)||desc.includes(searchTerm); let dateMatch=true; if((selectedMonth||selectedYear) && event.sortableDate){ const y=event.sortableDate.substring(0,4); const m=event.sortableDate.substring(5,7); dateMatch=(selectedYear===''||y===selectedYear) && (selectedMonth===''||m===selectedMonth); } else if(selectedMonth||selectedYear){dateMatch=false;} const eventType = String(event[COL_EVENT_TYPE] || '').trim(); const typeMatch = selectedType === '' || eventType === selectedType; return searchMatch && dateMatch && typeMatch; }); // Typ-Filter anwenden
+            displayEvents(filteredEvents);
+        }
+        function displayEvents(events) { /* ... Logik unverändert ... */
+             if (!listElement || !loadingElement) { console.error("Liste/Loading nicht gefunden"); return; }
+             console.log("displayEvents für:", events.length, "Events");
+             loadingElement.classList.add('d-none'); errorElement.classList.add('d-none');
+             listElement.innerHTML = '';
+             if (!events || events.length === 0) { listElement.innerHTML = '<p class="text-muted text-center p-3">Keine Events entsprechen den aktuellen Filtern.</p>'; return; }
+             let currentMonthYear = null;
+             events.forEach(event => {
+                 let eventMonthYear = null; if (event.sortableDate) { eventMonthYear=event.sortableDate.substring(0,7); if(eventMonthYear !== currentMonthYear){ currentMonthYear=eventMonthYear; try { const mhDate = new Date(currentMonthYear+'-01T00:00:00Z'); const mhString = mhDate.toLocaleDateString('de-CH', {month:'long', year:'numeric', timeZone:'Europe/Zurich'}); const sep = document.createElement('h2'); sep.className='mt-4 mb-3 h4 text-secondary month-separator'; sep.textContent=mhString; listElement.appendChild(sep); } catch(e){} }}
+                 const eventElement = document.createElement('div'); eventElement.classList.add('list-group-item', 'mb-3', 'p-3');
+                 const title=String(event[COL_TITLE]||''); const eventType=String(event[COL_EVENT_TYPE]||'').trim(); const description=String(event[COL_DESCRIPTION]||''); const startTime=String(event[COL_START_TIME]||'').substring(0,5); const endTime=String(event[COL_END_TIME]||'').substring(0,5); const resources=String(event[COL_RESOURCES]||''); const responsible=String(event[COL_RESPONSIBLE]||''); let displayDate='Kein Datum'; const dateSrc=event.sortableDate; if(dateSrc){ try { const d=new Date(dateSrc+'T00:00:00Z'); if(!isNaN(d)) displayDate=d.toLocaleDateString('de-CH',{weekday:'long',year:'numeric',month:'long',day:'numeric',timeZone:'Europe/Zurich'}); else displayDate=event[COL_DATE]||'Ungültig';} catch(e){displayDate=event[COL_DATE]||'Fehler';}} else {displayDate=event[COL_DATE]||'Fehlt';} let timeString=''; if(startTime&&endTime) timeString=`${startTime} - ${endTime} Uhr`; else if(startTime) timeString=`Ab ${startTime} Uhr`; else timeString='Keine Zeit';
+                 let typeBadgeHTML = ''; if (eventType === 'Privat') typeBadgeHTML=`<span class="badge rounded-pill bg-danger">Privat</span>`; else if (eventType === 'Öffentlich') typeBadgeHTML=`<span class="badge rounded-pill bg-success">Öffentlich</span>`;
+                 eventElement.innerHTML = ` ${typeBadgeHTML ? `<div class="mb-2">${typeBadgeHTML}</div>` : ''} <div class="d-flex justify-content-between align-items-start"> <h5 class="mb-1 flex-grow-1">${title || 'Unbenanntes Event'}</h5> <button type="button" class="btn btn-sm btn-outline-secondary ms-2 edit-event-btn" data-row="${event.rowNum}" aria-label="Bearbeiten"><i class="bi bi-pencil"></i></button> </div> <div class="row align-items-center mt-2"> <div class="col-6"> <div class="d-flex flex-column"> <small class="fw-bold">${displayDate}</small> <small class="mb-2">${timeString}</small> <small>${responsible ? `<strong class="me-1">Verantwortlich:</strong>${responsible}` : ''}</small> </div> </div> <div class="col-6 border-start ps-3"> <div class="d-flex flex-column"> ${description ? `<p class="mb-1 small"><strong class="me-1">Beschreibung:</strong>${description}</p>` : '<p class="mb-1 small">&nbsp;</p>'} <small>${resources ? `<strong class="me-1">Ressourcen:</strong>${resources}` : ''}</small> </div> </div> </div>`;
+                 listElement.appendChild(eventElement);
+             });
+        }
+
+        // --- Feedback und Reset Funktionen (Logik unverändert) ---
+        function showError(error) { /* ... Logik unverändert ... */
+            if (!errorElement) return; console.error("Fehler angezeigt:", error); let t = "Ein unbekannter Fehler."; if(typeof error==='string') t=error; else if(error&&error.message) t=error.message; else if(error&&error.error) t=error.error; else if(error&&error.name) t=`Fehler: ${error.name}`; hideMessages(); errorElement.textContent=`Fehler: ${t}`; errorElement.classList.remove('d-none');
+        }
+        function showSuccess(message) { /* ... Logik unverändert ... */
+             if (!successElement) return; hideMessages(); successElement.textContent = message; successElement.classList.remove('d-none'); setTimeout(hideMessages, 4000);
+        }
+        function showLoadingFeedback(message) { /* ... Logik unverändert ... */
+            if (!successElement) return; hideMessages(); successElement.textContent = message; successElement.classList.remove('alert-success'); successElement.classList.add('alert-info'); successElement.classList.remove('d-none');
+        }
+        function hideMessages() { /* ... Logik unverändert ... */
+             if (errorElement) errorElement.classList.add('d-none'); if (successElement) { successElement.classList.add('d-none'); successElement.classList.remove('alert-info'); successElement.classList.add('alert-success'); }
+        }
+        function resetAllFilters() { /* ... Logik unverändert ... */
+             if(searchTermInput) searchTermInput.value=''; if(monthFilterSelect) monthFilterSelect.value=''; if(yearFilterSelect) yearFilterSelect.value=''; if(typeFilterSelect) typeFilterSelect.value = ''; applyFiltersAndRender();
+        }
+
+        // --- *** GEÄNDERT: Event Erfassung mit fetch *** ---
+        function handleAddEventSubmit(submitEvent) {
+            submitEvent.preventDefault(); if (!addEventButton || !addSpinner || !addFormFeedback) return;
+            addSpinner.classList.remove('d-none'); addEventButton.disabled = true; clearAddFormFeedback(); hideMessages();
+
+            // Daten sammeln (Logik unverändert, inkl. Datum DD.MM.YYYY)
+            const nodes = document.querySelectorAll('input[name="add-resources"]:checked'); const resources = Array.from(nodes).map(cb => cb.value).join(', ');
+            const dateISO = document.getElementById('add-date').value; let dateSheet = ''; if (dateISO) { try { const p = dateISO.split('-'); if (p.length === 3) dateSheet = `${p[2]}.${p[1]}.${p[0]}` } catch (e) {} }
+            const typeEl = document.querySelector('input[name="add-event-type"]:checked'); const typeVal = typeEl ? typeEl.value : 'Öffentlich';
+            const newData = { [COL_TITLE]: document.getElementById('add-title').value.trim(), [COL_DATE]: dateSheet, [COL_START_TIME]: document.getElementById('add-startTime').value, [COL_END_TIME]: document.getElementById('add-endTime').value, [COL_DESCRIPTION]: document.getElementById('add-description').value.trim(), [COL_RESOURCES]: resources, [COL_RESPONSIBLE]: document.getElementById('add-responsible').value.trim(), [COL_EVENT_TYPE]: typeVal };
+
+            if (!newData[COL_TITLE] || !newData[COL_DATE]) {
+                showAddFormFeedback("Titel und Datum sind Pflichtfelder.", false); addSpinner.classList.add('d-none'); addEventButton.disabled = false; return;
+            }
+
+            // Fetch an Backend senden
+            fetch('/api/events', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newData)
+            })
+            .then(response => {
+                 if (!response.ok) {
+                     return response.json().then(errData => { throw new Error(errData.message || errData.error || `HTTP Fehler ${response.status}`); });
+                 }
+                 return response.json();
+            })
+            .then(res => { // Erfolg
+                addSpinner.classList.add('d-none'); addEventButton.disabled = false;
+                if (res && res.success) {
+                    if (addForm) addForm.reset(); clearAddFormFeedback();
+                    showAddFormFeedback("Event wurde erfolgreich erfasst.", true, "Du wirst zur Übersicht weitergeleitet...");
+                    setTimeout(() => { showView('event-view'); refreshData(); }, 3000); // Kurze Verzögerung und dann neu laden
+                } else {
+                    // Server hat { success: false, message: '...' } gesendet
+                    showAddFormFeedback(res.message || "Unbekannter Fehler beim Speichern.", false);
+                }
+            })
+            .catch(err => { // Fehler (Netzwerk, Server 500, etc.)
+                addSpinner.classList.add('d-none'); addEventButton.disabled = false;
+                console.error("Fehler beim Hinzufügen:", err);
+                showAddFormFeedback("Kommunikationsfehler: " + err.message, false);
+            });
+        }
+        // --- *** ENDE fetch Add Event *** ---
+
+        function showAddFormFeedback(message, isSuccess, secondaryMessage = null) { /* ... Logik unverändert ... */
+             if(!addFormFeedback) return; let c=message; if(secondaryMessage) c+=`<br><small class="text-muted">${secondaryMessage}</small>`; addFormFeedback.innerHTML=c; addFormFeedback.className=`mt-3 alert alert-${isSuccess?'success':'danger'}`;
+        }
+        function clearAddFormFeedback() { /* ... Logik unverändert ... */
+             if(addFormFeedback){ addFormFeedback.textContent=''; addFormFeedback.className='mt-3'; } const cbs=document.querySelectorAll('input[name="add-resources"]'); cbs.forEach(cb=>cb.checked=false); const rPub=document.getElementById('add-type-public'); if(rPub) rPub.checked=true; const rPriv=document.getElementById('add-type-private'); if(rPriv) rPriv.checked=false;
+        }
+
+        // --- Funktionen für Event Bearbeitung (Modal öffnen unverändert) ---
+        function openEditModal(rowNum) { /* ... Logik unverändert ... */
+           if (!editModal || !allEvents || !editFormFeedback) { console.error("Edit Modal nicht bereit"); return; } const event = allEvents.find(e => e.rowNum === rowNum); if (!event) { showError({ message: "Event nicht gefunden."}); return; } clearEditFormFeedback();
+           document.getElementById('edit-rowNum').value = event.rowNum; document.getElementById('edit-title').value = event[COL_TITLE] || ''; document.getElementById('edit-date').value = event.sortableDate || ''; document.getElementById('edit-startTime').value = (event[COL_START_TIME] || '').substring(0, 5); document.getElementById('edit-endTime').value = (event[COL_END_TIME] || '').substring(0, 5); document.getElementById('edit-description').value = event[COL_DESCRIPTION] || ''; document.getElementById('edit-resources').value = event[COL_RESOURCES] || ''; document.getElementById('edit-responsible').value = event[COL_RESPONSIBLE] || ''; const eventTypeEdit = String(event[COL_EVENT_TYPE] || '').trim(); if(eventTypeEdit==='Privat'){ document.getElementById('edit-type-private').checked = true; } else { document.getElementById('edit-type-public').checked = true; } document.getElementById('editEventModalLabel').textContent = `Event bearbeiten: ${event[COL_TITLE] || 'Unbenannt'}`;
+           editModal.show();
+        }
+
+        // --- *** GEÄNDERT: Event Speichern mit fetch *** ---
+        function handleSaveChanges() {
+            if (!saveEventButton || !saveSpinner || !editFormFeedback) return;
+            saveSpinner.classList.remove('d-none'); saveEventButton.disabled = true; clearEditFormFeedback(); hideMessages();
+
+            // Daten sammeln (Logik unverändert, inkl. Datum DD.MM.YYYY)
+            const dateISO_edit = document.getElementById('edit-date').value; let dateSheet_edit = ''; if (dateISO_edit) { try { const p = dateISO_edit.split('-'); if (p.length === 3) dateSheet_edit = `${p[2]}.${p[1]}.${p[0]}`; } catch (e) {} }
+            const typeElEdit = document.querySelector('input[name="edit-event-type"]:checked'); const typeValEdit = typeElEdit ? typeElEdit.value : 'Öffentlich';
+            const updatedData = { rowNum: parseInt(document.getElementById('edit-rowNum').value, 10), [COL_TITLE]: document.getElementById('edit-title').value.trim(), [COL_DATE]: dateSheet_edit, [COL_START_TIME]: document.getElementById('edit-startTime').value, [COL_END_TIME]: document.getElementById('edit-endTime').value, [COL_DESCRIPTION]: document.getElementById('edit-description').value.trim(), [COL_RESOURCES]: document.getElementById('edit-resources').value.trim(), [COL_RESPONSIBLE]: document.getElementById('edit-responsible').value.trim(), [COL_EVENT_TYPE]: typeValEdit };
+
+            if (!updatedData[COL_TITLE] || !updatedData[COL_DATE] || !updatedData.rowNum) {
+                showEditFormFeedback("Titel & Datum sind Pflichtfelder.", false); saveSpinner.classList.add('d-none'); saveEventButton.disabled = false; return;
+            }
+
+            // Fetch an Backend senden
+            fetch('/api/events/' + updatedData.rowNum, { // Verwende rowNum in der URL
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatedData)
+            })
+            .then(response => {
+                 if (!response.ok) {
+                     return response.json().then(errData => { throw new Error(errData.message || errData.error || `HTTP Fehler ${response.status}`); });
+                 }
+                 return response.json();
+            })
+            .then(res => { // Erfolg
+                saveSpinner.classList.add('d-none'); saveEventButton.disabled = false;
+                if (res && res.success) {
+                    editModal.hide();
+                    showSuccess(res.message || "Event erfolgreich aktualisiert.");
+                    refreshData(); // Daten neu laden, um Änderungen anzuzeigen
+                } else {
+                    // Server hat { success: false, message: '...' } gesendet
+                    showEditFormFeedback(res.message || "Unbekannter Fehler beim Aktualisieren.", false);
+                }
+            })
+            .catch(err => { // Fehler
+                saveSpinner.classList.add('d-none'); saveEventButton.disabled = false;
+                console.error("Fehler beim Aktualisieren:", err);
+                showEditFormFeedback("Kommunikationsfehler: " + err.message, false);
+            });
+        }
+        // --- *** ENDE fetch Update Event *** ---
+
+        function showEditFormFeedback(message, isSuccess) { /* ... Logik unverändert ... */
+             if(!editFormFeedback) return; editFormFeedback.textContent=message; editFormFeedback.className=`mt-3 alert alert-${isSuccess?'success':'danger'}`;
+        }
+        function clearEditFormFeedback() { /* ... Logik unverändert ... */
+             if(editFormFeedback) { editFormFeedback.textContent=''; editFormFeedback.className='mt-3'; }
+        }
+
+        // --- *** GEÄNDERT: Daten neu laden mit fetch *** ---
+        /** Lädt Daten neu vom Server. */
+         function refreshData() {
+             console.log("Lade Daten via API Endpunkt /api/events...");
+             if (loadingElement) loadingElement.classList.remove('d-none'); // Zeige Ladeanzeige
+             if (listElement) listElement.innerHTML = ''; // Leere alte Liste
+             hideMessages(); // Verstecke alte Nachrichten
+
+             fetch('/api/events') // GET Request standardmäßig
+                 .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(errData => { throw new Error(errData.error || `HTTP Fehler ${response.status}`); });
+                    }
+                    return response.json();
+                 })
+                 .then(data => { // Erfolg
+                     if (loadingElement) loadingElement.classList.add('d-none'); // Verstecke Ladeanzeige
+                     console.log("Daten von API empfangen:", data);
+
+                     if (!Array.isArray(data)) { // Prüfe ob Array (wie im Original)
+                         console.error("Empfangene Daten sind kein Array:", data);
+                         showError("Unerwartetes Datenformat vom Server erhalten.");
+                         return;
+                     }
+
+                     allEvents = data; // Speichere die Daten global
+                     console.log("Events gespeichert:", allEvents.length);
+                     try {
+                         populateFilters(allEvents); // Filter befüllen
+                         applyFiltersAndRender(); // Events anzeigen
+                         console.log("Initiales Rendern abgeschlossen.");
+                     } catch (e) {
+                         console.error("Fehler während populateFilters oder applyFiltersAndRender:", e);
+                         showError("Fehler bei der Anzeige der Daten: " + e.message);
+                     }
+                 })
+                 .catch(err => { // Fehler
+                     if (loadingElement) loadingElement.classList.add('d-none'); // Verstecke Ladeanzeige
+                     console.error("Fehler beim Laden der Events:", err);
+                     showError(err); // Zeige Fehler im UI
+                 });
+         }
+         // --- *** ENDE fetch Refresh Data *** ---
+
+
+        // --- Initialisierung und Event Listener (Logik der Listener unverändert) ---
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM Referenzen initialisieren (unverändert)
+            eventView=document.getElementById('event-view'); addFormView=document.getElementById('add-form-view'); helpView=document.getElementById('help-view'); listElement=document.getElementById('event-liste'); loadingElement=document.getElementById('loading'); errorElement=document.getElementById('error-message'); successElement=document.getElementById('success-message'); searchTermInput=document.getElementById('search-term'); monthFilterSelect=document.getElementById('month-filter'); yearFilterSelect=document.getElementById('year-filter'); resetFiltersButton=document.getElementById('reset-filters'); typeFilterSelect = document.getElementById('type-filter'); addForm=document.getElementById('addEventForm'); addEventButton=document.getElementById('addEventButton'); addSpinner=addEventButton?addEventButton.querySelector('.spinner-border'):null; addFormFeedback=document.getElementById('add-form-feedback'); menuShowList=document.getElementById('menu-show-list'); menuShowAddForm=document.getElementById('menu-show-add-form'); menuShowHelp=document.getElementById('menu-show-help'); editModalElement=document.getElementById('editEventModal'); if(editModalElement) editModal=new bootstrap.Modal(editModalElement); editForm=document.getElementById('editEventForm'); saveEventButton=document.getElementById('saveEventButton'); saveSpinner=saveEventButton?saveEventButton.querySelector('.spinner-border'):null; editFormFeedback=document.getElementById('edit-form-feedback');
+
+            // Prüfen, ob alle wichtigen Elemente gefunden wurden (unverändert)
+            if (!eventView || !addFormView || !helpView || !listElement || !loadingElement || !errorElement || !successElement || !searchTermInput || !monthFilterSelect || !yearFilterSelect || !resetFiltersButton || !typeFilterSelect || !addForm || !addEventButton || !addSpinner || !addFormFeedback || !menuShowList || !menuShowAddForm || !menuShowHelp || !editModalElement || !editModal || !editForm || !saveEventButton || !saveSpinner || !editFormFeedback) { console.error("Einige UI-Elemente fehlen! Prüfe IDs."); showError({ message: "Initialisierungsfehler: UI fehlt." }); return; }
+
+            // Event Listener registrieren (unverändert)
+            menuShowList.addEventListener('click', (e)=>{ e.preventDefault(); showView('event-view'); });
+            menuShowAddForm.addEventListener('click', (e)=>{ e.preventDefault(); promptForAddPassword(); }); // Ruft jetzt fetch-Version auf
+            menuShowHelp.addEventListener('click', (e)=> { e.preventDefault(); showView('help-view'); });
+            searchTermInput.addEventListener('input', applyFiltersAndRender); monthFilterSelect.addEventListener('change', applyFiltersAndRender); yearFilterSelect.addEventListener('change', applyFiltersAndRender); typeFilterSelect.addEventListener('change', applyFiltersAndRender);
+            resetFiltersButton.addEventListener('click', resetAllFilters);
+            addForm.addEventListener('submit', handleAddEventSubmit); // Ruft jetzt fetch-Version auf
+            listElement.addEventListener('click', function(event){ const btn=event.target.closest('.edit-event-btn'); if(btn){ const row=parseInt(btn.getAttribute('data-row'),10); if(row) promptForEditPassword(row); } }); // Ruft jetzt fetch-Version auf
+            saveEventButton.addEventListener('click', handleSaveChanges); // Ruft jetzt fetch-Version auf
+
+            // Initiales Setup
+            console.log("DOM geladen. Initialisiere Anwendung...");
+            showView('event-view'); // Starte mit der Event-Liste
+            refreshData(); // Lade initiale Daten (ruft jetzt fetch-Version auf)
+        });
+
+    </script>
+</body>
+</html>
