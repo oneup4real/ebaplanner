@@ -7,7 +7,7 @@ const { GoogleAuth } = require('google-auth-library');
 
 // WICHTIG: Für Cloud Run dringend empfohlen, die ID als Umgebungsvariable zu setzen!
 // const SPREADSHEET_ID = process.env.SPREADSHEET_ID;
-const SPREADSHEET_ID = '1v213UqdChUATSQoTeOl_poaZj17MbXRAjk8nJXKzyXQ'; 
+const SPREADSHEET_ID = '1v213UqdChUATSQoTeOl_poaZj17MbXRAjk8nJXKzyXQ';
 
 // WICHTIG: Für Cloud Run dringend empfohlen, das Passwort über Secret Manager zu verwalten!
 const APP_PASSWORD = process.env.APP_PASSWORD; // Passwort aus Umgebungsvariable lesen
@@ -76,23 +76,23 @@ async function getAuthenticatedSheetsClient(readOnly = true) {
 function parseAndFormatDate(dateValue) {
     // ... (Funktion aus vorheriger Antwort oder deinem code.gs einfügen) ...
     // Stelle sicher, dass Logger.log durch console.warn oder console.log ersetzt ist.
-      if (!dateValue) return null;
-      let dateStr = String(dateValue).trim();
-      if (!dateStr) return null;
-      let parts;
-      // DD.MM.YYYY
-      parts = dateStr.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
-      if (parts) { try { const d=parseInt(parts[1],10), m=parseInt(parts[2],10), y=parseInt(parts[3],10); if(y>1900 && m>=1 && m<=12 && d>=1 && d<=31) return `${y}-${('0'+m).slice(-2)}-${('0'+d).slice(-2)}`; } catch(e){} }
-      // YYYY-MM-DD
-      parts = dateStr.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
-      if (parts) { try { const d=parseInt(parts[3],10), m=parseInt(parts[2],10), y=parseInt(parts[1],10); if(y>1900 && m>=1 && m<=12 && d>=1 && d<=31) return `${y}-${('0'+m).slice(-2)}-${('0'+d).slice(-2)}`; } catch(e){} }
-      // MM/DD/YYYY
-      parts = dateStr.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-      if (parts) { try { const m=parseInt(parts[1],10), d=parseInt(parts[2],10), y=parseInt(parts[3],10); if(y>1900 && m>=1 && m<=12 && d>=1 && d<=31) return `${y}-${('0'+m).slice(-2)}-${('0'+d).slice(-2)}`; } catch (e) {} }
-      // Fallback mit new Date()
-      try { const pd=new Date(dateStr); if(!isNaN(pd.getTime())) return pd.getFullYear()+'-'+('0'+(pd.getMonth()+1)).slice(-2)+'-'+('0'+pd.getDate()).slice(-2); } catch(e){}
-      console.warn(`Datum konnte nicht in YYYY-MM-DD konvertiert werden: "${dateStr}"`);
-      return null;
+    if (!dateValue) return null;
+    let dateStr = String(dateValue).trim();
+    if (!dateStr) return null;
+    let parts;
+    // DD.MM.YYYY
+    parts = dateStr.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+    if (parts) { try { const d = parseInt(parts[1], 10), m = parseInt(parts[2], 10), y = parseInt(parts[3], 10); if (y > 1900 && m >= 1 && m <= 12 && d >= 1 && d <= 31) return `${y}-${('0' + m).slice(-2)}-${('0' + d).slice(-2)}`; } catch (e) { } }
+    // YYYY-MM-DD
+    parts = dateStr.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+    if (parts) { try { const d = parseInt(parts[3], 10), m = parseInt(parts[2], 10), y = parseInt(parts[1], 10); if (y > 1900 && m >= 1 && m <= 12 && d >= 1 && d <= 31) return `${y}-${('0' + m).slice(-2)}-${('0' + d).slice(-2)}`; } catch (e) { } }
+    // MM/DD/YYYY
+    parts = dateStr.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (parts) { try { const m = parseInt(parts[1], 10), d = parseInt(parts[2], 10), y = parseInt(parts[3], 10); if (y > 1900 && m >= 1 && m <= 12 && d >= 1 && d <= 31) return `${y}-${('0' + m).slice(-2)}-${('0' + d).slice(-2)}`; } catch (e) { } }
+    // Fallback mit new Date()
+    try { const pd = new Date(dateStr); if (!isNaN(pd.getTime())) return pd.getFullYear() + '-' + ('0' + (pd.getMonth() + 1)).slice(-2) + '-' + ('0' + pd.getDate()).slice(-2); } catch (e) { }
+    console.warn(`Datum konnte nicht in YYYY-MM-DD konvertiert werden: "${dateStr}"`);
+    return null;
 }
 
 
@@ -117,9 +117,9 @@ app.get('/api/events', async (req, res) => {
         if (headers.length === 0) {
             throw new Error(`Keine Header in Zeile ${HEADER_ROW} gefunden.`);
         }
-         // Sicherstellen, dass die gelesenen Header mit COLUMN_ORDER übereinstimmen (optional, aber gut zur Fehlersuche)
-         // console.log("Gelesene Header:", headers);
-         // console.log("Erwartete Header:", COLUMN_ORDER);
+        // Sicherstellen, dass die gelesenen Header mit COLUMN_ORDER übereinstimmen (optional, aber gut zur Fehlersuche)
+        // console.log("Gelesene Header:", headers);
+        // console.log("Erwartete Header:", COLUMN_ORDER);
 
         // 2. Daten lesen (ab Zeile nach Header)
         const startRow = HEADER_ROW + 1;
@@ -142,15 +142,15 @@ app.get('/api/events', async (req, res) => {
 
             // Werte den Headern aus COLUMN_ORDER zuordnen
             COLUMN_ORDER.forEach((definedHeader, colIndex) => {
-                 // Finde den Index des Headers in den tatsächlich gelesenen Headern
-                 const actualHeaderIndex = headers.indexOf(definedHeader);
-                 let value = '';
-                 if (actualHeaderIndex !== -1 && actualHeaderIndex < row.length) {
-                     // Nimm den Wert aus der entsprechenden Spalte der aktuellen Zeile
-                     value = (row[actualHeaderIndex] !== null && typeof row[actualHeaderIndex] !== 'undefined') ? String(row[actualHeaderIndex]).trim() : '';
-                 }
-                 event[definedHeader] = value; // Speichere unter dem definierten Header-Namen
-                 if(value !== '') hasData = true;
+                // Finde den Index des Headers in den tatsächlich gelesenen Headern
+                const actualHeaderIndex = headers.indexOf(definedHeader);
+                let value = '';
+                if (actualHeaderIndex !== -1 && actualHeaderIndex < row.length) {
+                    // Nimm den Wert aus der entsprechenden Spalte der aktuellen Zeile
+                    value = (row[actualHeaderIndex] !== null && typeof row[actualHeaderIndex] !== 'undefined') ? String(row[actualHeaderIndex]).trim() : '';
+                }
+                event[definedHeader] = value; // Speichere unter dem definierten Header-Namen
+                if (value !== '') hasData = true;
             });
 
             if (hasData) {
@@ -163,16 +163,16 @@ app.get('/api/events', async (req, res) => {
 
         // Sortierung (wie in code.gs)
         events.sort((a, b) => {
-             if (!a.sortableDate && !b.sortableDate) return 0;
-             if (!a.sortableDate) return 1;
-             if (!b.sortableDate) return -1;
-             if (a.sortableDate < b.sortableDate) return -1;
-             if (a.sortableDate > b.sortableDate) return 1;
-             const startTimeA = String(a[COL_START_TIME] || '');
-             const startTimeB = String(b[COL_START_TIME] || '');
-             if (startTimeA < startTimeB) return -1;
-             if (startTimeA > startTimeB) return 1;
-             return 0;
+            if (!a.sortableDate && !b.sortableDate) return 0;
+            if (!a.sortableDate) return 1;
+            if (!b.sortableDate) return -1;
+            if (a.sortableDate < b.sortableDate) return -1;
+            if (a.sortableDate > b.sortableDate) return 1;
+            const startTimeA = String(a[COL_START_TIME] || '');
+            const startTimeB = String(b[COL_START_TIME] || '');
+            if (startTimeA < startTimeB) return -1;
+            if (startTimeA > startTimeB) return 1;
+            return 0;
         });
 
         console.log(`${events.length} Events verarbeitet und sortiert.`);
@@ -181,10 +181,10 @@ app.get('/api/events', async (req, res) => {
     } catch (error) {
         console.error("Fehler in GET /api/events:", error.message);
         console.error("Stack:", error.stack);
-         let clientMessage = "Fehler beim Laden der Events.";
-         if (error.response?.data?.error) {
+        let clientMessage = "Fehler beim Laden der Events.";
+        if (error.response?.data?.error) {
             clientMessage += ` Details: ${error.response.data.error.message || error.message}`;
-         } else { clientMessage += ` Details: ${error.message}`; }
+        } else { clientMessage += ` Details: ${error.message}`; }
         res.status(500).json({ error: clientMessage });
     }
 });
@@ -228,9 +228,9 @@ app.post('/api/events', async (req, res) => {
         console.error("Fehler in POST /api/events:", error.message);
         console.error("Stack:", error.stack);
         let clientMessage = "Fehler beim Hinzufügen des Events.";
-         if (error.response?.data?.error) {
+        if (error.response?.data?.error) {
             clientMessage += ` Details: ${error.response.data.error.message || error.message}`;
-         } else { clientMessage += ` Details: ${error.message}`; }
+        } else { clientMessage += ` Details: ${error.message}`; }
         res.status(500).json({ success: false, message: clientMessage });
     }
 });
@@ -278,10 +278,10 @@ app.put('/api/events/:rowNum', async (req, res) => {
     } catch (error) {
         console.error(`Fehler in PUT /api/events/${rowNum}:`, error.message);
         console.error("Stack:", error.stack);
-         let clientMessage = "Fehler beim Aktualisieren des Events.";
-         if (error.response?.data?.error) {
+        let clientMessage = "Fehler beim Aktualisieren des Events.";
+        if (error.response?.data?.error) {
             clientMessage += ` Details: ${error.response.data.error.message || error.message}`;
-         } else { clientMessage += ` Details: ${error.message}`; }
+        } else { clientMessage += ` Details: ${error.message}`; }
         res.status(500).json({ success: false, message: clientMessage });
     }
 });
@@ -296,9 +296,9 @@ app.post('/api/auth/check', (req, res) => {
         // Sende keinen spezifischen Fehler an den Client, der das Fehlen des Passworts verrät
         return res.status(500).json({ error: 'Server-Konfigurationsfehler.' });
     }
-     if (typeof userPassword !== 'string') {
-         return res.status(400).json({ error: 'Passwort fehlt oder ungültiges Format im Request Body.' });
-     }
+    if (typeof userPassword !== 'string') {
+        return res.status(400).json({ error: 'Passwort fehlt oder ungültiges Format im Request Body.' });
+    }
 
     // Einfacher String-Vergleich (Timing-Angriffe sind hier weniger relevant als bei Hash-Vergleichen)
     const isValid = (userPassword === APP_PASSWORD);
@@ -313,16 +313,83 @@ app.post('/api/auth/check', (req, res) => {
 
 // "*" Route fängt alle übrigen GET-Requests ab und sendet index.html (für Frontend-Routing)
 app.get('/{*splat}', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
+    res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
 });
 
 app.listen(PORT, () => {
-  console.log(`Server läuft auf Port ${PORT}`);
-  if (!SPREADSHEET_ID || SPREADSHEET_ID === '1v213UqdChUATSQoTeOl_poaZj17MbXRAjk8nJXKzyXQ') {
-      console.warn('WARNUNG: Umgebungsvariable SPREADSHEET_ID ist nicht gesetzt oder verwendet Beispiel-ID.');
-  }
-  if (!APP_PASSWORD) {
-      console.warn('WARNUNG: Umgebungsvariable APP_PASSWORD ist nicht gesetzt. Passwortprüfung wird fehlschlagen.');
-      console.warn('WARNUNG: Für Produktion dringend empfohlen, Secret Manager für Passwörter zu verwenden!');
-  }
+    console.log(`Server läuft auf Port ${PORT}`);
+    if (!SPREADSHEET_ID || SPREADSHEET_ID === '1v213UqdChUATSQoTeOl_poaZj17MbXRAjk8nJXKzyXQ') {
+        console.warn('WARNUNG: Umgebungsvariable SPREADSHEET_ID ist nicht gesetzt oder verwendet Beispiel-ID.');
+    }
+    if (!APP_PASSWORD) {
+        console.warn('WARNUNG: Umgebungsvariable APP_PASSWORD ist nicht gesetzt. Passwortprüfung wird fehlschlagen.');
+        console.warn('WARNUNG: Für Produktion dringend empfohlen, Secret Manager für Passwörter zu verwenden!');
+    }
+});
+
+// DELETE /api/events/:rowNum - Löscht ein Event
+app.delete('/api/events/:rowNum', async (req, res) => {
+    const rowNum = parseInt(req.params.rowNum, 10);
+    console.log(`API DELETE /api/events/${rowNum} aufgerufen`);
+
+    if (!SPREADSHEET_ID) return res.status(500).json({ error: 'Serverkonfiguration: Spreadsheet ID fehlt.' });
+    if (isNaN(rowNum) || rowNum <= HEADER_ROW) { // Zeilennummer muss gültig sein
+        return res.status(400).json({ error: 'Ungültige Zeilennummer zum Löschen angegeben.' });
+    }
+
+    try {
+        const sheets = await getAuthenticatedSheetsClient(false); // Schreibzugriff benötigt
+
+        // Schritt 1: Metadaten abrufen, um die numerische sheetId für den Tabellennamen zu finden
+        console.log(`Rufe Metadaten ab für Sheet ID: <span class="math-inline">\{SPREADSHEET\_ID\} um Sheet ID für "</span>{SHEET_NAME}" zu finden.`);
+        const metadata = await sheets.spreadsheets.get({
+            spreadsheetId: SPREADSHEET_ID,
+            fields: 'sheets(properties(sheetId,title))' // Nur benötigte Felder abrufen
+        });
+
+        const sheet = metadata.data.sheets.find(s => s.properties.title === SHEET_NAME);
+
+        if (!sheet || sheet.properties.sheetId === undefined) {
+            console.error(`Tabellenblatt "${SHEET_NAME}" nicht in Metadaten gefunden oder hat keine sheetId.`);
+            return res.status(404).json({ error: `Tabellenblatt "${SHEET_NAME}" nicht gefunden.` });
+        }
+        const sheetId = sheet.properties.sheetId;
+        console.log(`Sheet ID für "${SHEET_NAME}" ist: ${sheetId}`);
+
+        // Schritt 2: Den BatchUpdate Request zum Löschen der Zeile erstellen
+        const deleteRequest = {
+            deleteDimension: {
+                range: {
+                    sheetId: sheetId,       // Numerische ID des Tabs
+                    dimension: "ROWS",      // Wir wollen eine Zeile löschen
+                    startIndex: rowNum - 1, // API ist 0-basiert, also Zeilennummer - 1
+                    endIndex: rowNum        // Der Endindex ist exklusiv ([startIndex, endIndex))
+                }
+            }
+        };
+
+        console.log(`Sende BatchUpdate zum Löschen von Zeile ${rowNum} (Index ${rowNum - 1}) auf Sheet ID ${sheetId}`);
+        const batchUpdateResponse = await sheets.spreadsheets.batchUpdate({
+            spreadsheetId: SPREADSHEET_ID,
+            resource: {
+                requests: [deleteRequest]
+            }
+        });
+
+        console.log(`Zeile ${rowNum} erfolgreich gelöscht:`, batchUpdateResponse.data);
+        res.json({ success: true, message: 'Event erfolgreich gelöscht.' });
+
+    } catch (error) {
+        console.error(`Fehler in DELETE /api/events/${rowNum}:`, error.message);
+        if (error.response?.data?.error) { // Detailliertere Google API Fehler anzeigen
+             console.error("Google API Error Details:", JSON.stringify(error.response.data.error, null, 2));
+        } else {
+             console.error("Stack:", error.stack);
+        }
+        let clientMessage = "Fehler beim Löschen des Events.";
+        if (error.response?.data?.error) {
+            clientMessage += ` Details: ${error.response.data.error.message || error.message}`;
+        } else { clientMessage += ` Details: ${error.message}`; }
+        res.status(500).json({ success: false, message: clientMessage });
+    }
 });
