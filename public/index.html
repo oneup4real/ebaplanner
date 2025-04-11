@@ -634,7 +634,7 @@
 
 
             // Prüfen, ob alle wichtigen Elemente gefunden wurden (unverändert)
-            if (!eventView || !addFormView || !helpView || !listElement || !loadingElement || !errorElement || !successElement || !searchTermInput || !monthFilterSelect || !yearFilterSelect || !resetFiltersButton || !typeFilterSelect || !addForm || !addEventButton || !addSpinner || !addFormFeedback || !menuShowList || !menuShowAddForm || !menuShowHelp || !editModalElement || !editModal || !editForm || !saveEventButton || !saveSpinner || !editFormFeedback || deleteEventButton || deleteSpinner) { console.error("Einige UI-Elemente fehlen! Prüfe IDs."); showError({ message: "Initialisierungsfehler: UI fehlt." }); return; }
+            if (!eventView || !addFormView || !helpView || !listElement || !loadingElement || !errorElement || !successElement || !searchTermInput || !monthFilterSelect || !yearFilterSelect || !resetFiltersButton || !typeFilterSelect || !addForm || !addEventButton || !addSpinner || !addFormFeedback || !menuShowList || !menuShowAddForm || !menuShowHelp || !editModalElement || !editModal || !editForm || !saveEventButton || !saveSpinner || !editFormFeedback || !deleteEventButton || !deleteSpinner) { console.error("Einige UI-Elemente fehlen! Prüfe IDs."); showError({ message: "Initialisierungsfehler: UI fehlt." }); return; }
 
             // Event Listener registrieren (unverändert)
             menuShowList.addEventListener('click', (e) => { e.preventDefault(); showView('event-view'); });
