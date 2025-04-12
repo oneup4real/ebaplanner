@@ -234,9 +234,42 @@
                                         class="form-check-label" for="edit-type-private">Privat</label> </div>
                             </div>
                         </div>
-                        <div class="mb-3"> <label for="edit-resources" class="form-label">Ressourcen <small
-                                    class="text-muted">(Komma-getrennt)</small></label> <input type="text"
-                                class="form-control" id="edit-resources"> </div>
+                <div class="mb-3">
+                    <label class="form-label">Ressourcen <small class="text-muted">(Mehrfachauswahl möglich)</small></label>
+                    <div id="edit-resources-checkboxes">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="edit-resources" value="Retro Game Station"
+                                id="edit-res-retro">
+                            <label class="form-check-label" for="edit-res-retro">Retro Game Station</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="edit-resources" value="Beamer und Sofa"
+                                id="edit-res-beamersofa">
+                            <label class="form-check-label" for="edit-res-beamersofa">Beamer und Sofa</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="edit-resources" value="Flipperkasten"
+                                id="edit-res-flipper">
+                            <label class="form-check-label" for="edit-res-flipper">Flipperkasten</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="edit-resources" value="1-2 Tische"
+                                id="edit-res-tische12">
+                            <label class="form-check-label" for="edit-res-tische12">1-2 Tische</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="edit-resources" value="2-4 Tische"
+                                id="edit-res-tische24">
+                            <label class="form-check-label" for="edit-res-tische24">2-4 Tische</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="edit-resources" value="4-6 Tische"
+                                id="edit-res-tische46">
+                            <label class="form-check-label" for="edit-res-tische46">4-6 Tische</label>
+                        </div>
+                    </div>
+                </div>
+                
                         <div class="mb-3"> <label for="edit-responsible" class="form-label">Verantwortlich</label>
                             <input type="text" class="form-control" id="edit-responsible"
                                 aria-describedby="responsibleHelpEdit">
@@ -496,56 +529,95 @@
         }
 
         // --- Funktionen für Event Bearbeitung (Modal öffnen unverändert) ---
-        function openEditModal(rowNum) { /* ... Logik unverändert ... */
-            if (!editModal || !allEvents || !editFormFeedback) { console.error("Edit Modal nicht bereit"); return; } const event = allEvents.find(e => e.rowNum === rowNum); if (!event) { showError({ message: "Event nicht gefunden." }); return; } clearEditFormFeedback();
-            document.getElementById('edit-rowNum').value = event.rowNum; document.getElementById('edit-title').value = event[COL_TITLE] || ''; document.getElementById('edit-date').value = event.sortableDate || ''; document.getElementById('edit-startTime').value = (event[COL_START_TIME] || '').substring(0, 5); document.getElementById('edit-endTime').value = (event[COL_END_TIME] || '').substring(0, 5); document.getElementById('edit-description').value = event[COL_DESCRIPTION] || ''; document.getElementById('edit-resources').value = event[COL_RESOURCES] || ''; document.getElementById('edit-responsible').value = event[COL_RESPONSIBLE] || ''; const eventTypeEdit = String(event[COL_EVENT_TYPE] || '').trim(); if (eventTypeEdit === 'Privat') { document.getElementById('edit-type-private').checked = true; } else { document.getElementById('edit-type-public').checked = true; } document.getElementById('editEventModalLabel').textContent = `Event bearbeiten: ${event[COL_TITLE] || 'Unbenannt'}`;
-            editModal.show();
-        }
+     function openEditModal(rowNum) {
+         if (!editModal || !allEvents || !editFormFeedback) {
+             console.error("Edit Modal nicht bereit");
+             return;
+         }
+         const event = allEvents.find(e => e.rowNum === rowNum);
+         if (!event) {
+             showError({ message: "Event nicht gefunden." });
+             return;
+         }
+         clearEditFormFeedback();
+     
+         document.getElementById('edit-rowNum').value = event.rowNum;
+         document.getElementById('edit-title').value = event[COL_TITLE] || '';
+         document.getElementById('edit-date').value = event.sortableDate || '';
+         document.getElementById('edit-startTime').value = (event[COL_START_TIME] || '').substring(0, 5);
+         document.getElementById('edit-endTime').value = (event[COL_END_TIME] || '').substring(0, 5);
+         document.getElementById('edit-description').value = event[COL_DESCRIPTION] || '';
+         //document.getElementById('edit-resources').value = event[COL_RESOURCES] || ''; // Removed this line
+         document.getElementById('edit-responsible').value = event[COL_RESPONSIBLE] || '';
+     
+         // Checkboxes for resources
+         const resourcesCheckboxes = document.querySelectorAll('#edit-resources-checkboxes input[type="checkbox"]');
+         const eventResources = (event[COL_RESOURCES] || '').split(',').map(r => r.trim());
+     
+         resourcesCheckboxes.forEach(checkbox => {
+             checkbox.checked = eventResources.includes(checkbox.value);
+         });
+     
+         const eventTypeEdit = String(event[COL_EVENT_TYPE] || '').trim();
+         if (eventTypeEdit === 'Privat') {
+             document.getElementById('edit-type-private').checked = true;
+         } else {
+             document.getElementById('edit-type-public').checked = true;
+         }
+         document.getElementById('editEventModalLabel').textContent = `Event bearbeiten: ${event[COL_TITLE] || 'Unbenannt'}`;
+         editModal.show();
+     }
+     
 
         // --- *** GEÄNDERT: Event Speichern mit fetch *** ---
-        function handleSaveChanges() {
-            if (!saveEventButton || !saveSpinner || !editFormFeedback) return;
-            saveSpinner.classList.remove('d-none'); saveEventButton.disabled = true; clearEditFormFeedback(); hideMessages();
-
-            // Daten sammeln (Logik unverändert, inkl. Datum DD.MM.YYYY)
-            const dateISO_edit = document.getElementById('edit-date').value; let dateSheet_edit = ''; if (dateISO_edit) { try { const p = dateISO_edit.split('-'); if (p.length === 3) dateSheet_edit = `${p[2]}.${p[1]}.${p[0]}`; } catch (e) { } }
-            const typeElEdit = document.querySelector('input[name="edit-event-type"]:checked'); const typeValEdit = typeElEdit ? typeElEdit.value : 'Öffentlich';
-            const updatedData = { rowNum: parseInt(document.getElementById('edit-rowNum').value, 10), [COL_TITLE]: document.getElementById('edit-title').value.trim(), [COL_DATE]: dateSheet_edit, [COL_START_TIME]: document.getElementById('edit-startTime').value, [COL_END_TIME]: document.getElementById('edit-endTime').value, [COL_DESCRIPTION]: document.getElementById('edit-description').value.trim(), [COL_RESOURCES]: document.getElementById('edit-resources').value.trim(), [COL_RESPONSIBLE]: document.getElementById('edit-responsible').value.trim(), [COL_EVENT_TYPE]: typeValEdit };
-
-            if (!updatedData[COL_TITLE] || !updatedData[COL_DATE] || !updatedData.rowNum) {
-                showEditFormFeedback("Titel & Datum sind Pflichtfelder.", false); saveSpinner.classList.add('d-none'); saveEventButton.disabled = false; return;
-            }
-  
-
-            // Fetch an Backend senden
-            fetch('/api/events/' + updatedData.rowNum, { // Verwende rowNum in der URL
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(updatedData)
-            })
-                .then(response => {
-                    if (!response.ok) {
-                        return response.json().then(errData => { throw new Error(errData.message || errData.error || `HTTP Fehler ${response.status}`); });
-                    }
-                    return response.json();
-                })
-                .then(res => { // Erfolg
-                    saveSpinner.classList.add('d-none'); saveEventButton.disabled = false;
-                    if (res && res.success) {
-                        editModal.hide();
-                        showSuccess(res.message || "Event erfolgreich aktualisiert.");
-                        refreshData(); // Daten neu laden, um Änderungen anzuzeigen
-                    } else {
-                        // Server hat { success: false, message: '...' } gesendet
-                        showEditFormFeedback(res.message || "Unbekannter Fehler beim Aktualisieren.", false);
-                    }
-                })
-                .catch(err => { // Fehler
-                    saveSpinner.classList.add('d-none'); saveEventButton.disabled = false;
-                    console.error("Fehler beim Aktualisieren:", err);
-                    showEditFormFeedback("Kommunikationsfehler: " + err.message, false);
-                });
-        }
+      function handleSaveChanges() {
+          if (!saveEventButton || !saveSpinner || !editFormFeedback) return;
+          saveSpinner.classList.remove('d-none'); saveEventButton.disabled = true; clearEditFormFeedback(); hideMessages();
+      
+          // Daten sammeln (Logik unverändert, inkl. Datum DD.MM.YYYY)
+          const dateISO_edit = document.getElementById('edit-date').value; let dateSheet_edit = ''; if (dateISO_edit) { try { const p = dateISO_edit.split('-'); if (p.length === 3) dateSheet_edit = `${p[2]}.${p[1]}.${p[0]}`; } catch (e) { } }
+          const typeElEdit = document.querySelector('input[name="edit-event-type"]:checked'); const typeValEdit = typeElEdit ? typeElEdit.value : 'Öffentlich';
+          // Get the selected resources from the checkboxes
+          const selectedResources = Array.from(document.querySelectorAll('#edit-resources-checkboxes input[type="checkbox"]:checked'))
+              .map(checkbox => checkbox.value)
+              .join(', ');
+          const updatedData = { rowNum: parseInt(document.getElementById('edit-rowNum').value, 10), [COL_TITLE]: document.getElementById('edit-title').value.trim(), [COL_DATE]: dateSheet_edit, [COL_START_TIME]: document.getElementById('edit-startTime').value, [COL_END_TIME]: document.getElementById('edit-endTime').value, [COL_DESCRIPTION]: document.getElementById('edit-description').value.trim(), [COL_RESOURCES]: selectedResources, [COL_RESPONSIBLE]: document.getElementById('edit-responsible').value.trim(), [COL_EVENT_TYPE]: typeValEdit };
+      
+          if (!updatedData[COL_TITLE] || !updatedData[COL_DATE] || !updatedData.rowNum) {
+              showEditFormFeedback("Titel & Datum sind Pflichtfelder.", false); saveSpinner.classList.add('d-none'); saveEventButton.disabled = false; return;
+          }
+      
+      
+          // Fetch an Backend senden
+          fetch('/api/events/' + updatedData.rowNum, { // Verwende rowNum in der URL
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(updatedData)
+          })
+              .then(response => {
+                  if (!response.ok) {
+                      return response.json().then(errData => { throw new Error(errData.message || errData.error || `HTTP Fehler ${response.status}`); });
+                  }
+                  return response.json();
+              })
+              .then(res => { // Erfolg
+                  saveSpinner.classList.add('d-none'); saveEventButton.disabled = false;
+                  if (res && res.success) {
+                      editModal.hide();
+                      showSuccess(res.message || "Event erfolgreich aktualisiert.");
+                      refreshData(); // Daten neu laden, um Änderungen anzuzeigen
+                  } else {
+                      // Server hat { success: false, message: '...' } gesendet
+                      showEditFormFeedback(res.message || "Unbekannter Fehler beim Aktualisieren.", false);
+                  }
+              })
+              .catch(err => { // Fehler
+                  saveSpinner.classList.add('d-none'); saveEventButton.disabled = false;
+                  console.error("Fehler beim Aktualisieren:", err);
+                  showEditFormFeedback("Kommunikationsfehler: " + err.message, false);
+              });
+      }
+      
         // --- *** ENDE fetch Update Event *** ---
 
         function showEditFormFeedback(message, isSuccess) { /* ... Logik unverändert ... */
@@ -724,7 +796,6 @@
         clickedTile.classList.toggle('expanded');
     }
 };
-
     </script>
 </body>
 
