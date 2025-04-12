@@ -138,6 +138,9 @@
                             type="text" class="form-control" id="add-responsible" aria-describedby="responsibleHelp">
                         <div id="responsibleHelp" class="form-text">(Vorname, Name, Telefonnummer, Adresse)</div>
                     </div>
+                    <div class="mb-3"> <label for="add-participantInfo" class="form-label">Zusatzinfo für Teilnehmer</label> <textarea
+                            class="form-control" id="add-participantInfo" rows="3"></textarea>
+                    </div>
                     <div class="d-flex justify-content-end"> <button type="submit" class="btn btn-success"
                             id="addEventButton"> <span class="spinner-border spinner-border-sm d-none me-1"></span><i
                                 class="bi bi-plus-lg me-1"></i> Event hinzufügen </button> </div>
@@ -275,6 +278,9 @@
                                 aria-describedby="responsibleHelpEdit">
                             <div id="responsibleHelpEdit" class="form-text">(Vorname, Name, Telefonnummer, Adresse)
                             </div>
+                        </div>
+                        <div class="mb-3"> <label for="edit-participantInfo" class="form-label">Zusatzinfo für Teilnehmer</label> <textarea
+                            class="form-control" id="edit-participantInfo" rows="3"></textarea>
                         </div>
                         <div id="edit-form-feedback" class="mt-3"></div>
                     </form>
@@ -484,7 +490,7 @@
             const nodes = document.querySelectorAll('input[name="add-resources"]:checked'); const resources = Array.from(nodes).map(cb => cb.value).join(', ');
             const dateISO = document.getElementById('add-date').value; let dateSheet = ''; if (dateISO) { try { const p = dateISO.split('-'); if (p.length === 3) dateSheet = `${p[2]}.${p[1]}.${p[0]}` } catch (e) { } }
             const typeEl = document.querySelector('input[name="add-event-type"]:checked'); const typeVal = typeEl ? typeEl.value : 'Öffentlich';
-            const newData = { [COL_TITLE]: document.getElementById('add-title').value.trim(), [COL_DATE]: dateSheet, [COL_START_TIME]: document.getElementById('add-startTime').value, [COL_END_TIME]: document.getElementById('add-endTime').value, [COL_DESCRIPTION]: document.getElementById('add-description').value.trim(), [COL_RESOURCES]: resources, [COL_RESPONSIBLE]: document.getElementById('add-responsible').value.trim(), [COL_EVENT_TYPE]: typeVal };
+            const newData = { [COL_TITLE]: document.getElementById('add-title').value.trim(), [COL_DATE]: dateSheet, [COL_START_TIME]: document.getElementById('add-startTime').value, [COL_END_TIME]: document.getElementById('add-endTime').value, [COL_DESCRIPTION]: document.getElementById('add-description').value.trim(), [COL_RESOURCES]: resources, [COL_RESPONSIBLE]: document.getElementById('add-responsible').value.trim(), [COL_EVENT_TYPE]: typeVal, [COL_PARTICIPANT_INFO]: document.getElementById('add-participantInfo').value.trim() };
 
             if (!newData[COL_TITLE] || !newData[COL_DATE]) {
                 showAddFormFeedback("Titel und Datum sind Pflichtfelder.", false); addSpinner.classList.add('d-none'); addEventButton.disabled = false; return;
@@ -549,6 +555,8 @@
          document.getElementById('edit-description').value = event[COL_DESCRIPTION] || '';
          //document.getElementById('edit-resources').value = event[COL_RESOURCES] || ''; // Removed this line
          document.getElementById('edit-responsible').value = event[COL_RESPONSIBLE] || '';
+         document.getElementById('edit-participantInfo').value = event[COL_PARTICIPANT_INFO] || '';
+      
      
          // Checkboxes for resources
          const resourcesCheckboxes = document.querySelectorAll('#edit-resources-checkboxes input[type="checkbox"]');
@@ -581,7 +589,7 @@
           const selectedResources = Array.from(document.querySelectorAll('#edit-resources-checkboxes input[type="checkbox"]:checked'))
               .map(checkbox => checkbox.value)
               .join(', ');
-          const updatedData = { rowNum: parseInt(document.getElementById('edit-rowNum').value, 10), [COL_TITLE]: document.getElementById('edit-title').value.trim(), [COL_DATE]: dateSheet_edit, [COL_START_TIME]: document.getElementById('edit-startTime').value, [COL_END_TIME]: document.getElementById('edit-endTime').value, [COL_DESCRIPTION]: document.getElementById('edit-description').value.trim(), [COL_RESOURCES]: selectedResources, [COL_RESPONSIBLE]: document.getElementById('edit-responsible').value.trim(), [COL_EVENT_TYPE]: typeValEdit };
+              const updatedData = { rowNum: parseInt(document.getElementById('edit-rowNum').value, 10), [COL_TITLE]: document.getElementById('edit-title').value.trim(), [COL_DATE]: dateSheet_edit, [COL_START_TIME]: document.getElementById('edit-startTime').value, [COL_END_TIME]: document.getElementById('edit-endTime').value, [COL_DESCRIPTION]: document.getElementById('edit-description').value.trim(), [COL_RESOURCES]: selectedResources, [COL_RESPONSIBLE]: document.getElementById('edit-responsible').value.trim(), [COL_EVENT_TYPE]: typeValEdit, [COL_PARTICIPANT_INFO]: document.getElementById('edit-participantInfo').value.trim() };
       
           if (!updatedData[COL_TITLE] || !updatedData[COL_DATE] || !updatedData.rowNum) {
               showEditFormFeedback("Titel & Datum sind Pflichtfelder.", false); saveSpinner.classList.add('d-none'); saveEventButton.disabled = false; return;
