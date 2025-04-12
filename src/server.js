@@ -25,7 +25,8 @@ const COLUMN_ORDER = [
     'Welche Ressourcen brauchst du?', // F
     'Wer ist für den Event Verantwortlich?', // G
     'Event Typ',                   // H
-    'Zeitstempel'                  // I
+    'Teilnehmer Info',               // I
+    'Zeitstempel'                  // J
 ];
 
 // Indizes und Spaltennamen basierend auf COLUMN_ORDER
@@ -38,10 +39,11 @@ const COL_DESCRIPTION = COLUMN_ORDER[4];
 const COL_RESOURCES = COLUMN_ORDER[5];
 const COL_RESPONSIBLE = COLUMN_ORDER[6];
 const COL_EVENT_TYPE = COLUMN_ORDER[7];
-const COL_TIMESTAMP = COLUMN_ORDER[8];
+const COL_PARTICIPANT_INFO = COLUMN_ORDER[8];
+const COL_TIMESTAMP = COLUMN_ORDER[9];
 
 // Bestimme den Bereich der zu aktualisierenden Spalten (alle außer Zeitstempel)
-const UPDATE_COLUMN_END_LETTER = String.fromCharCode(65 + COLUMN_ORDER.indexOf(COL_EVENT_TYPE)); // 65='A', Spalte H = A+7
+const UPDATE_COLUMN_END_LETTER = String.fromCharCode(65 + COLUMN_ORDER.indexOf(COL_PARTICIPANT_INFO)); // 65='A', Spalte H = A+7
 
 // --- Express App Initialisierung ---
 const app = express();
