@@ -361,7 +361,7 @@ app.post('/api/auth/check', (req, res) => {
 // This MUST be AFTER all your API routes.
 // It serves the main index.html for any GET request that doesn't match an API route or a static file in the /public folder.
 // This is important for handling browser refreshes or direct links if you were using frontend routing (though less critical for the current simple view switching).
-app.get('*', (req, res) => {
+app.get('/*splat', (req, res) => {
   // Ensure the path points correctly to your index.html within the public folder
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
