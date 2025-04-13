@@ -13,6 +13,8 @@
     "@google-cloud/local-auth": "^3.0.1",
     "@google-cloud/storage": "^7.16.0",
     "express": "^5.1.0",
+    "cors": "^2.8.5",
+    "firebase-admin": "^13.2.0",
     "google-auth-library": "^9.15.1",
     "googleapis": "^105.0.0"
   }
