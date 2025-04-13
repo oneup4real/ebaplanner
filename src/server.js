@@ -1,397 +1,371 @@
+// server.js
+require('dotenv').config(); // Load .env file for local dev (put this first!)
+
 const express = require('express');
+const cors = require('cors');
 const path = require('path');
-const { google } = require('googleapis');
-const { GoogleAuth } = require('google-auth-library');
+const { Firestore, FieldValue, Timestamp } = require('@google-cloud/firestore'); // Firestore Client
+const { Storage } = require('@google-cloud/storage'); // Google Cloud Storage Client
+const Multer = require('multer'); // Middleware for handling multipart/form-data (file uploads)
+const { format } = require('util'); // Node.js utility
 
-// --- Konfiguration (aus neuem code.gs) ---
-
-// WICHTIG: Für Cloud Run dringend empfohlen, die ID als Umgebungsvariable zu setzen!
-// const SPREADSHEET_ID = process.env.SPREADSHEET_ID;
-const SPREADSHEET_ID = '1v213UqdChUATSQoTeOl_poaZj17MbXRAjk8nJXKzyXQ';
-
-// WICHTIG: Für Cloud Run dringend empfohlen, das Passwort über Secret Manager zu verwalten!
-const APP_PASSWORD = process.env.APP_PASSWORD; // Passwort aus Umgebungsvariable lesen
-
-const SHEET_NAME = 'Formularantworten 1'; // <-- Prüfen und ggf. anpassen!
-const HEADER_ROW = 1; // Zeilennummer der Überschriften (1-basiert)
-
-// Spaltenreihenfolge - diese definiert, wie Daten gelesen und geschrieben werden!
-const COLUMN_ORDER = [
-    'Wann findet der Event statt?', // A
-    'Event Titel',                 // B
-    'Wann starter der Event?',       // C
-    'Wann ist der Event zu Ende?', // D
-    'Um was geht es bei dem Event?', // E
-    'Welche Ressourcen brauchst du?', // F
-    'Wer ist für den Event Verantwortlich?', // G
-    'Event Typ',                   // H
-    'Teilnehmer Info',               // I
-    'Zeitstempel'                  // J
-];
-
-// Indizes und Spaltennamen basierend auf COLUMN_ORDER
-const DATE_COLUMN_INDEX = COLUMN_ORDER.indexOf('Wann findet der Event statt?');
-const COL_DATE = COLUMN_ORDER[0];
-const COL_TITLE = COLUMN_ORDER[1];
-const COL_START_TIME = COLUMN_ORDER[2];
-const COL_END_TIME = COLUMN_ORDER[3];
-const COL_DESCRIPTION = COLUMN_ORDER[4];
-const COL_RESOURCES = COLUMN_ORDER[5];
-const COL_RESPONSIBLE = COLUMN_ORDER[6];
-const COL_EVENT_TYPE = COLUMN_ORDER[7];
-const COL_PARTICIPANT_INFO = COLUMN_ORDER[8];
-const COL_TIMESTAMP = COLUMN_ORDER[9];
-
-// Bestimme den Bereich der zu aktualisierenden Spalten (alle außer Zeitstempel)
-const UPDATE_COLUMN_END_LETTER = String.fromCharCode(65 + COLUMN_ORDER.indexOf(COL_PARTICIPANT_INFO)); // 65='A', Spalte H = A+7
-
-// --- Express App Initialisierung ---
-const app = express();
+// --- Configuration ---
 const PORT = process.env.PORT || 8080;
+const db = new Firestore();
+const eventsCollection = db.collection('events'); // Reference to your Firestore collection
+
+// Google Cloud Storage Configuration
+const GCS_BUCKET_NAME = 'ebaplanner_event_images'; // Your bucket name
+const storage = new Storage(); // Assumes ADC provides credentials with GCS access
+const bucket = storage.bucket(GCS_BUCKET_NAME);
+
+// Multer configuration (for handling file uploads in memory)
+const multer = Multer({
+  storage: Multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024, // Limit file size to 10MB
+  },
+});
+
+// Password Check (reads from env var)
+const APP_PASSWORD = process.env.APP_PASSWORD;
+
+// --- Express App Initialization ---
+const app = express();
 
 // --- Middleware ---
-app.use(express.static(path.join(__dirname, '..', 'public'))); // Statische Dateien (HTML, CSS)
-app.use(express.json()); // JSON Body Parser für POST/PUT
 
-// --- Hilfsfunktionen ---
+// CORS Configuration - **ADJUST ALLOWED ORIGINS!**
+const allowedOrigins = [
+  'http://localhost:8080', // For local testing of the HTML file directly
+  'http://localhost:5173', // Vite/React/Vue default dev port
+  'https://YOUR_FIREBASE_PROJECT_ID.web.app', // Your deployed Firebase frontend URL (replace!)
+  'https://YOUR_FIREBASE_PROJECT_ID.firebaseapp.com' // Possible alternate Firebase URL (replace!)
+  // Add your custom domain if you have one
+];
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl) or if origin is in whitelist
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      console.warn(`CORS blocked for origin: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+};
+app.use(cors(corsOptions)); // Enable CORS *before* routes
+
+// JSON Parser (for requests *without* file uploads, like auth check, PUT)
+app.use(express.json());
+
+// --- Helper Functions ---
 
 /**
- * Authentifiziert und erstellt einen Google Sheets API Client.
- * @param {boolean} readOnly Ob nur Lesezugriff benötigt wird.
- * @returns {Promise<object>} Ein Promise, das zum Sheets API Client auflöst.
+ * Uploads a file buffer to Google Cloud Storage.
+ * @param {Buffer} buffer The file buffer.
+ * @param {string} originalname The original filename.
+ * @param {string} mimetype The file mimetype.
+ * @returns {Promise<string>} A promise that resolves with the public URL of the uploaded file.
  */
-async function getAuthenticatedSheetsClient(readOnly = true) {
-    const scopes = readOnly
-        ? ['https://www.googleapis.com/auth/spreadsheets.readonly']
-        : ['https://www.googleapis.com/auth/spreadsheets']; // Schreibzugriff benötigt
+function uploadToGcs(buffer, originalname, mimetype) {
+  return new Promise((resolve, reject) => {
+    const uniqueFilename = `${Date.now()}-${originalname.replace(/ /g, '_')}`; // Create unique filename
+    const blob = bucket.file(uniqueFilename);
+    const blobStream = blob.createWriteStream({
+      metadata: {
+        contentType: mimetype,
+      },
+      resumable: false,
+    });
 
-    const auth = new GoogleAuth({ scopes: scopes });
-    const authClient = await auth.getClient();
-    return google.sheets({ version: 'v4', auth: authClient });
+    blobStream.on('error', (err) => {
+      console.error("GCS Upload Error:", err);
+      reject(`Error uploading to GCS: ${err.message}`);
+    });
+
+    blobStream.on('finish', async () => {
+      try {
+        // Make the file publicly readable (adjust if using Signed URLs)
+        await blob.makePublic();
+        const publicUrl = format(`https://storage.googleapis.com/${bucket.name}/${blob.name}`);
+        console.log("GCS Upload successful:", publicUrl);
+        resolve(publicUrl);
+      } catch (err) {
+        console.error("Error making file public or getting URL:", err);
+        reject(`Error finalizing GCS upload: ${err.message}`);
+      }
+    });
+
+    blobStream.end(buffer);
+  });
 }
 
 /**
- * Parsed Datumsformate (kopiert aus code.gs, Logger ersetzt).
- * @param {string|Date} dateValue
- * @return {string|null} Datum als 'YYYY-MM-DD' oder null.
+ * Deletes an object from Google Cloud Storage using its public URL.
+ * @param {string} fileUrl The public URL of the file.
+ * @returns {Promise<void>}
  */
-function parseAndFormatDate(dateValue) {
-    // ... (Funktion aus vorheriger Antwort oder deinem code.gs einfügen) ...
-    // Stelle sicher, dass Logger.log durch console.warn oder console.log ersetzt ist.
-    if (!dateValue) return null;
-    let dateStr = String(dateValue).trim();
-    if (!dateStr) return null;
-    let parts;
-    // DD.MM.YYYY
-    parts = dateStr.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
-    if (parts) { try { const d = parseInt(parts[1], 10), m = parseInt(parts[2], 10), y = parseInt(parts[3], 10); if (y > 1900 && m >= 1 && m <= 12 && d >= 1 && d <= 31) return `${y}-${('0' + m).slice(-2)}-${('0' + d).slice(-2)}`; } catch (e) { } }
-    // YYYY-MM-DD
-    parts = dateStr.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
-    if (parts) { try { const d = parseInt(parts[3], 10), m = parseInt(parts[2], 10), y = parseInt(parts[1], 10); if (y > 1900 && m >= 1 && m <= 12 && d >= 1 && d <= 31) return `${y}-${('0' + m).slice(-2)}-${('0' + d).slice(-2)}`; } catch (e) { } }
-    // MM/DD/YYYY
-    parts = dateStr.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-    if (parts) { try { const m = parseInt(parts[1], 10), d = parseInt(parts[2], 10), y = parseInt(parts[3], 10); if (y > 1900 && m >= 1 && m <= 12 && d >= 1 && d <= 31) return `${y}-${('0' + m).slice(-2)}-${('0' + d).slice(-2)}`; } catch (e) { } }
-    // Fallback mit new Date()
-    try { const pd = new Date(dateStr); if (!isNaN(pd.getTime())) return pd.getFullYear() + '-' + ('0' + (pd.getMonth() + 1)).slice(-2) + '-' + ('0' + pd.getDate()).slice(-2); } catch (e) { }
-    console.warn(`Datum konnte nicht in YYYY-MM-DD konvertiert werden: "${dateStr}"`);
-    return null;
+async function deleteFromGcs(fileUrl) {
+    if (!fileUrl || !fileUrl.startsWith(`https://storage.googleapis.com/${bucket.name}/`)) {
+        console.warn(`Invalid or non-GCS URL provided for deletion: ${fileUrl}`);
+        return; // Don't try to delete if URL is invalid or not from our bucket
+    }
+    try {
+        const fileName = fileUrl.substring(`https://storage.googleapis.com/${bucket.name}/`.length);
+        console.log(`Attempting to delete GCS object: ${fileName}`);
+        await bucket.file(fileName).delete();
+        console.log(`Successfully deleted GCS object: ${fileName}`);
+    } catch (error) {
+        // Log error but don't necessarily fail the whole request if GCS delete fails
+        console.error(`Failed to delete GCS object ${fileUrl}:`, error.message);
+        // Consider logging severity based on error code (e.g., ignore 'Not Found' errors)
+        // if (error.code !== 404) { /* log more seriously */ }
+    }
 }
 
+// --- API Endpoints ---
 
-// --- API Endpunkte ---
-
-// GET /api/events - Holt alle Events
+// GET /api/events - Fetches all events from Firestore
 app.get('/api/events', async (req, res) => {
-    console.log('API GET /api/events aufgerufen');
-    if (!SPREADSHEET_ID) return res.status(500).json({ error: 'Serverkonfiguration: Spreadsheet ID fehlt.' });
+  console.log('API GET /api/events called');
+  try {
+    const snapshot = await eventsCollection
+      .orderBy('eventDate', 'asc') // Sort by the Timestamp field
+      .orderBy('startTime', 'asc') // Secondary sort by start time string
+      .get();
 
-    try {
-        const sheets = await getAuthenticatedSheetsClient(true); // Read-only
-        const numColumns = COLUMN_ORDER.length;
+    if (snapshot.empty) {
+      console.log('No events found in Firestore.');
+      return res.json([]);
+    }
 
-        // 1. Header lesen
-        const headerRange = `${SHEET_NAME}!${HEADER_ROW}:${HEADER_ROW}`;
-        const headerResponse = await sheets.spreadsheets.values.get({
-            spreadsheetId: SPREADSHEET_ID,
-            range: headerRange,
-        });
-        const headers = headerResponse.data.values ? headerResponse.data.values[0].map(h => String(h).trim()) : [];
-        if (headers.length === 0) {
-            throw new Error(`Keine Header in Zeile ${HEADER_ROW} gefunden.`);
+    const events = [];
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      // Convert Firestore Timestamps back to a usable format for frontend (ISO String YYYY-MM-DD)
+      events.push({
+        id: doc.id, // Include Firestore document ID
+        ...data,
+        eventDate: data.eventDate?.toDate()?.toISOString()?.split('T')[0] || null,
+        createdAt: data.createdAt?.toDate()?.toISOString() || null
+      });
+    });
+
+    console.log(`${events.length} events fetched from Firestore.`);
+    res.json(events);
+
+  } catch (error) {
+    console.error("Error in GET /api/events:", error.message, error.stack);
+    res.status(500).json({ error: "Error loading events from database." });
+  }
+});
+
+// POST /api/events - Adds a new event (with optional image upload)
+// Uses multer middleware *only* for this route to handle multipart/form-data
+app.post('/api/events', multer.single('eventImage'), async (req, res) => {
+  // 'eventImage' must match the 'name' attribute of the file input in the frontend form
+  console.log('API POST /api/events called');
+  try {
+    const eventData = req.body; // Text fields are in req.body
+    const uploadedFile = req.file; // Uploaded file details (if any) are in req.file
+
+    // Field names expected from FormData
+    const FIELD_TITLE = 'title';
+    const FIELD_DATE = 'eventDate'; // Expecting YYYY-MM-DD from input type="date"
+    const FIELD_START_TIME = 'startTime';
+    const FIELD_END_TIME = 'endTime';
+    const FIELD_DESCRIPTION = 'description';
+    const FIELD_RESOURCES = 'resources';
+    const FIELD_RESPONSIBLE = 'responsible';
+    const FIELD_EVENT_TYPE = 'eventType';
+    const FIELD_PARTICIPANT_INFO = 'participantInfo';
+
+    if (!eventData || !eventData[FIELD_TITLE] || !eventData[FIELD_DATE]) {
+       return res.status(400).json({ success: false, message: 'Title and Date are required fields.' });
+    }
+
+    let imageUrl = null;
+    if (uploadedFile) {
+      console.log("Processing uploaded file:", uploadedFile.originalname);
+      // Upload to GCS and get public URL
+      imageUrl = await uploadToGcs(uploadedFile.buffer, uploadedFile.originalname, uploadedFile.mimetype);
+    }
+
+    // Prepare data for Firestore
+    // Convert date string (expecting YYYY-MM-DD from frontend) to Timestamp
+    let eventDateTimestamp = null;
+    if (eventData[FIELD_DATE]) {
+        try {
+            // Parse YYYY-MM-DD directly, assuming UTC for consistency on backend
+            eventDateTimestamp = Timestamp.fromDate(new Date(eventData[FIELD_DATE] + 'T00:00:00Z'));
+        } catch(e) {
+             console.warn(`Could not parse date from frontend: ${eventData[FIELD_DATE]}`);
+             return res.status(400).json({ success: false, message: 'Invalid date format. Please use YYYY-MM-DD.' });
         }
-        // Sicherstellen, dass die gelesenen Header mit COLUMN_ORDER übereinstimmen (optional, aber gut zur Fehlersuche)
-        // console.log("Gelesene Header:", headers);
-        // console.log("Erwartete Header:", COLUMN_ORDER);
-
-        // 2. Daten lesen (ab Zeile nach Header)
-        const startRow = HEADER_ROW + 1;
-        const dataRange = `${SHEET_NAME}!A${startRow}:${String.fromCharCode(65 + numColumns - 1)}`; // Z.B. A2:I
-        const response = await sheets.spreadsheets.values.get({
-            spreadsheetId: SPREADSHEET_ID,
-            range: dataRange,
-            valueRenderOption: 'FORMATTED_VALUE',
-            dateTimeRenderOption: 'SERIAL_NUMBER'
-        });
-
-        const values = response.data.values || [];
-        console.log(`Daten aus ${SHEET_NAME} geholt. ${values.length} Datenzeilen empfangen.`);
-
-        const events = [];
-        values.forEach((row, index) => {
-            let event = {};
-            let hasData = false;
-            const currentRowNum = startRow + index; // Aktuelle Zeilennummer im Sheet
-
-            // Werte den Headern aus COLUMN_ORDER zuordnen
-            COLUMN_ORDER.forEach((definedHeader, colIndex) => {
-                // Finde den Index des Headers in den tatsächlich gelesenen Headern
-                const actualHeaderIndex = headers.indexOf(definedHeader);
-                let value = '';
-                if (actualHeaderIndex !== -1 && actualHeaderIndex < row.length) {
-                    // Nimm den Wert aus der entsprechenden Spalte der aktuellen Zeile
-                    value = (row[actualHeaderIndex] !== null && typeof row[actualHeaderIndex] !== 'undefined') ? String(row[actualHeaderIndex]).trim() : '';
-                }
-                event[definedHeader] = value; // Speichere unter dem definierten Header-Namen
-                if (value !== '') hasData = true;
-            });
-
-            if (hasData) {
-                const dateValue = event[COL_DATE]; // Nimm den Wert aus der Datumsspalte
-                event.sortableDate = parseAndFormatDate(dateValue);
-                event.rowNum = currentRowNum; // Zeilennummer hinzufügen
-                events.push(event);
-            }
-        });
-
-        // Sortierung (wie in code.gs)
-        events.sort((a, b) => {
-            if (!a.sortableDate && !b.sortableDate) return 0;
-            if (!a.sortableDate) return 1;
-            if (!b.sortableDate) return -1;
-            if (a.sortableDate < b.sortableDate) return -1;
-            if (a.sortableDate > b.sortableDate) return 1;
-            const startTimeA = String(a[COL_START_TIME] || '');
-            const startTimeB = String(b[COL_START_TIME] || '');
-            if (startTimeA < startTimeB) return -1;
-            if (startTimeA > startTimeB) return 1;
-            return 0;
-        });
-
-        console.log(`${events.length} Events verarbeitet und sortiert.`);
-        res.json(events);
-
-    } catch (error) {
-        console.error("Fehler in GET /api/events:", error.message);
-        console.error("Stack:", error.stack);
-        let clientMessage = "Fehler beim Laden der Events.";
-        if (error.response?.data?.error) {
-            clientMessage += ` Details: ${error.response.data.error.message || error.message}`;
-        } else { clientMessage += ` Details: ${error.message}`; }
-        res.status(500).json({ error: clientMessage });
+    } else {
+         return res.status(400).json({ success: false, message: 'Date is a required field.' });
     }
+
+    const newEvent = {
+      title: eventData[FIELD_TITLE] || '',
+      eventDate: eventDateTimestamp,
+      startTime: eventData[FIELD_START_TIME] || '',
+      endTime: eventData[FIELD_END_TIME] || '',
+      description: eventData[FIELD_DESCRIPTION] || '',
+      resources: eventData[FIELD_RESOURCES] || '', // Comma-separated string from frontend
+      responsible: eventData[FIELD_RESPONSIBLE] || '',
+      eventType: eventData[FIELD_EVENT_TYPE] || 'Öffentlich', // Default if not provided
+      participantInfo: eventData[FIELD_PARTICIPANT_INFO] || '',
+      imageUrl: imageUrl, // Add the GCS URL if a file was uploaded
+      createdAt: FieldValue.serverTimestamp() // Firestore server-side timestamp
+    };
+
+    const docRef = await eventsCollection.add(newEvent);
+    console.log("New event successfully added to Firestore with ID:", docRef.id);
+    res.status(201).json({ success: true, message: "Event added successfully.", id: docRef.id });
+
+  } catch (error) {
+    console.error("Error in POST /api/events:", error.message, error.stack);
+    res.status(500).json({ success: false, message: "Error adding event." });
+  }
 });
 
-// POST /api/events - Fügt ein neues Event hinzu
-app.post('/api/events', async (req, res) => {
-    console.log('API POST /api/events aufgerufen mit Body:', req.body);
-    const eventData = req.body;
 
-    if (!SPREADSHEET_ID) return res.status(500).json({ error: 'Serverkonfiguration: Spreadsheet ID fehlt.' });
-    if (!eventData || typeof eventData !== 'object' || Object.keys(eventData).length === 0) {
-        return res.status(400).json({ error: 'Ungültige oder fehlende Event-Daten im Request Body.' });
+// PUT /api/events/:id - Updates an event in Firestore (ID instead of rowNum!)
+// NOTE: This version does NOT handle image updates/replacements for simplicity. Expects JSON body.
+app.put('/api/events/:id', async (req, res) => {
+    const eventId = req.params.id;
+    const eventData = req.body; // Expecting JSON body now
+    console.log(`API PUT /api/events/${eventId} called`);
+
+    // Field names expected from JSON body
+    const FIELD_TITLE = 'title';
+    const FIELD_DATE = 'eventDate'; // Expecting YYYY-MM-DD
+    const FIELD_START_TIME = 'startTime';
+    const FIELD_END_TIME = 'endTime';
+    const FIELD_DESCRIPTION = 'description';
+    const FIELD_RESOURCES = 'resources';
+    const FIELD_RESPONSIBLE = 'responsible';
+    const FIELD_EVENT_TYPE = 'eventType';
+    const FIELD_PARTICIPANT_INFO = 'participantInfo';
+
+    if (!eventId) {
+        return res.status(400).json({ error: 'Event ID missing.' });
+    }
+    if (!eventData || typeof eventData !== 'object' || Object.keys(eventData).length === 0 || !eventData[FIELD_TITLE] || !eventData[FIELD_DATE]) {
+        return res.status(400).json({ success: false, message: 'Invalid data or Title/Date missing.' });
     }
 
     try {
-        const sheets = await getAuthenticatedSheetsClient(false); // Write access
+        const eventRef = eventsCollection.doc(eventId);
+        const doc = await eventRef.get();
 
-        // Erstelle die Zeile basierend auf COLUMN_ORDER
-        const newRow = COLUMN_ORDER.map(columnName => {
-            if (columnName === COL_TIMESTAMP) {
-                return new Date().toISOString(); // Zeitstempel als ISO String
-            }
-            // Verwende den Wert aus eventData, falls vorhanden, sonst leer
-            return eventData[columnName] !== undefined ? eventData[columnName] : "";
-        });
+        if (!doc.exists) {
+            return res.status(404).json({ success: false, message: 'Event not found.' });
+        }
 
-        const response = await sheets.spreadsheets.values.append({
-            spreadsheetId: SPREADSHEET_ID,
-            range: `${SHEET_NAME}!A1`, // Sage Sheets, es soll an die erste leere Zeile anhängen
-            valueInputOption: 'USER_ENTERED', // Behandelt Eingaben als ob sie vom Benutzer kommen (wichtig für Formeln etc., hier eher 'RAW')
-            insertDataOption: 'INSERT_ROWS', // Fügt Zeilen ein
-            resource: {
-                values: [newRow] // Muss ein Array von Zeilen sein
-            }
-        });
+        // Prepare update data (convert date)
+        let eventDateTimestamp = null;
+        if (eventData[FIELD_DATE]) {
+             try {
+                 eventDateTimestamp = Timestamp.fromDate(new Date(eventData[FIELD_DATE] + 'T00:00:00Z')); // Assume UTC
+             } catch(e) {
+                  return res.status(400).json({ success: false, message: 'Invalid date format. Please use YYYY-MM-DD.' });
+             }
+        } else {
+             return res.status(400).json({ success: false, message: 'Date is a required field.' });
+        }
 
-        console.log("Neues Event erfolgreich hinzugefügt:", response.data);
-        res.status(201).json({ success: true, message: "Event erfolgreich hinzugefügt." });
+        // Create update object - DO NOT update createdAt or imageUrl here
+        const updatePayload = {
+            title: eventData[FIELD_TITLE] || '',
+            eventDate: eventDateTimestamp,
+            startTime: eventData[FIELD_START_TIME] || '',
+            endTime: eventData[FIELD_END_TIME] || '',
+            description: eventData[FIELD_DESCRIPTION] || '',
+            resources: eventData[FIELD_RESOURCES] || '', // Comma-separated string from frontend
+            responsible: eventData[FIELD_RESPONSIBLE] || '',
+            eventType: eventData[FIELD_EVENT_TYPE] || 'Öffentlich',
+            participantInfo: eventData[FIELD_PARTICIPANT_INFO] || '',
+        };
+
+        await eventRef.update(updatePayload);
+        console.log(`Event ${eventId} successfully updated.`);
+        res.json({ success: true, message: "Event updated successfully." });
 
     } catch (error) {
-        console.error("Fehler in POST /api/events:", error.message);
-        console.error("Stack:", error.stack);
-        let clientMessage = "Fehler beim Hinzufügen des Events.";
-        if (error.response?.data?.error) {
-            clientMessage += ` Details: ${error.response.data.error.message || error.message}`;
-        } else { clientMessage += ` Details: ${error.message}`; }
-        res.status(500).json({ success: false, message: clientMessage });
+        console.error(`Error in PUT /api/events/${eventId}:`, error.message, error.stack);
+        res.status(500).json({ success: false, message: "Error updating event." });
     }
 });
 
-// PUT /api/events/:rowNum - Aktualisiert ein Event
-app.put('/api/events/:rowNum', async (req, res) => {
-    const rowNum = parseInt(req.params.rowNum, 10);
-    const eventData = req.body;
-    console.log(`API PUT /api/events/${rowNum} aufgerufen mit Body:`, eventData);
+// DELETE /api/events/:id - Deletes an event from Firestore (and optionally image from GCS)
+app.delete('/api/events/:id', async (req, res) => {
+    const eventId = req.params.id;
+    console.log(`API DELETE /api/events/${eventId} called`);
 
-    if (!SPREADSHEET_ID) return res.status(500).json({ error: 'Serverkonfiguration: Spreadsheet ID fehlt.' });
-    if (isNaN(rowNum) || rowNum <= HEADER_ROW) { // Zeilennummer muss gültig sein
-        return res.status(400).json({ error: 'Ungültige Zeilennummer angegeben.' });
-    }
-    if (!eventData || typeof eventData !== 'object' || Object.keys(eventData).length === 0) {
-        return res.status(400).json({ error: 'Ungültige oder fehlende Event-Daten im Request Body.' });
+     if (!eventId) {
+        return res.status(400).json({ error: 'Event ID missing.' });
     }
 
     try {
-        const sheets = await getAuthenticatedSheetsClient(false); // Write access
+        const eventRef = eventsCollection.doc(eventId);
+        const doc = await eventRef.get();
 
-        // Erstelle Array der Werte in korrekter Reihenfolge, ignoriere Zeitstempel
-        const valuesToWrite = COLUMN_ORDER.map(header => {
-            if (header === COL_TIMESTAMP) return null; // Zeitstempel nicht überschreiben
-            // Nimm Wert aus eventData, falls vorhanden, sonst leer ''
-            return eventData[header] !== undefined ? eventData[header] : "";
-        }).filter(value => value !== null); // Entferne den null-Platzhalter für Zeitstempel
-
-        // Bereich zum Schreiben definieren (z.B. A<rowNum>:H<rowNum>)
-        const range = `${SHEET_NAME}!A${rowNum}:${UPDATE_COLUMN_END_LETTER}${rowNum}`;
-        console.log(`Aktualisiere Bereich: ${range}`);
-
-        const response = await sheets.spreadsheets.values.update({
-            spreadsheetId: SPREADSHEET_ID,
-            range: range,
-            valueInputOption: 'USER_ENTERED', // oder 'RAW'
-            resource: {
-                values: [valuesToWrite] // Muss ein Array von Zeilen sein
+        if (doc.exists) {
+            // Optional: Delete associated image from GCS *before* deleting Firestore record
+            const eventData = doc.data();
+            if (eventData.imageUrl) {
+                await deleteFromGcs(eventData.imageUrl); // Attempt to delete, handles errors internally
             }
-        });
 
-        console.log(`Zeile ${rowNum} erfolgreich aktualisiert:`, response.data);
-        res.json({ success: true, message: "Event erfolgreich aktualisiert." });
-
+            // Delete Firestore document
+            await eventRef.delete();
+            console.log(`Event ${eventId} successfully deleted from Firestore.`);
+            res.json({ success: true, message: 'Event deleted successfully.' });
+        } else {
+             console.log(`Event ${eventId} not found for deletion.`);
+             res.status(404).json({ success: false, message: 'Event not found.' }); // Send 404
+        }
     } catch (error) {
-        console.error(`Fehler in PUT /api/events/${rowNum}:`, error.message);
-        console.error("Stack:", error.stack);
-        let clientMessage = "Fehler beim Aktualisieren des Events.";
-        if (error.response?.data?.error) {
-            clientMessage += ` Details: ${error.response.data.error.message || error.message}`;
-        } else { clientMessage += ` Details: ${error.message}`; }
-        res.status(500).json({ success: false, message: clientMessage });
+        console.error(`Error in DELETE /api/events/${eventId}:`, error.message, error.stack);
+        res.status(500).json({ success: false, message: "Error deleting event." });
     }
 });
 
-// POST /api/auth/check - Überprüft das Passwort
+
+// POST /api/auth/check - Checks the password (unchanged)
 app.post('/api/auth/check', (req, res) => {
-    console.log('API POST /api/auth/check aufgerufen');
+    console.log('API POST /api/auth/check called');
     const { password: userPassword } = req.body;
 
     if (!APP_PASSWORD) {
-        console.error("SICHERHEITSWARNUNG: Kein APP_PASSWORD in Umgebungsvariablen gefunden! Passwortprüfung nicht möglich.");
-        // Sende keinen spezifischen Fehler an den Client, der das Fehlen des Passworts verrät
-        return res.status(500).json({ error: 'Server-Konfigurationsfehler.' });
+        console.error("SECURITY WARNING: APP_PASSWORD environment variable not set!");
+        return res.status(500).json({ error: 'Server configuration error.' });
     }
     if (typeof userPassword !== 'string') {
-        return res.status(400).json({ error: 'Passwort fehlt oder ungültiges Format im Request Body.' });
+        return res.status(400).json({ error: 'Password missing or invalid format.' });
     }
-
-    // Einfacher String-Vergleich (Timing-Angriffe sind hier weniger relevant als bei Hash-Vergleichen)
     const isValid = (userPassword === APP_PASSWORD);
-    console.log(`Passwortprüfung: ${isValid ? 'Erfolgreich' : 'Fehlgeschlagen'}`);
-
-    // Sende nur zurück, ob gültig oder nicht
+    console.log(`Password check result: ${isValid ? 'Success' : 'Failed'}`);
     res.json({ isValid: isValid });
 });
 
 
-// --- Hauptroute und Serverstart ---
-
-// "*" Route fängt alle übrigen GET-Requests ab und sendet index.html (für Frontend-Routing)
-app.get('/{*splat}', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
-});
-
+// --- Server Start ---
 app.listen(PORT, () => {
-    console.log(`Server läuft auf Port ${PORT}`);
-    if (!SPREADSHEET_ID || SPREADSHEET_ID === '1v213UqdChUATSQoTeOl_poaZj17MbXRAjk8nJXKzyXQ') {
-        console.warn('WARNUNG: Umgebungsvariable SPREADSHEET_ID ist nicht gesetzt oder verwendet Beispiel-ID.');
-    }
-    if (!APP_PASSWORD) {
-        console.warn('WARNUNG: Umgebungsvariable APP_PASSWORD ist nicht gesetzt. Passwortprüfung wird fehlschlagen.');
-        console.warn('WARNUNG: Für Produktion dringend empfohlen, Secret Manager für Passwörter zu verwenden!');
-    }
-});
-
-// DELETE /api/events/:rowNum - Löscht ein Event
-app.delete('/api/events/:rowNum', async (req, res) => {
-    const rowNum = parseInt(req.params.rowNum, 10);
-    console.log(`API DELETE /api/events/${rowNum} aufgerufen`);
-
-    if (!SPREADSHEET_ID) return res.status(500).json({ error: 'Serverkonfiguration: Spreadsheet ID fehlt.' });
-    if (isNaN(rowNum) || rowNum <= HEADER_ROW) { // Zeilennummer muss gültig sein
-        return res.status(400).json({ error: 'Ungültige Zeilennummer zum Löschen angegeben.' });
-    }
-
-    try {
-        const sheets = await getAuthenticatedSheetsClient(false); // Schreibzugriff benötigt
-
-        // Schritt 1: Metadaten abrufen, um die numerische sheetId für den Tabellennamen zu finden
-        console.log(`Rufe Metadaten ab für Sheet ID: <span class="math-inline">\{SPREADSHEET\_ID\} um Sheet ID für "</span>{SHEET_NAME}" zu finden.`);
-        const metadata = await sheets.spreadsheets.get({
-            spreadsheetId: SPREADSHEET_ID,
-            fields: 'sheets(properties(sheetId,title))' // Nur benötigte Felder abrufen
-        });
-
-        const sheet = metadata.data.sheets.find(s => s.properties.title === SHEET_NAME);
-
-        if (!sheet || sheet.properties.sheetId === undefined) {
-            console.error(`Tabellenblatt "${SHEET_NAME}" nicht in Metadaten gefunden oder hat keine sheetId.`);
-            return res.status(404).json({ error: `Tabellenblatt "${SHEET_NAME}" nicht gefunden.` });
-        }
-        const sheetId = sheet.properties.sheetId;
-        console.log(`Sheet ID für "${SHEET_NAME}" ist: ${sheetId}`);
-
-        // Schritt 2: Den BatchUpdate Request zum Löschen der Zeile erstellen
-        const deleteRequest = {
-            deleteDimension: {
-                range: {
-                    sheetId: sheetId,       // Numerische ID des Tabs
-                    dimension: "ROWS",      // Wir wollen eine Zeile löschen
-                    startIndex: rowNum - 1, // API ist 0-basiert, also Zeilennummer - 1
-                    endIndex: rowNum        // Der Endindex ist exklusiv ([startIndex, endIndex))
-                }
-            }
-        };
-
-        console.log(`Sende BatchUpdate zum Löschen von Zeile ${rowNum} (Index ${rowNum - 1}) auf Sheet ID ${sheetId}`);
-        const batchUpdateResponse = await sheets.spreadsheets.batchUpdate({
-            spreadsheetId: SPREADSHEET_ID,
-            resource: {
-                requests: [deleteRequest]
-            }
-        });
-
-        console.log(`Zeile ${rowNum} erfolgreich gelöscht:`, batchUpdateResponse.data);
-        res.json({ success: true, message: 'Event erfolgreich gelöscht.' });
-
-    } catch (error) {
-        console.error(`Fehler in DELETE /api/events/${rowNum}:`, error.message);
-        if (error.response?.data?.error) { // Detailliertere Google API Fehler anzeigen
-             console.error("Google API Error Details:", JSON.stringify(error.response.data.error, null, 2));
-        } else {
-             console.error("Stack:", error.stack);
-        }
-        let clientMessage = "Fehler beim Löschen des Events.";
-        if (error.response?.data?.error) {
-            clientMessage += ` Details: ${error.response.data.error.message || error.message}`;
-        } else { clientMessage += ` Details: ${error.message}`; }
-        res.status(500).json({ success: false, message: clientMessage });
-    }
+  console.log(`Server listening on port ${PORT}`);
+  if (!process.env.GOOGLE_APPLICATION_CREDENTIALS && !process.env.GOOGLE_CLOUD_PROJECT) {
+      console.warn('WARNING: Application Default Credentials (ADC) not found. Authentication with GCP services will likely fail unless running on GCP.');
+  }
+   if (!APP_PASSWORD) {
+       console.warn('WARNING: APP_PASSWORD environment variable is not set. Password check will fail.');
+       console.warn('WARNING: For production, using Secret Manager for secrets is strongly recommended!');
+   }
+   // Check for GCS Bucket Name (optional startup check)
+   if (!GCS_BUCKET_NAME){
+        console.error('ERROR: GCS_BUCKET_NAME is not defined!');
+   }
 });
