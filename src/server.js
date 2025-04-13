@@ -1,5 +1,5 @@
 // server.js
-require('dotenv').config(); // Load .env file for local dev (put this first!)
+//require('dotenv').config(); // Load .env file for local dev (put this first!)
 
 const express = require('express');
 const cors = require('cors');
