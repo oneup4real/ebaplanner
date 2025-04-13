@@ -17,4 +17,4 @@ COPY . .
 EXPOSE 8080
 
 # Befehl zum Starten der Anwendung, wenn der Container startet
-CMD [ "node", "src/server.js" ]
+CMD [ "node", "server.js" ]
