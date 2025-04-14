@@ -1,12 +1,14 @@
 <!DOCTYPE html>
-<html lang="en"> <head>
+<html lang="en">
+
+<head>
     <base target="_top">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EBA-BAR Event List & Entry</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="stylesheet.css"> </head>
+    <link rel="stylesheet" href="/stylesheet.css"> </head>
 
 <body>
 
@@ -18,26 +20,41 @@
         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
             <li><a class="dropdown-item" href="#" id="menu-show-list"><i
                         class="bi bi-calendar-event-fill me-2"></i>Event Overview</a></li>
-            <li><a class="dropdown-item" href="#" id="menu-show-add-form"><i
+            <li><a class="dropdown-item" href="#" id="menu-show-add-form" style="display: none;"><i
                         class="bi bi-plus-circle-fill me-2"></i>Add Event</a></li>
             <li>
                 <hr class="dropdown-divider">
             </li>
             <li><a class="dropdown-item" href="#" id="menu-show-help"><i
                         class="bi bi-info-circle-fill me-2"></i>Principles and Help</a></li>
+            <li><a class="dropdown-item" href="#" id="logout-button" style="display: none;"><i
+                        class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
         </ul>
     </div>
 
     <div class="container mt-4 mb-5">
 
+        <div id="login-view" class="d-none">
+             <h1 class="mb-4">Login Required</h1>
+             <div class="add-form-container p-4 rounded mx-auto" style="max-width: 500px;"> <p>Please enter the password to add or edit events.</p>
+                  <div class="mb-3">
+                      <label for="login-password" class="form-label">Password</label>
+                      <input type="password" class="form-control" id="login-password" required>
+                  </div>
+                  <div class="d-flex justify-content-end">
+                      <button type="button" class="btn btn-primary" id="login-button">
+                          <span class="spinner-border spinner-border-sm d-none me-1"></span>Login
+                      </button>
+                  </div>
+                  <div id="login-feedback" class="mt-3 alert d-none"></div> </div>
+        </div>
+
         <div id="event-view">
             <h1 class="mb-4">EBA-BAR Event List</h1>
             <div id="filter-bar">
                 <div class="row g-3 align-items-end">
-                    <div class="col-md-4 col-sm-12"> <label for="search-term" class="form-label">Search
-                            (Title/Description)</label>
-                        <input type="text" class="form-control form-control-sm" id="search-term"
-                            placeholder="Enter search term...">
+                    <div class="col-md-4 col-sm-12"> <label for="search-term" class="form-label">Search (Title/Description)</label>
+                        <input type="text" class="form-control form-control-sm" id="search-term" placeholder="Enter search term...">
                     </div>
                     <div class="col-md-2 col-sm-6">
                         <label for="type-filter" class="form-label">Type</label>
@@ -49,142 +66,63 @@
                     </div>
                     <div class="col-md-5 col-sm-6"> <label class="form-label">Month / Year</label>
                         <div class="input-group input-group-sm">
-                            <select class="form-select form-select-sm" id="month-filter">
-                                <option value="" selected>Month (All)</option>
-                                <option value="01">January</option>
-                                <option value="02">February</option>
-                                <option value="03">March</option>
-                                <option value="04">April</option>
-                                <option value="05">May</option>
-                                <option value="06">June</option>
-                                <option value="07">July</option>
-                                <option value="08">August</option>
-                                <option value="09">September</option>
-                                <option value="10">October</option>
-                                <option value="11">November</option>
-                                <option value="12">December</option>
-                            </select>
-                            <select class="form-select form-select-sm" id="year-filter">
-                                <option value="" selected>Year (All)</option>
-                            </select>
+                            <select class="form-select form-select-sm" id="month-filter"> <option value="" selected>Month (All)</option> <option value="01">January</option><option value="02">February</option><option value="03">March</option><option value="04">April</option><option value="05">May</option><option value="06">June</option><option value="07">July</option><option value="08">August</option><option value="09">September</option><option value="10">October</option><option value="11">November</option><option value="12">December</option> </select>
+                            <select class="form-select form-select-sm" id="year-filter"> <option value="" selected>Year (All)</option> </select>
                         </div>
                     </div>
-                    <div class="col-md-1 col-sm-12 d-grid">
-                        <button class="btn btn-secondary btn-sm" id="reset-filters" type="button">Reset</button>
-                    </div>
+                    <div class="col-md-1 col-sm-12 d-grid"> <button class="btn btn-secondary btn-sm" id="reset-filters" type="button">Reset</button> </div>
                 </div>
             </div>
             <div id="event-liste" class="list-group mt-4">
-                <div id="loading" class="d-flex justify-content-center align-items-center p-5">
-                    <div class="spinner-border" role="status"><span class="visually-hidden">Loading Events...</span></div>
-                    <span class="ms-3">Loading Events...</span>
-                </div>
-                </div>
+                <div id="loading" class="d-flex justify-content-center align-items-center p-5"> <div class="spinner-border" role="status"><span class="visually-hidden">Loading Events...</span></div> <span class="ms-3">Loading Events...</span> </div>
+            </div>
         </div>
 
         <div id="add-form-view" class="d-none">
             <h1 class="mb-4">Add New Event</h1>
             <div class="add-form-container p-4 rounded">
                 <form id="addEventForm" novalidate>
-                    <div class="mb-3">
-                        <label for="add-title" class="form-label">Event Title*</label>
-                        <input type="text" class="form-control" id="add-title" required> </div>
+                    <div class="mb-3"> <label for="add-title" class="form-label">Event Title*</label> <input type="text" class="form-control" id="add-title" required> </div>
                     <div class="row mb-3">
-                        <div class="col-md-4">
-                            <label for="add-date" class="form-label">Date*</label>
-                            <input type="date" class="form-control" id="add-date" required> </div>
-                        <div class="col-md-4">
-                             <label for="add-startTime" class="form-label">Start Time (HH:MM)</label>
-                             <input type="time" class="form-control" id="add-startTime"> </div>
-                        <div class="col-md-4">
-                            <label for="add-endTime" class="form-label">End Time (HH:MM)</label>
-                            <input type="time" class="form-control" id="add-endTime"> </div>
+                        <div class="col-md-4"> <label for="add-date" class="form-label">Date*</label> <input type="date" class="form-control" id="add-date" required> </div>
+                        <div class="col-md-4"> <label for="add-startTime" class="form-label">Start Time (HH:MM)</label> <input type="time" class="form-control" id="add-startTime"> </div>
+                        <div class="col-md-4"> <label for="add-endTime" class="form-label">End Time (HH:MM)</label> <input type="time" class="form-control" id="add-endTime"> </div>
                     </div>
-                    <div class="mb-3">
-                         <label for="add-description" class="form-label">Description</label>
-                         <textarea class="form-control" id="add-description" rows="3"></textarea>
-                    </div>
+                    <div class="mb-3"> <label for="add-description" class="form-label">Description</label> <textarea class="form-control" id="add-description" rows="3"></textarea> </div>
                     <div class="mb-3"> <label class="form-label">Event Type*</label>
                         <div>
-                            <div class="form-check form-check-inline"> <input class="form-check-input" type="radio"
-                                    name="add-event-type" id="add-type-public" value="Öffentlich" checked required>
-                                <label class="form-check-label" for="add-type-public">Public</label> </div>
-                            <div class="form-check form-check-inline"> <input class="form-check-input" type="radio"
-                                    name="add-event-type" id="add-type-private" value="Privat" required> <label
-                                    class="form-check-label" for="add-type-private">Private</label> </div>
+                            <div class="form-check form-check-inline"> <input class="form-check-input" type="radio" name="add-event-type" id="add-type-public" value="Öffentlich" checked required> <label class="form-check-label" for="add-type-public">Public</label> </div>
+                            <div class="form-check form-check-inline"> <input class="form-check-input" type="radio" name="add-event-type" id="add-type-private" value="Privat" required> <label class="form-check-label" for="add-type-private">Private</label> </div>
                         </div>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Benötigte Ressourcen <small class="text-muted">(Auswahl wird deaktiviert, wenn "Ganzer Raum" gewählt)</small></label>
+                    <div class="mb-3"> <label class="form-label">Required Resources <small class="text-muted">(Selection disabled if "Entire Room" checked)</small></label>
                         <div id="add-resources-checkboxes">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="Ganzer Raum" id="add-res-ganzer-raum">
-                                <label class="form-check-label fw-bold" for="add-res-ganzer-raum">Ganzer Raum</label>
-                            </div>
-                            <hr class="my-2"> <div class="form-check">
-                                <input class="form-check-input resource-checkbox" type="checkbox" name="add-resources" value="Retro Game Station" id="add-res-retro">
-                                <label class="form-check-label" for="add-res-retro">Retro Game Station</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input resource-checkbox" type="checkbox" name="add-resources" value="Beamer und Sofa" id="add-res-beamersofa">
-                                <label class="form-check-label" for="add-res-beamersofa">Beamer und Sofa</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input resource-checkbox" type="checkbox" name="add-resources" value="Flipperkasten" id="add-res-flipper">
-                                <label class="form-check-label" for="add-res-flipper">Flipperkasten</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input resource-checkbox" type="checkbox" name="add-resources" value="1-2 Tische" id="add-res-tische12">
-                                <label class="form-check-label" for="add-res-tische12">1-2 Tische</label>
-                            </div>
-                             <div class="form-check">
-                                <input class="form-check-input resource-checkbox" type="checkbox" name="add-resources" value="2-4 Tische" id="add-res-tische24">
-                                <label class="form-check-label" for="add-res-tische24">2-4 Tische</label>
-                            </div>
-                             <div class="form-check">
-                                <input class="form-check-input resource-checkbox" type="checkbox" name="add-resources" value="4-6 Tische" id="add-res-tische46">
-                                <label class="form-check-label" for="add-res-tische46">4-6 Tische</label>
-                            </div>
+                            <div class="form-check"><input class="form-check-input" type="checkbox" value="Ganzer Raum" id="add-res-ganzer-raum"><label class="form-check-label fw-bold" for="add-res-ganzer-raum">Entire Room</label></div>
+                            <hr class="my-2">
+                            <div class="form-check"><input class="form-check-input resource-checkbox" type="checkbox" name="add-resources" value="Retro Game Station" id="add-res-retro"><label class="form-check-label" for="add-res-retro">Retro Game Station</label></div>
+                            <div class="form-check"><input class="form-check-input resource-checkbox" type="checkbox" name="add-resources" value="Beamer und Sofa" id="add-res-beamersofa"><label class="form-check-label" for="add-res-beamersofa">Projector and Sofa</label></div>
+                            <div class="form-check"><input class="form-check-input resource-checkbox" type="checkbox" name="add-resources" value="Flipperkasten" id="add-res-flipper"><label class="form-check-label" for="add-res-flipper">Pinball Machine</label></div>
+                            <div class="form-check"><input class="form-check-input resource-checkbox" type="checkbox" name="add-resources" value="1-2 Tische" id="add-res-tische12"><label class="form-check-label" for="add-res-tische12">1-2 Tables</label></div>
+                            <div class="form-check"><input class="form-check-input resource-checkbox" type="checkbox" name="add-resources" value="2-4 Tische" id="add-res-tische24"><label class="form-check-label" for="add-res-tische24">2-4 Tables</label></div>
+                            <div class="form-check"><input class="form-check-input resource-checkbox" type="checkbox" name="add-resources" value="4-6 Tische" id="add-res-tische46"><label class="form-check-label" for="add-res-tische46">4-6 Tables</label></div>
                         </div>
                     </div>
-                    <div class="mb-3"> <label for="add-responsible" class="form-label">Responsible Person</label> <input
-                            type="text" class="form-control" id="add-responsible" aria-describedby="responsibleHelp">
-                        <div id="responsibleHelp" class="form-text">(First Name, Last Name, Phone, Address)</div>
-                    </div>
-                    <div class="mb-3"> <label for="add-participantInfo" class="form-label">Additional Info for Participants</label> <textarea
-                            class="form-control" id="add-participantInfo" rows="4" aria-describedby="participantInfoHelpAdd"></textarea>
-                            <div id="participantInfoHelpAdd" class="form-text">
-                                Extra information, including longer descriptions. Not shown in the main event list.
-                            </div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="add-event-image" class="form-label">Bild hochladen (Optional)</label>
-                        <div style="position: relative; max-width: 205px;"> <input class="form-control" type="file" id="add-event-image" name="eventImage" accept="image/png, image/jpeg, image/gif">
-                            <img id="add-image-preview" src="#" alt="Bildvorschau" class="image-preview mt-2" /> <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 p-1 lh-1" id="add-delete-preview-button" style="display: none; transform: translate(30%, -30%); border-radius: 50%;" aria-label="Bildauswahl zurücksetzen">
-                                <i class="bi bi-x-lg" style="font-size: 0.7rem; vertical-align: top;"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="d-flex justify-content-end"> <button type="submit" class="btn btn-success"
-                            id="addEventButton"> <span class="spinner-border spinner-border-sm d-none me-1"></span><i
-                                class="bi bi-plus-lg me-1"></i> Add Event </button> </div>
+                    <div class="mb-3"> <label for="add-responsible" class="form-label">Responsible Person</label> <input type="text" class="form-control" id="add-responsible" aria-describedby="responsibleHelp"> <div id="responsibleHelp" class="form-text">(First Name, Last Name, Phone, Address)</div> </div>
+                    <div class="mb-3"> <label for="add-participantInfo" class="form-label">Additional Info for Participants</label> <textarea class="form-control" id="add-participantInfo" rows="4" aria-describedby="participantInfoHelpAdd"></textarea> <div id="participantInfoHelpAdd" class="form-text"> Extra information, including longer descriptions. Not shown in the main event list. </div> </div>
+                    <div class="mb-3"> <label for="add-event-image" class="form-label">Upload Image (Optional)</label> <div style="position: relative; max-width: 205px;"> <input class="form-control" type="file" id="add-event-image" name="eventImage" accept="image/png, image/jpeg, image/gif"> <img id="add-image-preview" src="#" alt="Image Preview" class="image-preview mt-2" /> <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 p-1 lh-1" id="add-delete-preview-button" style="display: none; transform: translate(30%, -30%); border-radius: 50%;" aria-label="Clear Image Selection"> <i class="bi bi-x-lg" style="font-size: 0.7rem;"></i> </button> </div> </div>
+                    <div class="d-flex justify-content-end"> <button type="submit" class="btn btn-success" id="addEventButton"> <span class="spinner-border spinner-border-sm d-none me-1"></span><i class="bi bi-plus-lg me-1"></i> Add Event </button> </div>
                     <div id="add-form-feedback" class="mt-3"></div>
                 </form>
             </div>
         </div>
 
         <div id="help-view" class="d-none">
-             <h1 class="mb-4">Principles and Help</h1>
-             <div class="help-view-container p-4 rounded">
-                 <h2>Genossenschaftsraum - Unsere Vision</h2>
-                 <p>Der Genossenschaftsraum ist unser gemeinsames Wohnzimmer – ein Treffpunkt, wo wir uns begegnen, austauschen und zusammen aktiv sein können. Er soll Gemeinschaft, Kreativität und ein faires Miteinander fördern. Offenheit und Respekt sind uns dabei wichtig.</p>
-                 <h3 class="mt-4">Die wichtigsten Regeln - Einfach und klar</h3>
-                 <h4>Immer offen für alle</h4>
-                 <p>Der Genossenschaftsraum gehört uns allen...</p>
-                 <ul>
-                     <li><strong>Password (Entry/Editing):</strong> <code>******</code></li> </ul>
-                  <p>Do you have ideas...? Share them via <a href="mailto:event@eba-zuerich.ch">event@eba-zuerich.ch</a>.</p>
-             </div>
+            <h1 class="mb-4">Principles and Help</h1>
+            <div class="help-view-container p-4 rounded">
+                <h2>Genossenschaftsraum - Unsere Vision</h2><p>Der Genossenschaftsraum ist unser gemeinsames Wohnzimmer...</p>
+                 <ul><li><strong>Password (Entry/Editing):</strong> <code>******</code></li></ul>
+                 <p>Hast du Ideen...? Teile sie uns über <a href="mailto:event@eba-zuerich.ch">event@eba-zuerich.ch</a> mit.</p>
+            </div>
         </div>
 
         <div id="error-message" class="alert alert-danger mt-4 d-none" role="alert"></div>
@@ -193,105 +131,39 @@
     </div> <div class="modal fade" id="editEventModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="editEventModalLabel">Edit Event</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
+                <div class="modal-header"> <h5 class="modal-title" id="editEventModalLabel">Edit Event</h5> <button type="button" class="btn-close" data-bs-dismiss="modal"></button> </div>
                 <div class="modal-body">
                     <form id="editEventForm" novalidate>
-                        <input type="hidden" id="edit-id">
-                        <div class="mb-3"> <label for="edit-title" class="form-label">Event Title*</label> <input
-                                type="text" class="form-control" id="edit-title" required> </div>
+                        <input type="hidden" id="edit-id"> <div class="mb-3"> <label for="edit-title" class="form-label">Event Title*</label> <input type="text" class="form-control" id="edit-title" required> </div>
                         <div class="row mb-3">
-                            <div class="col-md-4"> <label for="edit-date" class="form-label">Date*</label> <input
-                                    type="date" class="form-control" id="edit-date" required> </div>
+                            <div class="col-md-4"> <label for="edit-date" class="form-label">Date*</label> <input type="date" class="form-control" id="edit-date" required> </div>
                             <div class="col-md-4"> <label for="edit-startTime" class="form-label">Start Time (HH:MM)</label> <input type="time" class="form-control" id="edit-startTime"> </div>
                             <div class="col-md-4"> <label for="edit-endTime" class="form-label">End Time (HH:MM)</label> <input type="time" class="form-control" id="edit-endTime"> </div>
                         </div>
-                        <div class="mb-3"> <label for="edit-description" class="form-label">Description</label>
-                            <textarea class="form-control" id="edit-description" rows="3"></textarea> </div>
-                        <div class="mb-3"> <label class="form-label">Event Type*</label>
-                            <div>
-                                <div class="form-check form-check-inline"> <input class="form-check-input" type="radio"
-                                        name="edit-event-type" id="edit-type-public" value="Öffentlich" required> <label
-                                        class="form-check-label" for="edit-type-public">Public</label> </div>
-                                <div class="form-check form-check-inline"> <input class="form-check-input" type="radio"
-                                        name="edit-event-type" id="edit-type-private" value="Privat" required> <label
-                                        class="form-check-label" for="edit-type-private">Private</label> </div>
+                        <div class="mb-3"> <label for="edit-description" class="form-label">Description</label> <textarea class="form-control" id="edit-description" rows="3"></textarea> </div>
+                        <div class="mb-3"> <label class="form-label">Event Type*</label> <div> <div class="form-check form-check-inline"> <input class="form-check-input" type="radio" name="edit-event-type" id="edit-type-public" value="Öffentlich" required> <label class="form-check-label" for="edit-type-public">Public</label> </div> <div class="form-check form-check-inline"> <input class="form-check-input" type="radio" name="edit-event-type" id="edit-type-private" value="Privat" required> <label class="form-check-label" for="edit-type-private">Private</label> </div> </div> </div>
+                        <div class="mb-3"> <label class="form-label">Required Resources <small class="text-muted">(Selection disabled if "Entire Room" checked)</small></label>
+                            <div id="edit-resources-checkboxes">
+                                <div class="form-check"><input class="form-check-input" type="checkbox" value="Ganzer Raum" id="edit-res-ganzer-raum"><label class="form-check-label fw-bold" for="edit-res-ganzer-raum">Entire Room</label></div> <hr class="my-2">
+                                <div class="form-check"><input class="form-check-input resource-checkbox" type="checkbox" name="edit-resources" value="Retro Game Station" id="edit-res-retro"><label class="form-check-label" for="edit-res-retro">Retro Game Station</label></div>
+                                <div class="form-check"><input class="form-check-input resource-checkbox" type="checkbox" name="edit-resources" value="Beamer und Sofa" id="edit-res-beamersofa"><label class="form-check-label" for="edit-res-beamersofa">Projector and Sofa</label></div>
+                                <div class="form-check"><input class="form-check-input resource-checkbox" type="checkbox" name="edit-resources" value="Flipperkasten" id="edit-res-flipper"><label class="form-check-label" for="edit-res-flipper">Pinball Machine</label></div>
+                                <div class="form-check"><input class="form-check-input resource-checkbox" type="checkbox" name="edit-resources" value="1-2 Tische" id="edit-res-tische12"><label class="form-check-label" for="edit-res-tische12">1-2 Tables</label></div>
+                                <div class="form-check"><input class="form-check-input resource-checkbox" type="checkbox" name="edit-resources" value="2-4 Tische" id="edit-res-tische24"><label class="form-check-label" for="edit-res-tische24">2-4 Tables</label></div>
+                                <div class="form-check"><input class="form-check-input resource-checkbox" type="checkbox" name="edit-resources" value="4-6 Tische" id="edit-res-tische46"><label class="form-check-label" for="edit-res-tische46">4-6 Tables</label></div>
                             </div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Benötigte Ressourcen <small class="text-muted">(Auswahl wird deaktiviert, wenn "Ganzer Raum" gewählt)</small></label>
-                            <div id="add-resources-checkboxes">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="Ganzer Raum" id="add-res-ganzer-raum">
-                                    <label class="form-check-label fw-bold" for="add-res-ganzer-raum">Ganzer Raum</label>
-                                </div>
-                                <hr class="my-2"> <div class="form-check">
-                                    <input class="form-check-input resource-checkbox" type="checkbox" name="add-resources" value="Retro Game Station" id="add-res-retro">
-                                    <label class="form-check-label" for="add-res-retro">Retro Game Station</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input resource-checkbox" type="checkbox" name="add-resources" value="Beamer und Sofa" id="add-res-beamersofa">
-                                    <label class="form-check-label" for="add-res-beamersofa">Beamer und Sofa</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input resource-checkbox" type="checkbox" name="add-resources" value="Flipperkasten" id="add-res-flipper">
-                                    <label class="form-check-label" for="add-res-flipper">Flipperkasten</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input resource-checkbox" type="checkbox" name="add-resources" value="1-2 Tische" id="add-res-tische12">
-                                    <label class="form-check-label" for="add-res-tische12">1-2 Tische</label>
-                                </div>
-                                 <div class="form-check">
-                                    <input class="form-check-input resource-checkbox" type="checkbox" name="add-resources" value="2-4 Tische" id="add-res-tische24">
-                                    <label class="form-check-label" for="add-res-tische24">2-4 Tische</label>
-                                </div>
-                                 <div class="form-check">
-                                    <input class="form-check-input resource-checkbox" type="checkbox" name="add-resources" value="4-6 Tische" id="add-res-tische46">
-                                    <label class="form-check-label" for="add-res-tische46">4-6 Tische</label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="mb-3"> <label for="edit-responsible" class="form-label">Responsible Person</label>
-                            <input type="text" class="form-control" id="edit-responsible"
-                                aria-describedby="responsibleHelpEdit">
-                            <div id="responsibleHelpEdit" class="form-text">(First Name, Last Name, Phone, Address)</div>
-                        </div>
-                        <div class="mb-3"> <label for="edit-participantInfo" class="form-label">Additional Info for Participants</label> <textarea
-                            class="form-control" id="edit-participantInfo" rows="4" aria-describedby="participantInfoHelpEdit"></textarea>
-                            <div id="participantInfoHelpEdit" class="form-text">
-                                Extra information, including longer descriptions. Not shown in main list.
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Aktuelles Bild:</label>
-                            <div style="position: relative; max-width: 205px;">
-                                <img id="edit-image-preview" src="#" alt="Aktuelles Event Bild" class="image-preview" style="display: none;" />
-                                <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 p-1 lh-1" id="edit-delete-image-button" style="display: none; transform: translate(30%, -30%); border-radius: 50%;" aria-label="Bild löschen">
-                                     <i class="bi bi-x-lg" style="font-size: 0.7rem; vertical-align: top;"></i>
-                                </button>
-                            </div>
-                            <p id="no-edit-image" class="form-text" style="display: none;">Kein Bild für dieses Event hochgeladen.</p>
-                        </div>
-                        <div class="mb-3">
-                            <label for="edit-event-image" class="form-label">Bild ändern / hinzufügen (Optional)</label>
-                            <input class="form-control" type="file" id="edit-event-image" name="eventImage" accept="image/png, image/jpeg, image/gif">
-                            <div class="form-text">Wähle eine neue Datei aus, um das aktuelle Bild beim Speichern zu ersetzen.</div>
-                        </div>
-
+                        <div class="mb-3"> <label for="edit-responsible" class="form-label">Responsible Person</label> <input type="text" class="form-control" id="edit-responsible" aria-describedby="responsibleHelpEdit"> <div id="responsibleHelpEdit" class="form-text">(First Name, Last Name, Phone, Address)</div> </div>
+                        <div class="mb-3"> <label for="edit-participantInfo" class="form-label">Additional Info for Participants</label> <textarea class="form-control" id="edit-participantInfo" rows="4" aria-describedby="participantInfoHelpEdit"></textarea> <div id="participantInfoHelpEdit" class="form-text"> Extra information, including longer descriptions. Not shown in main list. </div> </div>
+                        <div class="mb-3"> <label class="form-label">Current Image:</label> <div style="position: relative; max-width: 205px; min-height: 25px;"> <img id="edit-image-preview" src="#" alt="Current Event Image" class="image-preview" style="display: none;" /> <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 p-1 lh-1" id="edit-delete-image-button" style="display: none; transform: translate(30%, -30%); border-radius: 50%;" aria-label="Delete Saved Image"> <i class="bi bi-x-lg" style="font-size: 0.7rem;"></i> </button> </div> <p id="no-edit-image" class="form-text" style="display: block;">No image uploaded for this event.</p> </div>
+                        <div class="mb-3"> <label for="edit-event-image" class="form-label">Change / Add Image (Optional)</label> <input class="form-control" type="file" id="edit-event-image" name="eventImage" accept="image/png, image/jpeg, image/gif"> <div class="form-text">Select a new file to replace the current image when saving.</div> </div>
                         <div id="edit-form-feedback" class="mt-3"></div>
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-danger me-auto" id="deleteEventButton">
-                        <span class="spinner-border spinner-border-sm d-none me-1"></span>
-                        <i class="bi bi-trash me-1"></i> Delete
-                    </button>
+                    <button type="button" class="btn btn-danger me-auto" id="deleteEventButton"> <span class="spinner-border spinner-border-sm d-none me-1"></span> <i class="bi bi-trash me-1"></i> Delete Event </button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="saveEventButton"> <span
-                            class="spinner-border spinner-border-sm d-none me-1"></span> Save Changes
-                    </button>
+                    <button type="button" class="btn btn-primary" id="saveEventButton"> <span class="spinner-border spinner-border-sm d-none me-1"></span> Save Changes </button>
                 </div>
             </div>
         </div>
@@ -305,950 +177,490 @@
         const FIELD_START_TIME = 'startTime';
         const FIELD_END_TIME = 'endTime';
         const FIELD_DESCRIPTION = 'description';
-        const FIELD_RESOURCES = 'resources'; // Comma-separated string
+        const FIELD_RESOURCES = 'resources'; // Comma-separated string or 'Ganzer Raum'
         const FIELD_RESPONSIBLE = 'responsible';
         const FIELD_EVENT_TYPE = 'eventType';
         const FIELD_PARTICIPANT_INFO = 'participantInfo';
         const FIELD_IMAGE_URL = 'imageUrl'; // Field name for the image URL from GCS
 
         // --- Global Variables ---
-        let allEvents = []; // Stores all fetched events
+        let allEvents = [];
+        let isLoggedIn = false; // Track login state
 
         // --- DOM References ---
+        // Declare all variables that will hold DOM elements
         let eventView, addFormView, helpView, listElement, loadingElement, errorElement, successElement;
         let searchTermInput, monthFilterSelect, yearFilterSelect, resetFiltersButton, typeFilterSelect;
-        let addForm, addEventButton, addSpinner, addFormFeedback, addEventImageInput, addImagePreview; // For Add form
-        let menuShowList, menuShowAddForm, menuShowHelp;
-        let editModalElement, editModal, editForm, saveEventButton, saveSpinner, editFormFeedback, editImagePreview, editEventIdInput, noEditImageText; // For Edit modal
+        let addForm, addEventButton, addSpinner, addFormFeedback, addEventImageInput, addImagePreview, addGanzerRaumCheckbox, addDeletePreviewButton;
+        let menuShowList, menuShowAddForm, menuShowHelp, logoutButton; // Added logoutButton
+        let editModalElement, editModal, editForm, saveEventButton, saveSpinner, editFormFeedback, editImagePreview, noEditImageText, editEventIdInput, editGanzerRaumCheckbox, editEventImageInput, editDeleteImageButton;
         let deleteEventButton, deleteSpinner;
-        let addDeletePreviewButton, editDeleteImageButton;
-        let editEventImageInput;
-        let addGanzerRaumCheckbox, editGanzerRaumCheckbox;
+        let loginView, loginPasswordInput, loginButton, loginFeedback; // Added Login UI elements
 
         // Backend API Base URL (Empty for same-origin deployment)
         const API_BASE_URL = '';
 
-        /** Displays the specified view */
+        // --- UI Helper Functions ---
+
+        /** Displays the specified view and hides others */
         function showView(viewId) {
-            if (!eventView || !addFormView || !helpView) { console.error("View elements not found!"); return; }
-            hideMessages();
-            eventView.classList.add('d-none');
-            addFormView.classList.add('d-none');
-            helpView.classList.add('d-none');
-            if (viewId === 'event-view') { eventView.classList.remove('d-none'); }
-            else if (viewId === 'add-form-view') { addFormView.classList.remove('d-none'); if (addForm) addForm.reset(); clearAddFormFeedback(); }
-            else if (viewId === 'help-view') { helpView.classList.remove('d-none'); }
+            const views = [loginView, eventView, addFormView, helpView];
+            views.forEach(view => {
+                if (view) { // Check if element exists
+                    if (view.id === viewId) {
+                        view.classList.remove('d-none');
+                    } else {
+                        view.classList.add('d-none');
+                    }
+                } else {
+                  console.warn(`View element with potential ID ${viewId} not found during showView call.`);
+                }
+            });
+            hideMessages(); // Hide global messages when changing views
+            // Special handling for add form reset
+            if (viewId === 'add-form-view') {
+                 if (addForm) addForm.reset();
+                 clearAddFormFeedback(); // Also reset checkboxes/preview
+            }
         }
 
+        /** Shows a global error message */
+        function showError(error) {
+             if (!errorElement) return;
+             console.error("Error displayed:", error);
+             let t = "An unknown error occurred.";
+             if (typeof error === 'string') t = error;
+             else if (error && error.message) t = error.message; // Prefer error.message
+             else if (error && error.error) t = error.error; // Check for { error: '...' } object
+             else if (error && error.name) t = `Error: ${error.name}`;
+             hideMessages();
+             errorElement.textContent = `Error: ${t}`;
+             errorElement.classList.remove('d-none');
+         }
+        /** Shows a global success message */
+         function showSuccess(message) {
+             if (!successElement) return;
+             hideMessages();
+             successElement.textContent = message;
+             successElement.classList.remove('d-none');
+             setTimeout(hideMessages, 4000); // Auto-hide after 4 seconds
+         }
+        /** Shows a global loading/info message */
+         function showLoadingFeedback(message) {
+             if (!successElement) return;
+             hideMessages();
+             successElement.textContent = message;
+             successElement.classList.remove('alert-success'); // Make it look different
+             successElement.classList.add('alert-info');
+             successElement.classList.remove('d-none');
+         }
+        /** Hides global messages */
+         function hideMessages() {
+             if (errorElement) errorElement.classList.add('d-none');
+             if (successElement) {
+                 successElement.classList.add('d-none');
+                 successElement.classList.remove('alert-info'); // Reset style
+                 successElement.classList.add('alert-success');
+             }
+            // Also clear form-specific feedback if needed (handled elsewhere now)
+         }
+        /** Resets all filters */
+         function resetAllFilters() {
+             if (searchTermInput) searchTermInput.value = '';
+             if (monthFilterSelect) monthFilterSelect.value = '';
+             if (yearFilterSelect) yearFilterSelect.value = '';
+             if (typeFilterSelect) typeFilterSelect.value = '';
+             applyFiltersAndRender();
+         }
+
+         /** Clears feedback and resets specific add form elements */
+         function clearAddFormFeedback() {
+            if (addFormFeedback) { addFormFeedback.textContent = ''; addFormFeedback.className = 'mt-3'; }
+            if (addEventImageInput) { addEventImageInput.value = null; }
+            if (addImagePreview) { addImagePreview.style.display = 'none'; addImagePreview.src = '#'; }
+            if (addDeletePreviewButton) { addDeletePreviewButton.style.display = 'none'; }
+            const addOtherCheckboxes = document.querySelectorAll('#add-resources-checkboxes .resource-checkbox');
+            addOtherCheckboxes.forEach(cb => { cb.checked = false; cb.disabled = false; });
+            if (addGanzerRaumCheckbox) {
+                addGanzerRaumCheckbox.checked = false;
+                // Explicitly enable others in case it was left disabled
+                toggleResourceCheckboxes(addGanzerRaumCheckbox, '#add-resources-checkboxes');
+            }
+            const addTypePublic = document.getElementById('add-type-public');
+            if (addTypePublic) addTypePublic.checked = true; // Default to public
+         }
+
+         /** Clears feedback and resets specific edit form elements */
+         function clearEditFormFeedback() {
+             if (editFormFeedback) { editFormFeedback.textContent = ''; editFormFeedback.className = 'mt-3'; }
+             if (editImagePreview) { editImagePreview.style.display = 'none'; editImagePreview.src = '#'; }
+             if (noEditImageText) { noEditImageText.style.display = 'none'; }
+             if (editDeleteImageButton) { editDeleteImageButton.style.display = 'none';}
+             if (editEventImageInput) { editEventImageInput.value = null; } // Clear potential new file selection
+             // Checkboxes are reset when modal is opened by openEditModal
+         }
+
+         /** Shows feedback message within the login UI */
+         function showLoginFeedback(message, isSuccess) {
+             if (!loginFeedback) return;
+             loginFeedback.textContent = message;
+             loginFeedback.className = `mt-3 alert alert-${isSuccess ? 'success' : 'danger'}`;
+             loginFeedback.classList.remove('d-none');
+         }
+
+         /** Hides login feedback */
+         function hideLoginFeedback() {
+             if (loginFeedback) {
+                 loginFeedback.classList.add('d-none');
+                 loginFeedback.textContent = '';
+                 loginFeedback.className = 'mt-3 alert d-none';
+             }
+         }
+
+        // --- Authentication and Session Functions ---
+
         /** Checks password against the backend API */
-        async function checkPasswordApi(password) {
-            showLoadingFeedback("Checking password...");
+        async function loginApi(password) {
+            hideLoginFeedback(); // Hide previous messages
+            showLoadingFeedback("Attempting login..."); // Use global loading
+            if (loginButton) loginButton.disabled = true;
+
             try {
-                const response = await fetch(`${API_BASE_URL}/api/auth/check`, {
+                const response = await fetch(`${API_BASE_URL}/api/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ password: password })
                 });
-                const data = await response.json();
-                hideMessages();
-                if (!response.ok) { throw new Error(data.error || `HTTP Error ${response.status}`); }
-                return data.isValid;
+                const data = await response.json(); // Always parse JSON
+                hideMessages(); // Hide loading message
+                if (!response.ok || !data.success) {
+                    throw new Error(data.message || "Login failed.");
+                }
+                return true; // Indicate success
             } catch (error) {
-                hideMessages(); console.error("Error during password check:", error); showError(error); return false;
+                hideMessages();
+                console.error("Error during login API call:", error);
+                showLoginFeedback("Login failed: " + error.message, false); // Show error in login area
+                if (loginPasswordInput) loginPasswordInput.value = ''; // Clear password field on error
+                if (loginPasswordInput) loginPasswordInput.focus();
+                return false; // Indicate failure
+            } finally {
+                 if (loginButton) loginButton.disabled = false;
             }
         }
 
-        /** Prompts for password before showing Add form */
-        async function promptForAddPassword() {
-            const password = prompt("Password for event creation:");
-            if (password === null) return;
-            const isValid = await checkPasswordApi(password);
-            if (isValid) { showView('add-form-view'); }
-            else if (isValid === false) { showError({ message: "Incorrect password." }); }
+        /** Checks current session status with the backend */
+        async function checkAuthStatusApi() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/auth/status`);
+                if (!response.ok) {
+                    console.error(`Auth status check failed with status: ${response.status}`);
+                    return false; // Not logged in if status fails
+                }
+                const data = await response.json();
+                return data.loggedIn; // Return true or false from API
+            } catch (error) {
+                console.error("Error checking auth status:", error);
+                return false; // Assume not logged in if API call fails
+            }
         }
 
-        /** Prompts for password before opening Edit modal */
-        async function promptForEditPassword(eventId) { // Takes Firestore event ID
-            const password = prompt("Password for event editing:");
-            if (password === null) return;
-            const isValid = await checkPasswordApi(password);
-            if (isValid) { openEditModal(eventId); }
-            else if (isValid === false) { showError({ message: "Incorrect password." }); }
+        /** Calls the logout endpoint */
+        async function logoutApi() {
+            try {
+                 const response = await fetch(`${API_BASE_URL}/api/logout`, { method: 'POST' });
+                 if (!response.ok) { console.warn("Logout API call failed, clearing session locally anyway."); }
+            } catch(e) { console.error("Logout API call failed:", e); } // Log error but proceed
+            isLoggedIn = false;
+            updateUIAfterLoginStateChange(); // Update UI immediately
+            showView('event-view'); // Go back to main view (or login view)
+            showSuccess("You have been logged out.");
         }
 
+        /** Updates UI elements based on loggedIn state */
+        function updateUIAfterLoginStateChange() {
+            const protectedMenuItems = [menuShowAddForm]; // Items to show only when logged in
+            const publicMenuItems = [menuShowList, menuShowHelp];
+            const loginViewElements = [loginView]; // The login form container
+            const nonLoginViews = [eventView, addFormView, helpView]; // Views hidden when showing login
+
+            if (isLoggedIn) {
+                protectedMenuItems.forEach(el => { if(el) el.style.display = 'block'; });
+                if (logoutButton) logoutButton.style.display = 'block';
+                if (loginView) loginView.classList.add('d-none'); // Hide login form
+
+            } else {
+                protectedMenuItems.forEach(el => { if(el) el.style.display = 'none'; });
+                if (logoutButton) logoutButton.style.display = 'none';
+                // Decide if login view should be shown automatically - maybe not, let user navigate?
+                // if (loginView) loginView.classList.remove('d-none');
+                // nonLoginViews.forEach(view => { if(view) view.classList.add('d-none'); });
+            }
+            // Show/Hide Edit/Delete buttons on already rendered tiles (needs re-render ideally)
+            // This is tricky without a framework; easiest is to control access before *opening* the modal
+            // We can hide the buttons on render though:
+            document.querySelectorAll('.edit-event-btn').forEach(btn => btn.style.display = isLoggedIn ? '' : 'none');
+
+        }
+
+
+        // --- Core Application Logic Functions ---
 
         /** Populates year filter dropdown */
         function populateFilters(events) {
              if (!yearFilterSelect) return;
              const years = new Set();
-             events.forEach(event => {
-                 const dateStr = event[FIELD_DATE];
-                 if (dateStr) { try { years.add(dateStr.substring(0, 4)); } catch(e) {} }
-              });
-             const sortedYears = Array.from(years).sort((a, b) => b.localeCompare(a));
-             yearFilterSelect.innerHTML = '<option value="" selected>Year (All)</option>';
+             events.forEach(event => { const dateStr = event[FIELD_DATE]; if (dateStr) { try { years.add(dateStr.substring(0, 4)); } catch(e) {} } });
+             const sortedYears = Array.from(years).sort((a, b) => b.localeCompare(a)); yearFilterSelect.innerHTML = '<option value="" selected>Year (All)</option>';
              sortedYears.forEach(year => { const opt = document.createElement('option'); opt.value = year; opt.textContent = year; yearFilterSelect.appendChild(opt); });
         }
 
         /** Applies filters and re-renders the event list */
         function applyFiltersAndRender() {
              if (!searchTermInput || !monthFilterSelect || !yearFilterSelect || !typeFilterSelect || !allEvents) { console.error("Filter inputs or events not ready."); return; }
-             const searchTerm = searchTermInput.value.toLowerCase().trim();
-             const selectedMonth = monthFilterSelect.value;
-             const selectedYear = yearFilterSelect.value;
-             const selectedType = typeFilterSelect.value;
-
-             const filteredEvents = allEvents.filter(event => {
-                 const title = String(event[FIELD_TITLE] || '').toLowerCase();
-                 const desc = String(event[FIELD_DESCRIPTION] || '').toLowerCase();
-                 const searchMatch = searchTerm === '' || title.includes(searchTerm) || desc.includes(searchTerm);
-                 let dateMatch = true;
-                 const eventDateStr = event[FIELD_DATE];
-                 if ((selectedMonth || selectedYear) && eventDateStr) {
-                     const y = eventDateStr.substring(0, 4); const m = eventDateStr.substring(5, 7);
-                     dateMatch = (selectedYear === '' || y === selectedYear) && (selectedMonth === '' || m === selectedMonth);
-                 } else if (selectedMonth || selectedYear) { dateMatch = false; }
-                 const eventType = String(event[FIELD_EVENT_TYPE] || '').trim();
-                 const typeMatch = selectedType === '' || eventType === selectedType;
-                 return searchMatch && dateMatch && typeMatch;
-             });
+             const searchTerm = searchTermInput.value.toLowerCase().trim(); const selectedMonth = monthFilterSelect.value; const selectedYear = yearFilterSelect.value; const selectedType = typeFilterSelect.value;
+             const filteredEvents = allEvents.filter(event => { const title = String(event[FIELD_TITLE] || '').toLowerCase(); const desc = String(event[FIELD_DESCRIPTION] || '').toLowerCase(); const searchMatch = searchTerm === '' || title.includes(searchTerm) || desc.includes(searchTerm); let dateMatch = true; const eventDateStr = event[FIELD_DATE]; if ((selectedMonth || selectedYear) && eventDateStr) { const y = eventDateStr.substring(0, 4); const m = eventDateStr.substring(5, 7); dateMatch = (selectedYear === '' || y === selectedYear) && (selectedMonth === '' || m === selectedMonth); } else if (selectedMonth || selectedYear) { dateMatch = false; } const eventType = String(event[FIELD_EVENT_TYPE] || '').trim(); const typeMatch = selectedType === '' || eventType === selectedType; return searchMatch && dateMatch && typeMatch; });
              displayEvents(filteredEvents);
         }
 
-        /** Displays the events in the list, including image */
+        /** Displays the events in the list, including image and details section */
         function displayEvents(events) {
-            // ... (Setup like before: clear list, handle empty, month separator logic) ...
-             if (!listElement || !loadingElement) { console.error("List/Loading element not found"); return; }
-             console.log("displayEvents called for:", events.length, "Events");
-             loadingElement.classList.add('d-none'); errorElement.classList.add('d-none');
-             listElement.innerHTML = '';
-             if (!events || events.length === 0) { listElement.innerHTML = '<p class="text-muted text-center p-3">No events match the current filters.</p>'; return; }
+            if (!listElement || !loadingElement) { console.error("List/Loading element not found"); return; }
+            console.log("displayEvents called for:", events.length, "Events");
+            loadingElement.classList.add('d-none'); errorElement.classList.add('d-none');
+            listElement.innerHTML = '';
+            if (!events || events.length === 0) { listElement.innerHTML = '<p class="text-muted text-center p-3">No events match the current filters.</p>'; return; }
 
-             let currentMonthYear = null;
-             events.forEach(event => {
-                 // Month Separator Logic (using FIELD_DATE)
-                  let eventMonthYear = null;
-                  const eventDateStr = event[FIELD_DATE];
-                  if (eventDateStr) {
-                      eventMonthYear = eventDateStr.substring(0, 7); // YYYY-MM
-                      if (eventMonthYear !== currentMonthYear) {
-                          currentMonthYear = eventMonthYear;
-                          try {
-                              const mhDate = new Date(eventDateStr + 'T00:00:00Z');
-                              const mhString = mhDate.toLocaleDateString('en-GB', { month: 'long', year: 'numeric', timeZone: 'Europe/Zurich' });
-                              const sep = document.createElement('h2'); sep.className = 'mt-4 mb-3 h4 text-secondary month-separator'; sep.textContent = mhString; listElement.appendChild(sep);
-                          } catch (e) { console.error("Error creating month header:", e); }
-                      }
-                  }
+            let currentMonthYear = null;
+            events.forEach(event => {
+                // Month Separator Logic
+                let eventMonthYear = null; const eventDateStr = event[FIELD_DATE]; if (eventDateStr) { eventMonthYear = eventDateStr.substring(0, 7); if (eventMonthYear !== currentMonthYear) { currentMonthYear = eventMonthYear; try { const mhDate = new Date(eventDateStr + 'T00:00:00Z'); const mhString = mhDate.toLocaleDateString('en-GB', { month: 'long', year: 'numeric', timeZone: 'Europe/Zurich' }); const sep = document.createElement('h2'); sep.className = 'mt-4 mb-3 h4 text-secondary month-separator'; sep.textContent = mhString; listElement.appendChild(sep); } catch (e) { console.error("Error creating month header:", e); } } }
 
+                const eventElement = document.createElement('div');
+                eventElement.classList.add('list-group-item', 'mb-3', 'p-3', 'event-kachel');
+                eventElement.dataset.id = event.id; // Use Firestore ID
 
-                 const eventElement = document.createElement('div');
-                 eventElement.classList.add('list-group-item', 'mb-3', 'p-3', 'event-kachel');
-                 eventElement.dataset.id = event.id; // Use Firestore ID
+                // Extract Data
+                const { [FIELD_TITLE]: title = '', [FIELD_EVENT_TYPE]: eventType = '', [FIELD_DESCRIPTION]: description = '', [FIELD_START_TIME]: startTime = '', [FIELD_END_TIME]: endTime = '', [FIELD_RESOURCES]: resources = '', [FIELD_RESPONSIBLE]: responsible = '', [FIELD_PARTICIPANT_INFO]: participantInfo = '', [FIELD_IMAGE_URL]: imageUrl = null } = event;
+                const startTimeShort = startTime.substring(0, 5); const endTimeShort = endTime.substring(0, 5);
 
-                 // Extract Data (using FIELD_* constants)
-                 const title = String(event[FIELD_TITLE] || '');
-                 const eventType = String(event[FIELD_EVENT_TYPE] || '').trim();
-                 const description = String(event[FIELD_DESCRIPTION] || '');
-                 const startTime = String(event[FIELD_START_TIME] || '').substring(0, 5);
-                 const endTime = String(event[FIELD_END_TIME] || '').substring(0, 5);
-                 const resources = String(event[FIELD_RESOURCES] || '');
-                 const responsible = String(event[FIELD_RESPONSIBLE] || '');
-                 const participantInfo = String(event[FIELD_PARTICIPANT_INFO] || '');
-                 const imageUrl = event[FIELD_IMAGE_URL] || null; // Get image URL
+                // Format Date
+                let displayDate = 'No Date'; if (eventDateStr) { try { const d = new Date(eventDateStr + 'T00:00:00Z'); if (!isNaN(d)) displayDate = d.toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Europe/Zurich' }); else displayDate = 'Invalid Date'; } catch (e) { displayDate = 'Date Error'; } }
+                // Format Time
+                let timeString = ''; if (startTimeShort && endTimeShort) timeString = `${startTimeShort} - ${endTimeShort}`; else if (startTimeShort) timeString = `From ${startTimeShort}`; else timeString = 'No Time Specified';
+                // Format Type Badge
+                let typeBadgeHTML = ''; if (eventType === 'Privat') typeBadgeHTML = `<span class="badge rounded-pill bg-danger">Private</span>`; else if (eventType === 'Öffentlich') typeBadgeHTML = `<span class="badge rounded-pill bg-success">Public</span>`;
 
-                 // Format Date
-                 let displayDate = 'No Date';
-                 if (eventDateStr) {
-                     try {
-                         const d = new Date(eventDateStr + 'T00:00:00Z');
-                         if (!isNaN(d)) displayDate = d.toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Europe/Zurich' });
-                         else displayDate = 'Invalid Date';
-                     } catch (e) { displayDate = 'Date Error'; }
-                 }
-
-                 let timeString = ''; if (startTime && endTime) timeString = `${startTime} - ${endTime}`; else if (startTime) timeString = `From ${startTime}`; else timeString = 'No Time Specified';
-                 let typeBadgeHTML = ''; if (eventType === 'Privat') typeBadgeHTML = `<span class="badge rounded-pill bg-danger">Private</span>`; else if (eventType === 'Öffentlich') typeBadgeHTML = `<span class="badge rounded-pill bg-success">Public</span>`;
-
-                 // Build Tile HTML (includes image in details)
-                 eventElement.innerHTML = `
-                     ${typeBadgeHTML ? `<div class="mb-2">${typeBadgeHTML}</div>` : ''}
-                     <div class="d-flex justify-content-between align-items-start">
-                         <h5 class="mb-1 flex-grow-1">${title || 'Untitled Event'}</h5>
-                         <button type="button" class="btn btn-sm btn-outline-secondary ms-2 edit-event-btn" data-id="${event.id}" aria-label="Edit"><i class="bi bi-pencil"></i></button>
-                     </div>
-                     <div class="row align-items-center mt-2">
-                         <div class="col-md-6">
-                             <div class="d-flex flex-column">
-                                 <small class="fw-bold">${displayDate}</small>
-                                 <small class="mb-2">${timeString}</small>
-                                 <small>${responsible ? `<strong class="me-1">Responsible:</strong>${responsible}` : ''}</small>
-                             </div>
-                         </div>
-                         <div class="col-md-6 border-start ps-md-3">
-                             <div class="d-flex flex-column">
-                                  ${description ? `<p class="mb-1 small"><strong class="me-1">Description:</strong>${description}</p>` : '<p class="mb-1 small">&nbsp;</p>'}
-                                  <small>${resources ? `<strong class="me-1">Resources:</strong>${resources}` : ''}</small>
-                             </div>
-                         </div>
-                     </div>
-
-                     <div class="event-details mt-3 pt-3 border-top">
-                         ${participantInfo ? `<h6>Additional Information for Participants:</h6><p class="small mb-2">${participantInfo.replace(/\n/g, '<br>')}</p>` : ''}
-                         ${imageUrl ? `<h6>Image:</h6><img src="${imageUrl}" alt="Event Image for ${title}" class="event-image mb-0">` : '<p class="small fst-italic mb-0">No image available.</p>'}
-                     </div>
-                     `;
-                 listElement.appendChild(eventElement);
+                // Build Tile HTML
+                eventElement.innerHTML = `
+                    ${typeBadgeHTML ? `<div class="mb-2">${typeBadgeHTML}</div>` : ''}
+                    <div class="d-flex justify-content-between align-items-start">
+                        <h5 class="mb-1 flex-grow-1">${title || 'Untitled Event'}</h5>
+                        <button type="button" class="btn btn-sm btn-outline-secondary ms-2 edit-event-btn" data-id="${event.id}" aria-label="Edit" style="display: ${isLoggedIn ? 'inline-block' : 'none'};"><i class="bi bi-pencil"></i></button> </div>
+                    <div class="row align-items-center mt-2">
+                        <div class="col-md-6"> <div class="d-flex flex-column"> <small class="fw-bold">${displayDate}</small> <small class="mb-2">${timeString}</small> <small>${responsible ? `<strong class="me-1">Responsible:</strong>${responsible}` : ''}</small> </div> </div>
+                        <div class="col-md-6 border-start ps-md-3"> <div class="d-flex flex-column"> ${description ? `<p class="mb-1 small"><strong class="me-1">Description:</strong>${description}</p>` : '<p class="mb-1 small">&nbsp;</p>'} <small>${resources ? `<strong class="me-1">Resources:</strong>${resources}` : ''}</small> </div> </div>
+                    </div>
+                    <div class="event-details mt-3 pt-3 border-top">
+                        ${participantInfo ? `<h6>Additional Information for Participants:</h6><p class="small mb-2">${participantInfo.replace(/\n/g, '<br>')}</p>` : ''}
+                        ${imageUrl ? `<h6>Image:</h6><img src="${imageUrl}" alt="Event Image for ${title}" class="event-image mb-0">` : '<p class="small fst-italic mb-0">No image available.</p>'}
+                    </div>
+                    `;
+                listElement.appendChild(eventElement);
              });
         }
 
-        // --- Feedback and Reset Functions ---
-        function showError(error) { /* ... implement or keep existing ... */ }
-        function showSuccess(message) { /* ... implement or keep existing ... */ }
-        function showLoadingFeedback(message) { /* ... implement or keep existing ... */ }
-        function hideMessages() { /* ... implement or keep existing ... */ }
-        function resetAllFilters() { /* ... implement or keep existing ... */ }
+         /** Toggles resource checkboxes based on 'Ganzer Raum' state */
+         function toggleResourceCheckboxes(ganzerRaumCheckbox, containerSelector) {
+             const container = document.querySelector(containerSelector);
+             if (!container || !ganzerRaumCheckbox) return;
+             const otherCheckboxes = container.querySelectorAll('.resource-checkbox');
+             const shouldBeDisabled = ganzerRaumCheckbox.checked;
+             otherCheckboxes.forEach(cb => { cb.disabled = shouldBeDisabled; if (shouldBeDisabled) { cb.checked = false; } });
+         }
 
-        // --- Add Event Form Handling (Using FormData) ---
-        function handleAddEventSubmit(submitEvent) {
-    submitEvent.preventDefault(); // Prevent default browser form submission
-    // Ensure required elements exist
-    if (!addEventButton || !addSpinner || !addFormFeedback || !addEventImageInput || !addGanzerRaumCheckbox) {
-        console.error("Add form elements missing.");
-        return;
-    }
-
-    // Show loading state
-    addSpinner.classList.remove('d-none');
-    addEventButton.disabled = true;
-    clearAddFormFeedback();
-    hideMessages();
-
-    // --- Collect form data ---
-    const formData = new FormData(); // Use FormData for potential file upload
-
-    // Determine resources based on "Ganzer Raum" checkbox
-    let resourcesString = '';
-    if (addGanzerRaumCheckbox.checked) {
-        resourcesString = 'Ganzer Raum'; // Use the special value
-    } else {
-        const nodes = document.querySelectorAll('#add-resources-checkboxes .resource-checkbox:checked');
-        resourcesString = Array.from(nodes).map(cb => cb.value).join(', ');
-    }
-
-    // Append text fields using FIELD_* constants (or keys expected by backend)
-    formData.append(FIELD_TITLE, document.getElementById('add-title').value.trim());
-    formData.append(FIELD_DATE, document.getElementById('add-date').value); // Send YYYY-MM-DD
-    formData.append(FIELD_START_TIME, document.getElementById('add-startTime').value);
-    formData.append(FIELD_END_TIME, document.getElementById('add-endTime').value);
-    formData.append(FIELD_DESCRIPTION, document.getElementById('add-description').value.trim());
-    formData.append(FIELD_RESOURCES, resourcesString); // Append determined resource string
-    formData.append(FIELD_RESPONSIBLE, document.getElementById('add-responsible').value.trim());
-    const typeEl = document.querySelector('input[name="add-event-type"]:checked');
-    formData.append(FIELD_EVENT_TYPE, typeEl ? typeEl.value : 'Öffentlich'); // Send German value if backend expects it
-    formData.append(FIELD_PARTICIPANT_INFO, document.getElementById('add-participantInfo').value.trim());
-
-    // Basic validation
-    if (!formData.get(FIELD_TITLE) || !formData.get(FIELD_DATE)) {
-        showAddFormFeedback("Title and Date are required fields.", false);
-        addSpinner.classList.add('d-none'); addEventButton.disabled = false;
-        return;
-    }
-
-    // Append image file if selected
-    const imageFile = addEventImageInput.files[0];
-    if (imageFile) {
-        // Use 'eventImage' as key, must match multer.single('eventImage') in backend
-        formData.append('eventImage', imageFile, imageFile.name);
-    }
-
-    // --- Send data to backend ---
-    fetch(`${API_BASE_URL}/api/events`, {
-        method: 'POST',
-        body: formData // Send FormData object
-        // Browser sets Content-Type to multipart/form-data automatically
-    })
-    .then(response => response.json().then(data => ({ ok: response.ok, status: response.status, data }))) // Always parse JSON
-    .then(({ ok, status, data }) => {
-        addSpinner.classList.add('d-none'); addEventButton.disabled = false;
-        if (ok && data.success) {
-            if (addForm) addForm.reset(); // Reset the form fields
-            clearAddFormFeedback(); // Resets checkboxes and image preview
-            showAddFormFeedback("Event created successfully.", true, "Redirecting to overview...");
-            setTimeout(() => {
-                showView('event-view');
-                refreshData(); // Refresh list to show the new event
-             }, 3000);
-        } else {
-            // Handle error reported by server
-            throw new Error(data.message || data.error || `Error ${status}`);
-        }
-    })
-    .catch(err => {
-        // Handle network errors or errors thrown above
-        addSpinner.classList.add('d-none'); addEventButton.disabled = false;
-        console.error("Error adding event:", err);
-        showAddFormFeedback("Communication error: " + err.message, false);
-    });
-}
-        function showAddFormFeedback(message, isSuccess, secondaryMessage = null) { /* ... implement or keep ... */ }
-        function clearAddFormFeedback() { /* ... implement or keep, ensure preview resets ... */ }
-
-
-        // --- Edit Event Form Handling ---
- function openEditModal(eventId) {
-    // Ensure modal elements and event data are available
-    if (!editModal || !allEvents || !editFormFeedback || !editImagePreview || !noEditImageText || !editEventIdInput || !editGanzerRaumCheckbox) {
-        console.error("Edit Modal elements or event data not ready");
-        showError({ message: "Cannot open edit form. UI elements missing." });
-        return;
-    }
-    // Find the specific event using the Firestore ID
-    const event = allEvents.find(e => e.id === eventId);
-    if (!event) {
-        showError({ message: "Event not found for editing." });
-        return;
-    }
-    clearEditFormFeedback(); // Clear previous feedback
-
-    // --- Populate standard text fields ---
-    editEventIdInput.value = event.id; // Set the hidden Firestore ID input
-    document.getElementById('edit-title').value = event[FIELD_TITLE] || '';
-    document.getElementById('edit-date').value = event[FIELD_DATE] || ''; // Uses YYYY-MM-DD format
-    document.getElementById('edit-startTime').value = event[FIELD_START_TIME] || '';
-    document.getElementById('edit-endTime').value = event[FIELD_END_TIME] || '';
-    document.getElementById('edit-description').value = event[FIELD_DESCRIPTION] || '';
-    document.getElementById('edit-responsible').value = event[FIELD_RESPONSIBLE] || '';
-    document.getElementById('edit-participantInfo').value = event[FIELD_PARTICIPANT_INFO] || '';
-
-    // --- Populate Resource Checkboxes including "Ganzer Raum" logic ---
-    const savedResources = String(event[FIELD_RESOURCES] || '');
-    const otherResourceCheckboxes = document.querySelectorAll('#edit-resources-checkboxes .resource-checkbox');
-
-    if (savedResources === 'Ganzer Raum') {
-        // Set "Ganzer Raum" checkbox and disable/uncheck others
-        editGanzerRaumCheckbox.checked = true;
-        otherResourceCheckboxes.forEach(cb => {
-            cb.checked = false;
-            cb.disabled = true;
-        });
-    } else {
-         // Unset "Ganzer Raum" checkbox and enable/set others
-         editGanzerRaumCheckbox.checked = false;
-         const eventResourcesArray = savedResources.split(',').map(r => r.trim()).filter(r => r); // Get array of saved resources
-         otherResourceCheckboxes.forEach(cb => {
-            cb.disabled = false; // Ensure they are enabled
-            cb.checked = eventResourcesArray.includes(cb.value); // Check if this resource was saved
-        });
-    }
-
-    // --- Populate Event Type Radio Buttons ---
-    const eventTypeEdit = String(event[FIELD_EVENT_TYPE] || '').trim();
-    if (eventTypeEdit === 'Privat') { // Assuming backend stores German value
-        document.getElementById('edit-type-private').checked = true;
-    } else {
-        document.getElementById('edit-type-public').checked = true; // Default to public
-    }
-
-    // --- Populate Image Preview & Delete Button visibility ---
-    if (event[FIELD_IMAGE_URL]) {
-        editImagePreview.src = event[FIELD_IMAGE_URL];
-        editImagePreview.style.display = 'block';
-        noEditImageText.style.display = 'none';
-        if(editDeleteImageButton) editDeleteImageButton.style.display = 'inline-block'; // Show delete 'x'
-    } else {
-        editImagePreview.style.display = 'none';
-        editImagePreview.src = '#';
-        noEditImageText.style.display = 'block';
-        if(editDeleteImageButton) editDeleteImageButton.style.display = 'none'; // Hide delete 'x'
-    }
-
-    // --- Reset the *new* file input field ---
-    if (editEventImageInput) {
-       editEventImageInput.value = null; // Clear any previously selected file for upload
-    }
-
-    // Set modal title and show it
-    document.getElementById('editEventModalLabel').textContent = `Edit Event: ${event[FIELD_TITLE] || 'Untitled'}`;
-    editModal.show();
-}
-
-
-function handleSaveChanges() {
-    // Ensure required elements exist
-    if (!saveEventButton || !saveSpinner || !editFormFeedback || !editGanzerRaumCheckbox) {
-        console.error("Edit form elements missing.");
-        return;
-    }
-    // Show loading state
-    saveSpinner.classList.remove('d-none');
-    saveEventButton.disabled = true;
-    clearEditFormFeedback();
-    hideMessages();
-
-    const eventId = document.getElementById('edit-id').value; // Get Firestore ID
-
-    // Determine resources based on "Ganzer Raum" checkbox
-    let resourcesString = '';
-    if (editGanzerRaumCheckbox.checked) {
-        resourcesString = 'Ganzer Raum';
-    } else {
-        const selectedResourcesNodes = document.querySelectorAll('#edit-resources-checkboxes .resource-checkbox:checked');
-        resourcesString = Array.from(selectedResourcesNodes).map(checkbox => checkbox.value).join(', ');
-    }
-
-    // Create JSON payload for the update (NO image data sent)
-    const updatedData = {
-        [FIELD_TITLE]: document.getElementById('edit-title').value.trim(),
-        [FIELD_DATE]: document.getElementById('edit-date').value, // Send YYYY-MM-DD
-        [FIELD_START_TIME]: document.getElementById('edit-startTime').value,
-        [FIELD_END_TIME]: document.getElementById('edit-endTime').value,
-        [FIELD_DESCRIPTION]: document.getElementById('edit-description').value.trim(),
-        [FIELD_RESOURCES]: resourcesString, // Send determined resource string
-        [FIELD_RESPONSIBLE]: document.getElementById('edit-responsible').value.trim(),
-        [FIELD_EVENT_TYPE]: document.querySelector('input[name="edit-event-type"]:checked')?.value || 'Öffentlich',
-        [FIELD_PARTICIPANT_INFO]: document.getElementById('edit-participantInfo').value.trim()
-    };
-
-    // Basic validation
-    if (!updatedData[FIELD_TITLE] || !updatedData[FIELD_DATE] || !eventId) {
-        showEditFormFeedback("Title and Date are required fields.", false);
-        saveSpinner.classList.add('d-none'); saveEventButton.disabled = false;
-        return;
-    }
-
-    // --- Send JSON data to backend ---
-    fetch(`${API_BASE_URL}/api/events/${eventId}`, { // Use Firestore ID in URL
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' }, // Set header for JSON
-        body: JSON.stringify(updatedData) // Send JSON payload
-    })
-    .then(response => response.json().then(data => ({ ok: response.ok, status: response.status, data })))
-    .then(({ ok, status, data }) => {
-        saveSpinner.classList.add('d-none'); saveEventButton.disabled = false;
-        if (ok && data.success) {
-            editModal.hide();
-            showSuccess(data.message || "Event updated successfully.");
-            refreshData(); // Refresh list to show updated data
-        } else {
-            throw new Error(data.message || data.error || `Error ${status}`);
-        }
-    })
-    .catch(err => {
-        saveSpinner.classList.add('d-none'); saveEventButton.disabled = false;
-        console.error("Error updating event:", err);
-        showEditFormFeedback("Communication error: " + err.message, false);
-    });
-}
-        function showEditFormFeedback(message, isSuccess) { /* ... implement or keep ... */ }
-        function clearEditFormFeedback() { /* ... implement or keep, clear preview ... */ }
-
-        // --- Delete Event Handling ---
-        async function handleDeleteEvent() {
-            // ... (Logic is the same, ensure it uses eventId from 'edit-id' input) ...
-             if (!deleteEventButton || !deleteSpinner || !editModal) return;
-             const eventIdInput = document.getElementById('edit-id');
-             const eventId = eventIdInput ? eventIdInput.value : null;
-             const title = document.getElementById('edit-title')?.value || 'this event';
-
-             if (!eventId) { showEditFormFeedback("Error: Event ID not found for deletion.", false); return; }
-
-             if (confirm(`Are you sure you want to permanently delete the event "${title}"? (Associated image will also be deleted!)`)) {
-                 deleteSpinner.classList.remove('d-none'); deleteEventButton.disabled = true; if (saveEventButton) saveEventButton.disabled = true; clearEditFormFeedback(); hideMessages();
-
-                 try {
-                     const response = await fetch(`${API_BASE_URL}/api/events/${eventId}`, { method: 'DELETE' }); // Use ID
-                     const data = await response.json();
-                     if (!response.ok) { throw new Error(data.message || data.error || `HTTP Error ${response.status}`); }
-                     deleteSpinner.classList.add('d-none');
-                     editModal.hide(); showSuccess(data.message || "Event deleted successfully."); refreshData();
-                 } catch (error) {
-                     console.error("Error deleting event:", error);
-                     deleteSpinner.classList.add('d-none'); deleteEventButton.disabled = false; if (saveEventButton) saveEventButton.disabled = false;
-                     showEditFormFeedback("Error deleting event: " + error.message, false);
-                 }
-             } else { console.log("Delete operation cancelled."); }
-        }
-
-        // --- Refresh Data ---
-        function refreshData() {
-            // ... (Logic is the same, uses fetch with API_BASE_URL) ...
-             console.log("Loading data via API endpoint /api/events...");
-             if (loadingElement) loadingElement.classList.remove('d-none'); if (listElement) listElement.innerHTML = ''; hideMessages();
-
-             fetch(`${API_BASE_URL}/api/events`)
-                 .then(response => {
-                     if (!response.ok) { return response.json().then(errData => { throw new Error(errData.error || `HTTP Error ${response.status}`); }).catch(() => { throw new Error(`HTTP Error ${response.status}`); }); }
-                     return response.json();
-                 })
-                 .then(data => {
-                     if (loadingElement) loadingElement.classList.add('d-none'); console.log("Data received from API:", data);
-                     if (!Array.isArray(data)) { throw new Error("Unexpected data format from server."); }
-                     allEvents = data; console.log("Events stored:", allEvents.length);
-                     populateFilters(allEvents); applyFiltersAndRender(); console.log("Render complete.");
-                 })
-                 .catch(err => { if (loadingElement) loadingElement.classList.add('d-none'); console.error("Error loading events:", err); showError(err); });
-        }
-
-         // --- Tile Expand/Collapse Handling ---
+         /** Handles clicks within the event list for expand/collapse or edit trigger */
          function handleTileClick(event) {
             const clickedEditButton = event.target.closest('.edit-event-btn');
             const clickedTile = event.target.closest('.event-kachel');
             const clickedLink = event.target.closest('a');
 
-            // Click on Edit Button -> trigger edit flow with ID
+            // Click on Edit Button
             if (clickedEditButton) {
-                event.stopPropagation(); console.log('Edit button clicked');
-                const eventId = clickedEditButton.getAttribute('data-id'); // Get Firestore ID
-                if (eventId) { promptForEditPassword(eventId); } // Pass ID
+                event.stopPropagation();
+                if (isLoggedIn) { // Only proceed if logged in
+                     const eventId = clickedEditButton.getAttribute('data-id');
+                     if (eventId) { openEditModal(eventId); } // Open modal directly (no password prompt here)
+                } else {
+                     alert("Please log in to edit events."); // Inform user
+                     showView('login-view'); // Optionally show login view
+                }
                 return;
             }
-            if (clickedLink) { return; } // Click on Link -> do nothing
-
-            // Click on Tile area -> toggle expand/collapse
+            // Click on Link
+            if (clickedLink) { return; }
+            // Click on Tile area
             if (clickedTile) {
-                console.log('Tile area clicked:', clickedTile.dataset.id); // Log ID
                 const currentlyExpanded = listElement.querySelector('.event-kachel.expanded');
                 if (currentlyExpanded && currentlyExpanded !== clickedTile) { currentlyExpanded.classList.remove('expanded'); }
                 clickedTile.classList.toggle('expanded');
             }
         };
 
-        // --- Initialization and Event Listeners ---
-<<<<<<< HEAD
-<<<<<<< HEAD
-document.addEventListener('DOMContentLoaded', async function () { // Added async for initial auth check
+        /** Fetches events data from the backend API */
+        async function refreshData() {
+            console.log("Loading data via API endpoint /api/events...");
+            if (loadingElement) loadingElement.classList.remove('d-none');
+            if (listElement) listElement.innerHTML = '';
+            hideMessages();
 
-    // --- Get DOM References ---
-    // Views
-    eventView = document.getElementById('event-view');
-    addFormView = document.getElementById('add-form-view');
-    helpView = document.getElementById('help-view');
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/events`);
+                if (!response.ok) {
+                     const errData = await response.json().catch(() => ({ error: `HTTP Error ${response.status}` }));
+                     throw new Error(errData.error || `HTTP Error ${response.status}`);
+                 }
+                const data = await response.json();
+                if (!Array.isArray(data)) { throw new Error("Unexpected data format from server."); }
 
-    // Event List & Feedback
-    listElement = document.getElementById('event-liste');
-    loadingElement = document.getElementById('loading');
-    errorElement = document.getElementById('error-message');
-    successElement = document.getElementById('success-message');
+                allEvents = data; // Store events globally
+                console.log("Events stored:", allEvents.length);
+                populateFilters(allEvents);
+                applyFiltersAndRender(); // This calls displayEvents
+                updateUIAfterLoginStateChange(); // Ensure buttons visibility is correct after render
+                console.log("Render complete.");
 
-    // Filters
-    searchTermInput = document.getElementById('search-term');
-    monthFilterSelect = document.getElementById('month-filter');
-    yearFilterSelect = document.getElementById('year-filter');
-    resetFiltersButton = document.getElementById('reset-filters');
-    typeFilterSelect = document.getElementById('type-filter');
-
-    // Add Form Elements
-    addForm = document.getElementById('addEventForm');
-    addEventButton = document.getElementById('addEventButton');
-    addSpinner = addEventButton?.querySelector('.spinner-border'); // Use optional chaining
-    addFormFeedback = document.getElementById('add-form-feedback');
-    addEventImageInput = document.getElementById('add-event-image');
-    addImagePreview = document.getElementById('add-image-preview');
-    addGanzerRaumCheckbox = document.getElementById('add-res-ganzer-raum');
-    addDeletePreviewButton = document.getElementById('add-delete-preview-button');
-
-    // Menu Items
-    menuShowList = document.getElementById('menu-show-list');
-    menuShowAddForm = document.getElementById('menu-show-add-form');
-    menuShowHelp = document.getElementById('menu-show-help');
-
-    // Edit Modal Elements
-    editModalElement = document.getElementById('editEventModal');
-    if (editModalElement) { // Initialize Bootstrap Modal only if element exists
-       try {
-         editModal = new bootstrap.Modal(editModalElement);
-       } catch (e) {
-         console.error("Error initializing Bootstrap Modal:", e);
-         editModal = null; // Ensure editModal is null if init fails
-       }
-    } else {
-        editModal = null;
-    }
-    editForm = document.getElementById('editEventForm');
-    saveEventButton = document.getElementById('saveEventButton');
-    saveSpinner = saveEventButton?.querySelector('.spinner-border');
-    editFormFeedback = document.getElementById('edit-form-feedback');
-    editImagePreview = document.getElementById('edit-image-preview');
-    noEditImageText = document.getElementById('no-edit-image');
-    editEventIdInput = document.getElementById('edit-id'); // Hidden input for ID
-    editGanzerRaumCheckbox = document.getElementById('edit-res-ganzer-raum');
-    editEventImageInput = document.getElementById('edit-event-image'); // File input in edit modal
-    editDeleteImageButton = document.getElementById('edit-delete-image-button'); // Button to delete saved image
-
-    // Delete Event Button (in Edit Modal Footer)
-    deleteEventButton = document.getElementById('deleteEventButton');
-    deleteSpinner = deleteEventButton?.querySelector('.spinner-border');
-
-    // --- Check if Critical UI Elements Were Found ---
-    // List elements crucial for basic operation or event handling logic
-     const criticalElements = [
-        eventView, addFormView, helpView, listElement, loadingElement, errorElement, successElement,
-        searchTermInput, monthFilterSelect, yearFilterSelect, resetFiltersButton, typeFilterSelect,
-        addForm, addEventButton, addFormFeedback, addEventImageInput, addImagePreview, addGanzerRaumCheckbox, addDeletePreviewButton,
-        menuShowList, menuShowAddForm, menuShowHelp,
-        editModalElement, editForm, saveEventButton, editFormFeedback, editImagePreview, noEditImageText, editEventIdInput, editGanzerRaumCheckbox, editEventImageInput, editDeleteImageButton,
-        deleteEventButton
-     ];
-     const missingElements = criticalElements.filter(el => !el);
-
-     if (missingElements.length > 0) {
-         console.error("Critical UI elements missing! Check HTML IDs. Failed elements:", missingElements);
-         // Attempt to identify which ones are missing by checking the variable names in the debugger or logging them
-         // Example: if(!eventView) console.error("Element with ID 'event-view' not found!");
-         showError({ message: `Initialization Error: ${missingElements.length} critical UI element(s) missing. Check console.` });
-         return; // Stop initialization if critical elements are missing
-     }
-     // Also check if modal init worked
-     if (!editModal) {
-         console.error("Edit Modal could not be initialized (likely missing #editEventModal element).");
-         // Decide if this is critical enough to stop, or just disable edit functionality
-         // For now, let's allow proceeding but edit will fail.
-     }
-
-
-    // --- Register Event Listeners ---
-
-    // Menu Navigation
-    menuShowList.addEventListener('click', (e) => { e.preventDefault(); showView('event-view'); });
-    menuShowAddForm.addEventListener('click', (e) => { e.preventDefault(); promptForAddPassword(); }); // Checks login status internally now
-    menuShowHelp.addEventListener('click', (e) => { e.preventDefault(); showView('help-view'); });
-
-    // Filters
-    searchTermInput.addEventListener('input', applyFiltersAndRender);
-    monthFilterSelect.addEventListener('change', applyFiltersAndRender);
-    yearFilterSelect.addEventListener('change', applyFiltersAndRender);
-    typeFilterSelect.addEventListener('change', applyFiltersAndRender);
-    resetFiltersButton.addEventListener('click', resetAllFilters);
-
-    // Add Form
-    addForm.addEventListener('submit', handleAddEventSubmit);
-    if (addGanzerRaumCheckbox) {
-        addGanzerRaumCheckbox.addEventListener('change', () => toggleResourceCheckboxes(addGanzerRaumCheckbox, '#add-resources-checkboxes'));
-    }
-    if (addDeletePreviewButton && addEventImageInput && addImagePreview) {
-        addDeletePreviewButton.addEventListener('click', () => {
-            addEventImageInput.value = null; // Clear the file input
-            addImagePreview.src = '#';
-            addImagePreview.style.display = 'none'; // Hide preview
-            addDeletePreviewButton.style.display = 'none'; // Hide self
-        });
-    }
-     // Add Form Image Preview Listener
-     if (addEventImageInput && addImagePreview && addDeletePreviewButton) {
-        addEventImageInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file && file.type.startsWith('image/')) {
-                const reader = new FileReader();
-                reader.onload = function(loadEvent) {
-                    addImagePreview.src = loadEvent.target.result;
-                    addImagePreview.style.display = 'block';
-                    addDeletePreviewButton.style.display = 'inline-block'; // Show delete button
-                }
-                reader.readAsDataURL(file); // Read file for preview
-            } else {
-                addEventImageInput.value = null; // Clear selection if not image
-                addImagePreview.src = '#';
-                addImagePreview.style.display = 'none';
-                addDeletePreviewButton.style.display = 'none'; // Hide delete button
-            }
-        });
-     }
-
-    // Edit Modal Buttons & Inputs
-    if (saveEventButton) saveEventButton.addEventListener('click', handleSaveChanges);
-    if (deleteEventButton) deleteEventButton.addEventListener('click', handleDeleteEvent); // Delete the whole event
-    if (editDeleteImageButton) editDeleteImageButton.addEventListener('click', handleDeleteImage); // Delete just the image
-    if (editGanzerRaumCheckbox) {
-        editGanzerRaumCheckbox.addEventListener('change', () => toggleResourceCheckboxes(editGanzerRaumCheckbox, '#edit-resources-checkboxes'));
-    }
-    // Optional: Listener for editEventImageInput 'change' to update preview (add if needed)
-
-    // Event List (for tile clicks - expand/collapse and triggering edit)
-    listElement.addEventListener('click', handleTileClick);
-
-
-    // --- Initial Application Setup ---
-    console.log("DOM loaded. Initializing application...");
-    showView('event-view'); // Show event list initially
-
-}); // End DOMContentLoaded Listener
-
-    // Check initial authentication status
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/auth/status`); // Use async function for listener
-        if (!response.ok) {
-            // Handle non-OK response during status check if needed, but likely indicates backend issue
-            console.error(`Auth status check failed with status: ${response.status}`);
-            isLoggedIn = false;
-        } else {
-            const data = await response.json();
-            if (data.loggedIn) {
-                isLoggedIn = true;
-                console.log("User is logged in via session.");
-            } else {
-                isLoggedIn = false;
-                console.log("User is not logged in.");
+            } catch(err) {
+                console.error("Error loading events:", err);
+                showError(err); // Show error in UI
+            } finally {
+                 if (loadingElement) loadingElement.classList.add('d-none');
             }
         }
-    } catch(error) {
-        console.error("Error checking auth status:", error);
-        isLoggedIn = false; // Assume not logged in if status check fails
-    }
 
-    updateUIAfterLoginStateChange(); // Update UI based on initial loggedIn state
-
-    // Fetch initial data (refreshData might check isLoggedIn internally if needed,
-    // or GET /api/events might just be public)
-    refreshData();
-
-// Check initial authentication status
-try {
-    const response = await fetch(`${API_BASE_URL}/api/auth/status`); // Use async function for listener
-    if (!response.ok) {
-        // Handle non-OK response during status check if needed, but likely indicates backend issue
-        console.error(`Auth status check failed with status: ${response.status}`);
-        isLoggedIn = false;
-    } else {
-        const data = await response.json();
-        if (data.loggedIn) {
-            isLoggedIn = true;
-            console.log("User is logged in via session.");
-        } else {
-            isLoggedIn = false;
-            console.log("User is not logged in.");
-        }
-    }
-} catch(error) {
-    console.error("Error checking auth status:", error);
-    isLoggedIn = false; // Assume not logged in if status check fails
-}
-
-updateUIAfterLoginStateChange(); // Update UI based on initial loggedIn state
-
-// Fetch initial data (refreshData might check isLoggedIn internally if needed,
-// or GET /api/events might just be public)
-refreshData();
+        // --- Add/Edit/Delete Function Implementations ---
+        // (Include the final versions of handleAddEventSubmit, openEditModal,
+        // handleSaveChanges, handleDeleteEvent, handleDeleteImage here from previous steps,
+        // ensuring they use the correct FIELD_* constants and API_BASE_URL)
+        // ... (These functions were provided in previous responses) ...
+        // Make sure handleAddEventSubmit and handleSaveChanges use the FIELD_* constants
+        // when creating the FormData or JSON payload respectively.
+        // Make sure openEditModal uses FIELD_* constants when reading event data.
 
 
-=======
-        document.addEventListener('DOMContentLoaded', function () {
-            // Get DOM references (ensure all new IDs are included)
-            eventView = document.getElementById('event-view'); addFormView = document.getElementById('add-form-view'); helpView = document.getElementById('help-view'); listElement = document.getElementById('event-liste'); loadingElement = document.getElementById('loading'); errorElement = document.getElementById('error-message'); successElement = document.getElementById('success-message'); searchTermInput = document.getElementById('search-term'); monthFilterSelect = document.getElementById('month-filter'); yearFilterSelect = document.getElementById('year-filter'); resetFiltersButton = document.getElementById('reset-filters'); typeFilterSelect = document.getElementById('type-filter'); addForm = document.getElementById('addEventForm'); addEventButton = document.getElementById('addEventButton'); addSpinner = addEventButton?.querySelector('.spinner-border'); addFormFeedback = document.getElementById('add-form-feedback'); addEventImageInput = document.getElementById('add-event-image'); addImagePreview = document.getElementById('add-image-preview'); menuShowList = document.getElementById('menu-show-list'); menuShowAddForm = document.getElementById('menu-show-add-form'); menuShowHelp = document.getElementById('menu-show-help'); editModalElement = document.getElementById('editEventModal'); if (editModalElement) editModal = new bootstrap.Modal(editModalElement); editForm = document.getElementById('editEventForm'); saveEventButton = document.getElementById('saveEventButton'); saveSpinner = saveEventButton?.querySelector('.spinner-border'); editFormFeedback = document.getElementById('edit-form-feedback'); editImagePreview = document.getElementById('edit-image-preview'); noEditImageText = document.getElementById('no-edit-image'); editEventIdInput = document.getElementById('edit-id'); deleteEventButton = document.getElementById('deleteEventButton'); deleteSpinner = deleteEventButton?.querySelector('.spinner-border'); addDeletePreviewButton = document.getElementById('add-delete-preview-button'); editDeleteImageButton = document.getElementById('edit-delete-image-button');editEventImageInput = document.getElementById('edit-event-image'); addGanzerRaumCheckbox = document.getElementById('add-res-ganzer-raum');editGanzerRaumCheckbox = document.getElementById('edit-res-ganzer-raum');
-            // Check critical elements
-            if (!listElement || !editModalElement || !addForm || !editForm || !deleteEventButton || !addEventImageInput || !addImagePreview || !editImagePreview || !editEventIdInput || !noEditImageText || !addDeletePreviewButton || !editDeleteImageButton || !editEventImageInput) {
-                console.error("Critical UI elements missing! Check HTML IDs for forms, modals, image previews, and hidden ID input.");
-                showError({ message: "Initialization Error: Core UI elements missing." }); return;
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', async function () {
+             // Get DOM references (Assign to the globally declared variables)
+             loginView = document.getElementById('login-view');
+             loginPasswordInput = document.getElementById('login-password');
+             loginButton = document.getElementById('login-button');
+             loginFeedback = document.getElementById('login-feedback');
+             eventView = document.getElementById('event-view');
+             addFormView = document.getElementById('add-form-view');
+             helpView = document.getElementById('help-view');
+             listElement = document.getElementById('event-liste');
+             loadingElement = document.getElementById('loading');
+             errorElement = document.getElementById('error-message');
+             successElement = document.getElementById('success-message');
+             searchTermInput = document.getElementById('search-term');
+             monthFilterSelect = document.getElementById('month-filter');
+             yearFilterSelect = document.getElementById('year-filter');
+             resetFiltersButton = document.getElementById('reset-filters');
+             typeFilterSelect = document.getElementById('type-filter');
+             addForm = document.getElementById('addEventForm');
+             addEventButton = document.getElementById('addEventButton');
+             addSpinner = addEventButton?.querySelector('.spinner-border');
+             addFormFeedback = document.getElementById('add-form-feedback');
+             addEventImageInput = document.getElementById('add-event-image');
+             addImagePreview = document.getElementById('add-image-preview');
+             addGanzerRaumCheckbox = document.getElementById('add-res-ganzer-raum');
+             addDeletePreviewButton = document.getElementById('add-delete-preview-button');
+             menuShowList = document.getElementById('menu-show-list');
+             menuShowAddForm = document.getElementById('menu-show-add-form');
+             menuShowHelp = document.getElementById('menu-show-help');
+             logoutButton = document.getElementById('logout-button'); // Get logout button
+             editModalElement = document.getElementById('editEventModal');
+             if (editModalElement) { try { editModal = new bootstrap.Modal(editModalElement); } catch(e) { console.error("Error init bootstrap modal:", e); editModal = null; }} else { editModal = null; }
+             editForm = document.getElementById('editEventForm');
+             saveEventButton = document.getElementById('saveEventButton');
+             saveSpinner = saveEventButton?.querySelector('.spinner-border');
+             editFormFeedback = document.getElementById('edit-form-feedback');
+             editImagePreview = document.getElementById('edit-image-preview');
+             noEditImageText = document.getElementById('no-edit-image');
+             editEventIdInput = document.getElementById('edit-id');
+             editGanzerRaumCheckbox = document.getElementById('edit-res-ganzer-raum');
+             editEventImageInput = document.getElementById('edit-event-image');
+             editDeleteImageButton = document.getElementById('edit-delete-image-button');
+             deleteEventButton = document.getElementById('deleteEventButton');
+             deleteSpinner = deleteEventButton?.querySelector('.spinner-border');
+
+            // Simple check if critical elements are missing
+            if (!listElement || !editModalElement || !addForm || !editForm || !deleteEventButton || !loginView || !loginButton || !logoutButton) {
+                console.error("Critical UI elements missing! Check HTML IDs for forms, modals, login/logout buttons.");
+                showError({ message: "Initialization Error: Core UI elements missing." });
+                return;
             }
 
-            // Register Event Listeners (unchanged)
-            menuShowList.addEventListener('click', (e)=>{ e.preventDefault(); showView('event-view'); });
-            menuShowAddForm.addEventListener('click', (e)=>{ e.preventDefault(); promptForAddPassword(); });
-            menuShowHelp.addEventListener('click', (e)=> { e.preventDefault(); showView('help-view'); });
-            searchTermInput.addEventListener('input', applyFiltersAndRender); monthFilterSelect.addEventListener('change', applyFiltersAndRender); yearFilterSelect.addEventListener('change', applyFiltersAndRender); typeFilterSelect.addEventListener('change', applyFiltersAndRender);
-            resetFiltersButton.addEventListener('click', resetAllFilters);
-            addForm.addEventListener('submit', handleAddEventSubmit);
-            saveEventButton.addEventListener('click', handleSaveChanges);
-            deleteEventButton.addEventListener('click', handleDeleteEvent);
-            listElement.addEventListener('click', handleTileClick);
-            if (editDeleteImageButton) {
-                editDeleteImageButton.addEventListener('click', handleDeleteImage);
-            }
-            if (addGanzerRaumCheckbox) {
-                addGanzerRaumCheckbox.addEventListener('change', () => toggleResourceCheckboxes(addGanzerRaumCheckbox, '#add-resources-checkboxes'));
-            }
-            if (editGanzerRaumCheckbox) {
-                editGanzerRaumCheckbox.addEventListener('change', () => toggleResourceCheckboxes(editGanzerRaumCheckbox, '#edit-resources-checkboxes'));
-            }
-            
-
-             // Image preview listener for Add form
-             if (addEventImageInput && addImagePreview && addDeletePreviewButton) {
-    addEventImageInput.addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        // currentAddFile = file; // Behalte ggf. Referenz, falls gebraucht
-
-        if (file && file.type.startsWith('image/')) {
-            const reader = new FileReader();
-            reader.onload = function(loadEvent) {
-                addImagePreview.src = loadEvent.target.result;
-                addImagePreview.style.display = 'block';
-                addDeletePreviewButton.style.display = 'inline-block'; // Zeige Knopf
-            }
-            reader.readAsDataURL(file);
-        } else {
-            // Kein Bild oder ungültiger Typ
-            addEventImageInput.value = null; // Wichtig: Auswahl zurücksetzen
-            // currentAddFile = null;
-            addImagePreview.src = '#';
-            addImagePreview.style.display = 'none';
-            addDeletePreviewButton.style.display = 'none'; // Verstecke Knopf
-        }
-    });
-
-    // Listener für den "Vorschau Löschen"-Knopf im Add-Formular
-    addDeletePreviewButton.addEventListener('click', () => {
-        addEventImageInput.value = null; // Löscht die Dateiauswahl
-        // currentAddFile = null;
-        addImagePreview.src = '#';
-        addImagePreview.style.display = 'none'; // Versteckt Vorschau
-        addDeletePreviewButton.style.display = 'none'; // Versteckt sich selbst
-    });
- }
-
-=======
-        document.addEventListener('DOMContentLoaded', function () {
-            // Get DOM references (ensure all new IDs are included)
-            eventView = document.getElementById('event-view'); addFormView = document.getElementById('add-form-view'); helpView = document.getElementById('help-view'); listElement = document.getElementById('event-liste'); loadingElement = document.getElementById('loading'); errorElement = document.getElementById('error-message'); successElement = document.getElementById('success-message'); searchTermInput = document.getElementById('search-term'); monthFilterSelect = document.getElementById('month-filter'); yearFilterSelect = document.getElementById('year-filter'); resetFiltersButton = document.getElementById('reset-filters'); typeFilterSelect = document.getElementById('type-filter'); addForm = document.getElementById('addEventForm'); addEventButton = document.getElementById('addEventButton'); addSpinner = addEventButton?.querySelector('.spinner-border'); addFormFeedback = document.getElementById('add-form-feedback'); addEventImageInput = document.getElementById('add-event-image'); addImagePreview = document.getElementById('add-image-preview'); menuShowList = document.getElementById('menu-show-list'); menuShowAddForm = document.getElementById('menu-show-add-form'); menuShowHelp = document.getElementById('menu-show-help'); editModalElement = document.getElementById('editEventModal'); if (editModalElement) editModal = new bootstrap.Modal(editModalElement); editForm = document.getElementById('editEventForm'); saveEventButton = document.getElementById('saveEventButton'); saveSpinner = saveEventButton?.querySelector('.spinner-border'); editFormFeedback = document.getElementById('edit-form-feedback'); editImagePreview = document.getElementById('edit-image-preview'); noEditImageText = document.getElementById('no-edit-image'); editEventIdInput = document.getElementById('edit-id'); deleteEventButton = document.getElementById('deleteEventButton'); deleteSpinner = deleteEventButton?.querySelector('.spinner-border'); addDeletePreviewButton = document.getElementById('add-delete-preview-button'); editDeleteImageButton = document.getElementById('edit-delete-image-button');editEventImageInput = document.getElementById('edit-event-image'); addGanzerRaumCheckbox = document.getElementById('add-res-ganzer-raum');editGanzerRaumCheckbox = document.getElementById('edit-res-ganzer-raum');
-            // Check critical elements
-            if (!listElement || !editModalElement || !addForm || !editForm || !deleteEventButton || !addEventImageInput || !addImagePreview || !editImagePreview || !editEventIdInput || !noEditImageText || !addDeletePreviewButton || !editDeleteImageButton || !editEventImageInput) {
-                console.error("Critical UI elements missing! Check HTML IDs for forms, modals, image previews, and hidden ID input.");
-                showError({ message: "Initialization Error: Core UI elements missing." }); return;
-            }
-
-            // Register Event Listeners (unchanged)
-            menuShowList.addEventListener('click', (e)=>{ e.preventDefault(); showView('event-view'); });
-            menuShowAddForm.addEventListener('click', (e)=>{ e.preventDefault(); promptForAddPassword(); });
-            menuShowHelp.addEventListener('click', (e)=> { e.preventDefault(); showView('help-view'); });
-            searchTermInput.addEventListener('input', applyFiltersAndRender); monthFilterSelect.addEventListener('change', applyFiltersAndRender); yearFilterSelect.addEventListener('change', applyFiltersAndRender); typeFilterSelect.addEventListener('change', applyFiltersAndRender);
-            resetFiltersButton.addEventListener('click', resetAllFilters);
-            addForm.addEventListener('submit', handleAddEventSubmit);
-            saveEventButton.addEventListener('click', handleSaveChanges);
-            deleteEventButton.addEventListener('click', handleDeleteEvent);
-            listElement.addEventListener('click', handleTileClick);
-            if (editDeleteImageButton) {
-                editDeleteImageButton.addEventListener('click', handleDeleteImage);
-            }
-            if (addGanzerRaumCheckbox) {
-                addGanzerRaumCheckbox.addEventListener('change', () => toggleResourceCheckboxes(addGanzerRaumCheckbox, '#add-resources-checkboxes'));
-            }
-            if (editGanzerRaumCheckbox) {
-                editGanzerRaumCheckbox.addEventListener('change', () => toggleResourceCheckboxes(editGanzerRaumCheckbox, '#edit-resources-checkboxes'));
-            }
-            
-
-             // Image preview listener for Add form
-             if (addEventImageInput && addImagePreview && addDeletePreviewButton) {
-    addEventImageInput.addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        // currentAddFile = file; // Behalte ggf. Referenz, falls gebraucht
-
-        if (file && file.type.startsWith('image/')) {
-            const reader = new FileReader();
-            reader.onload = function(loadEvent) {
-                addImagePreview.src = loadEvent.target.result;
-                addImagePreview.style.display = 'block';
-                addDeletePreviewButton.style.display = 'inline-block'; // Zeige Knopf
-            }
-            reader.readAsDataURL(file);
-        } else {
-            // Kein Bild oder ungültiger Typ
-            addEventImageInput.value = null; // Wichtig: Auswahl zurücksetzen
-            // currentAddFile = null;
-            addImagePreview.src = '#';
-            addImagePreview.style.display = 'none';
-            addDeletePreviewButton.style.display = 'none'; // Verstecke Knopf
-        }
-    });
-
-    // Listener für den "Vorschau Löschen"-Knopf im Add-Formular
-    addDeletePreviewButton.addEventListener('click', () => {
-        addEventImageInput.value = null; // Löscht die Dateiauswahl
-        // currentAddFile = null;
-        addImagePreview.src = '#';
-        addImagePreview.style.display = 'none'; // Versteckt Vorschau
-        addDeletePreviewButton.style.display = 'none'; // Versteckt sich selbst
-    });
- }
-
->>>>>>> parent of d987ff4 (DomContentLoader fix)
-            // Initial Setup
-            console.log("DOM loaded. Initializing application...");
-            showView('event-view');
-            refreshData();
-        });
-<<<<<<< HEAD
->>>>>>> parent of d987ff4 (DomContentLoader fix)
-=======
->>>>>>> parent of d987ff4 (DomContentLoader fix)
-
-        /** Behandelt den Klick auf den Bild-Löschen-Knopf im Edit-Modal */
-async function handleDeleteImage() {
-    if (!editDeleteImageButton) return;
-    const eventIdInput = document.getElementById('edit-id');
-    const eventId = eventIdInput ? eventIdInput.value : null;
-    const currentImageUrl = editImagePreview.src;
-
-    if (!eventId || !currentImageUrl || currentImageUrl.startsWith('data:') || currentImageUrl.endsWith('#')) {
-        showEditFormFeedback("Kein gespeichertes Bild zum Löschen vorhanden oder Event-ID fehlt.", false);
-        return;
-    }
-
-    if (confirm(`Möchtest du das Bild für dieses Event wirklich löschen?\nDas Event selbst bleibt bestehen.`)) {
-        // Zeige Ladezustand (optional, da schnell)
-        editDeleteImageButton.disabled = true;
-        // Optional: add class to show spinner inside button
-        hideMessages();
-        clearEditFormFeedback();
-
-        try {
-            // Rufe den NEUEN Backend-Endpunkt auf
-            const response = await fetch(`${API_BASE_URL}/api/events/${eventId}/image`, {
-                method: 'DELETE'
+            // Register Event Listeners
+            menuShowList.addEventListener('click', (e) => { e.preventDefault(); showView('event-view'); });
+            menuShowAddForm.addEventListener('click', (e) => { e.preventDefault(); if(isLoggedIn) showView('add-form-view'); else showView('login-view'); });
+            menuShowHelp.addEventListener('click', (e) => { e.preventDefault(); showView('help-view'); });
+            if (logoutButton) logoutButton.addEventListener('click', (e) => { e.preventDefault(); logoutApi(); });
+            if (loginButton) loginButton.addEventListener('click', async () => {
+                 const password = loginPasswordInput.value;
+                 if (!password) { showLoginFeedback("Please enter the password.", false); return; }
+                 const success = await loginApi(password);
+                 if(success) {
+                     isLoggedIn = true;
+                     hideLoginFeedback();
+                     showView('event-view'); // Go to list view after login
+                     updateUIAfterLoginStateChange();
+                     refreshData();
+                 } // Error is handled within loginApi by showing feedback
             });
-            const data = await response.json(); // Immer JSON parsen
-            if (!response.ok) {
-                throw new Error(data.message || data.error || `HTTP Error ${response.status}`);
-            }
 
-            // Erfolg: UI sofort aktualisieren
-            editImagePreview.src = '#';
-            editImagePreview.style.display = 'none';
-            editDeleteImageButton.style.display = 'none';
-            if(noEditImageText) noEditImageText.style.display = 'block';
-            showSuccess("Bild erfolgreich gelöscht."); // Globale Nachricht
+            searchTermInput.addEventListener('input', applyFiltersAndRender);
+            monthFilterSelect.addEventListener('change', applyFiltersAndRender);
+            yearFilterSelect.addEventListener('change', applyFiltersAndRender);
+            typeFilterSelect.addEventListener('change', applyFiltersAndRender);
+            resetFiltersButton.addEventListener('click', resetAllFilters);
+            addForm.addEventListener('submit', handleAddEventSubmit);
+            if (saveEventButton) saveEventButton.addEventListener('click', handleSaveChanges);
+            if (deleteEventButton) deleteEventButton.addEventListener('click', handleDeleteEvent);
+            if (editDeleteImageButton) editDeleteImageButton.addEventListener('click', handleDeleteImage);
+            listElement.addEventListener('click', handleTileClick); // Handles tile expand and edit button clicks
 
-            // Wichtig: Lokale Daten aktualisieren, damit bei erneutem Öffnen
-            // des Modals (ohne Refresh) das Bild auch weg ist.
-            const eventIndex = allEvents.findIndex(e => e.id === eventId);
-            if (eventIndex > -1) {
-                allEvents[eventIndex][FIELD_IMAGE_URL] = null;
-                // Optional: Wenn Details gerade angezeigt werden, diese neu rendern
-                // oder auf den nächsten refreshData() warten.
-            }
+            // Ganzer Raum Checkbox listeners
+            if (addGanzerRaumCheckbox) { addGanzerRaumCheckbox.addEventListener('change', () => toggleResourceCheckboxes(addGanzerRaumCheckbox, '#add-resources-checkboxes')); }
+            if (editGanzerRaumCheckbox) { editGanzerRaumCheckbox.addEventListener('change', () => toggleResourceCheckboxes(editGanzerRaumCheckbox, '#edit-resources-checkboxes')); }
 
-        } catch (error) {
-            console.error("Fehler beim Löschen des Bildes:", error);
-            showEditFormFeedback("Fehler beim Löschen des Bildes: " + error.message, false); // Fehler im Modal anzeigen
-        } finally {
-            // Knopf wieder aktivieren
-            editDeleteImageButton.disabled = false;
-            // Optional: Remove spinner class from button
-        }
-    }
-}
+             // Add Form Image Preview Listener
+             if (addEventImageInput && addImagePreview && addDeletePreviewButton) {
+                addEventImageInput.addEventListener('change', function(e) { /* ... preview logic ... */ });
+                addDeletePreviewButton.addEventListener('click', () => { /* ... clear preview logic ... */ });
+             }
+             // Optional: Add change listener for editEventImageInput to show preview of NEW file
 
-/**
- * Aktiviert/Deaktiviert andere Ressourcen-Checkboxes basierend auf dem Status von "Ganzer Raum".
- * @param {HTMLInputElement} ganzerRaumCheckbox Die "Ganzer Raum"-Checkbox.
- * @param {string} containerSelector CSS-Selektor für den Container der *anderen* Ressourcen-Checkboxes (z.B. '#add-resources-checkboxes').
- */
- function toggleResourceCheckboxes(ganzerRaumCheckbox, containerSelector) {
-    const container = document.querySelector(containerSelector); // QuerySelector statt getElementById
-    if (!container || !ganzerRaumCheckbox) return;
-    // Finde alle Checkboxen mit der Klasse 'resource-checkbox' INNERHALB des Containers
-    const otherCheckboxes = container.querySelectorAll('.resource-checkbox');
-    const shouldBeDisabled = ganzerRaumCheckbox.checked;
+             // --- Initial Application Setup ---
+             console.log("DOM loaded. Initializing application...");
 
-    otherCheckboxes.forEach(cb => {
-        cb.disabled = shouldBeDisabled;
-        if (shouldBeDisabled) {
-            cb.checked = false; // Abwählen, wenn "Ganzer Raum" gewählt ist
-        }
-        // Das CSS kümmert sich um das Ausgrauen über :disabled
-    });
-}
+             // Check initial auth status
+             isLoggedIn = await checkAuthStatusApi();
+             console.log("Initial login state:", isLoggedIn);
+
+             updateUIAfterLoginStateChange(); // Set initial UI state based on login
+
+             if (!isLoggedIn && !document.location.hash) { // Show login first if not logged in, unless deep linking?
+                showView('login-view');
+                // Optionally still load events in background if list is public
+                // refreshData();
+             } else {
+                showView('event-view'); // Start with event list if logged in
+                refreshData(); // Fetch initial data
+             }
+         }); // End DOMContentLoaded Listener
 
     </script>
+
 </body>
 </html>
