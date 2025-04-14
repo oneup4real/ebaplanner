@@ -579,6 +579,53 @@
                 }
             } else { console.log("Delete operation cancelled."); }
         }
+        // PASTE THIS FUNCTION DEFINITION INSIDE YOUR <script> TAG
+
+    /** Fetches the latest event data from the backend API and updates the list */
+    async function refreshData() { // Ensure it's async as it uses await
+        console.log("Loading data via API endpoint /api/events...");
+        if (loadingElement) loadingElement.classList.remove('d-none'); // Show loading indicator
+        if (listElement) listElement.innerHTML = ''; // Clear old list
+        hideMessages(); // Hide any previous success/error messages
+
+        try {
+            // Fetch events using the API_BASE_URL (should be '' for same-origin)
+            const response = await fetch(`${API_BASE_URL}/api/events`);
+
+            if (!response.ok) {
+                 // Try to parse error json from server, fallback to status text
+                 // Use await here as response.json() is async
+                 const errData = await response.json().catch(() => ({ error: `HTTP Error ${response.status}: ${response.statusText}` }));
+                 // Throw an error object to be caught below
+                 throw new Error(errData.error || `HTTP Error ${response.status}`);
+             }
+            // Parse the successful JSON response
+            const data = await response.json();
+
+            // Validate the received data structure
+            if (!Array.isArray(data)) {
+                throw new Error("Unexpected data format received from server.");
+            }
+
+            allEvents = data; // Store events globally (now includes 'id')
+            console.log("Events stored:", allEvents.length);
+
+            // Update UI elements that depend on the event data
+            populateFilters(allEvents); // Update year filter options
+            applyFiltersAndRender(); // Filter and display events (this calls displayEvents)
+            updateUIAfterLoginStateChange(); // Ensure button visibility is correct after render
+
+            console.log("Render complete.");
+
+        } catch (err) {
+            // Catch errors from fetch or data processing
+            console.error("Error loading events:", err);
+            showError(err); // Show error message in the UI
+        } finally {
+             // Hide loading indicator regardless of success or error
+             if (loadingElement) loadingElement.classList.add('d-none');
+        }
+    }
 
 
         // --- Initialization ---
