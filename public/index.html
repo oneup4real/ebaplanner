@@ -570,6 +570,41 @@
             finally { if (loadingElement) loadingElement.classList.add('d-none'); }
         }
 
+            /** Shows feedback message within the Add Event form */
+    function showAddFormFeedback(message, isSuccess, secondaryMessage = null) {
+        // Ensure the feedback element reference exists
+        if (!addFormFeedback) {
+            console.error("Add form feedback element not found.");
+            // Fallback to global error message if specific one isn't available
+            showError({ message: message });
+            return;
+        }
+        let content = message;
+        if (secondaryMessage) {
+            // Append secondary message with Bootstrap utility class for styling
+            content += `<br><small class="text-muted">${secondaryMessage}</small>`;
+        }
+        addFormFeedback.innerHTML = content; // Use innerHTML if message contains HTML (like <br>)
+        // Apply appropriate Bootstrap alert classes for styling
+        addFormFeedback.className = `mt-3 alert alert-${isSuccess ? 'success' : 'danger'}`;
+        addFormFeedback.classList.remove('d-none'); // Make the feedback area visible
+    }
+
+    /** Shows feedback message within the Edit Event modal */
+    function showEditFormFeedback(message, isSuccess) {
+        // Ensure the feedback element reference exists
+        if (!editFormFeedback) {
+             console.error("Edit form feedback element not found.");
+             // Fallback to global error message
+             showError({ message: message });
+             return;
+        }
+        editFormFeedback.textContent = message; // Set the message text
+        // Apply appropriate Bootstrap alert classes for styling
+        editFormFeedback.className = `mt-3 alert alert-${isSuccess ? 'success' : 'danger'}`;
+        editFormFeedback.classList.remove('d-none'); // Make the feedback area visible
+    }
+
 
         // --- Initialization ---
         document.addEventListener('DOMContentLoaded', async function () {
