@@ -77,7 +77,7 @@ async function uploadToGcs(buffer, originalname, mimetype) {
     blobStream.on('finish', async () => {
       try {
         // Make the file publicly readable (Requires correct IAM/Bucket settings)
-        await blob.makePublic();
+        //await blob.makePublic();
         const publicUrl = format(`https://storage.googleapis.com/${bucket.name}/${blob.name}`);
         console.log("GCS Upload successful, public URL:", publicUrl);
         resolve(publicUrl);
