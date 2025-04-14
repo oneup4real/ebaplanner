@@ -227,76 +227,101 @@ app.post('/api/events', multer.single('eventImage'), async (req, res) => {
 
 // PUT /api/events/:id - Updates an existing event (ID instead of rowNum!)
 // NOTE: This version does NOT handle image updates/replacements for simplicity. Expects JSON body.
-app.put('/api/events/:id', async (req, res) => {
-    const eventId = req.params.id; // Get Firestore document ID from URL parameter
-    const eventData = req.body; // Expecting JSON data in the request body
-    console.log(`API PUT /api/events/${eventId} called`);
+app.put('/api/events/:id', multer.single('eventImage'), async (req, res) => {
+  const eventId = req.params.id;
+  const eventData = req.body; // Textfelder kommen aus FormData body
+  const newImageFile = req.file; // Neue Datei (falls hochgeladen) ist hier
+  console.log(`API PUT /api/events/${eventId} called`);
 
-    // Define keys expected in the JSON body from the frontend
-    const FIELD_TITLE = 'title';
-    const FIELD_DATE = 'eventDate'; // Expecting YYYY-MM-DD string
-    const FIELD_START_TIME = 'startTime';
-    const FIELD_END_TIME = 'endTime';
-    const FIELD_DESCRIPTION = 'description';
-    const FIELD_RESOURCES = 'resources';
-    const FIELD_RESPONSIBLE = 'responsible';
-    const FIELD_EVENT_TYPE = 'eventType';
-    const FIELD_PARTICIPANT_INFO = 'participantInfo';
+  // Konstanten für Feldnamen (erwartet von FormData)
+  const FIELD_TITLE = 'title';
+  const FIELD_DATE = 'eventDate'; // Erwartet YYYY-MM-dd
+  const FIELD_START_TIME = 'startTime';
+  const FIELD_END_TIME = 'endTime';
+  const FIELD_DESCRIPTION = 'description';
+  const FIELD_RESOURCES = 'resources';
+  const FIELD_RESPONSIBLE = 'responsible';
+  const FIELD_EVENT_TYPE = 'eventType';
+  const FIELD_PARTICIPANT_INFO = 'participantInfo';
 
-    // Validate input
-    if (!eventId) {
-        return res.status(400).json({ error: 'Event ID missing.' });
-    }
-    if (!eventData || typeof eventData !== 'object' || Object.keys(eventData).length === 0 || !eventData[FIELD_TITLE] || !eventData[FIELD_DATE]) {
-        return res.status(400).json({ success: false, message: 'Invalid data or Title/Date missing.' });
-    }
+  if (!eventId) return res.status(400).json({ error: 'Event ID fehlt.' });
+  if (!eventData || typeof eventData !== 'object' || !eventData[FIELD_TITLE] || !eventData[FIELD_DATE]) {
+      return res.status(400).json({ success: false, message: 'Ungültige Daten oder Titel/Datum fehlen.' });
+  }
 
-    try {
-        const eventRef = eventsCollection.doc(eventId);
-        const doc = await eventRef.get();
+  try {
+      const eventRef = eventsCollection.doc(eventId);
+      const doc = await eventRef.get();
+      if (!doc.exists) {
+           return res.status(404).json({ success: false, message: 'Event nicht gefunden.' });
+      }
 
-        // Check if the event exists
-        if (!doc.exists) {
-            return res.status(404).json({ success: false, message: 'Event not found.' });
+      const existingData = doc.data();
+      let imageUrlToUpdate = existingData.imageUrl; // Behalte standardmässig die alte URL
+
+      // === NEU: Bild-Handling ===
+      if (newImageFile) {
+          console.log("Neues Bild wird verarbeitet:", newImageFile.originalname);
+          // 1. Altes Bild aus GCS löschen, falls vorhanden
+          if (existingData.imageUrl) {
+              console.log("Lösche altes Bild aus GCS:", existingData.imageUrl);
+              await deleteFromGcs(existingData.imageUrl); // Helferfunktion nutzen
+          }
+          // 2. Neues Bild nach GCS hochladen
+          imageUrlToUpdate = await uploadToGcs(newImageFile.buffer, newImageFile.originalname, newImageFile.mimetype);
+          console.log("Neues Bild hochgeladen, URL:", imageUrlToUpdate);
+      }
+      // Wenn kein neues Bild hochgeladen wurde, bleibt imageUrlToUpdate auf dem alten Wert.
+
+      // Bereite Update-Daten vor (Konvertiere Datum)
+      let eventDateTimestamp = null;
+      if (eventData[FIELD_DATE]) {
+           try { eventDateTimestamp = Timestamp.fromDate(new Date(eventData[FIELD_DATE] + 'T00:00:00Z')); }
+           catch(e) { return res.status(400).json({ success: false, message: 'Ungültiges Datumsformat. Bitte YYYY-MM-dd verwenden.'}); }
+      } else { return res.status(400).json({ success: false, message: 'Datum ist ein Pflichtfeld.'}); }
+
+      // Update-Payload erstellen (inkl. neuer oder alter Bild-URL)
+      // Wichtig: Firestore erlaubt keine 'undefined' Werte im Update, nur explizite Werte oder FieldValue.delete()
+      const updatePayload = {
+          title: eventData[FIELD_TITLE] !== undefined ? eventData[FIELD_TITLE] : FieldValue.delete(),
+          eventDate: eventDateTimestamp, // Ist immer gesetzt oder Fehler vorher
+          startTime: eventData[FIELD_START_TIME] !== undefined ? eventData[FIELD_START_TIME] : FieldValue.delete(),
+          endTime: eventData[FIELD_END_TIME] !== undefined ? eventData[FIELD_END_TIME] : FieldValue.delete(),
+          description: eventData[FIELD_DESCRIPTION] !== undefined ? eventData[FIELD_DESCRIPTION] : FieldValue.delete(),
+          resources: eventData[FIELD_RESOURCES] !== undefined ? eventData[FIELD_RESOURCES] : FieldValue.delete(),
+          responsible: eventData[FIELD_RESPONSIBLE] !== undefined ? eventData[FIELD_RESPONSIBLE] : FieldValue.delete(),
+          eventType: eventData[FIELD_EVENT_TYPE] !== undefined ? eventData[FIELD_EVENT_TYPE] : FieldValue.delete(),
+          participantInfo: eventData[FIELD_PARTICIPANT_INFO] !== undefined ? eventData[FIELD_PARTICIPANT_INFO] : FieldValue.delete(),
+          // Setze imageUrl nur, wenn sie sich geändert hat ODER wenn sie explizit gelöscht wurde (hier nicht implementiert, aber imageUrlToUpdate enthält den korrekten neuen/alten/null Wert)
+          // Wenn imageUrlToUpdate null ist (weil kein neues Bild und vorher keins da war oder es per X gelöscht wurde), wird es nicht gesetzt oder ggf. überschrieben, je nachdem wie man es implementiert.
+          // Sicherer ist es, das Feld nur zu setzen, wenn es einen Wert hat ODER explizit zu löschen.
+          // Diese einfache Version setzt immer den aktuellen Wert von imageUrlToUpdate:
+          imageUrl: imageUrlToUpdate // Kann neu, alt oder null sein
+      };
+
+       // Entferne Felder, die nicht aktualisiert werden sollen oder null sind (ausser imageUrl)
+      Object.keys(updatePayload).forEach(key => {
+        if (updatePayload[key] === undefined) { // FormData sendet leere Felder als '' nicht undefined
+          delete updatePayload[key];
         }
-
-        // Prepare update data (convert date string to Firestore Timestamp)
-        let eventDateTimestamp = null;
-        if (eventData[FIELD_DATE]) {
-             try {
-                 // Parse YYYY-MM-DD, assume UTC
-                 eventDateTimestamp = Timestamp.fromDate(new Date(eventData[FIELD_DATE] + 'T00:00:00Z'));
-             } catch(e) {
-                  return res.status(400).json({ success: false, message: 'Invalid date format. Please use YYYY-MM-DD.' });
-             }
-        } else {
-             return res.status(400).json({ success: false, message: 'Date is a required field.' });
+        // Speziell für imageUrl: Wenn imageUrlToUpdate null ist (weil kein neues Bild kam und vorher keins da war ODER es per X gelöscht wurde),
+        // wollen wir das Feld in Firestore evtl. löschen oder auf null setzen.
+        // Sicherer ist, es explizit mit FieldValue.delete() zu entfernen, wenn imageUrlToUpdate null ist.
+        if (key === 'imageUrl' && imageUrlToUpdate === null) {
+            updatePayload[key] = FieldValue.delete();
         }
+      });
 
-        // Create the update object with fields to be modified
-        // Exclude fields that shouldn't be updated here (like imageUrl, createdAt)
-        const updatePayload = {
-            title: eventData[FIELD_TITLE] || '',
-            eventDate: eventDateTimestamp,
-            startTime: eventData[FIELD_START_TIME] || '',
-            endTime: eventData[FIELD_END_TIME] || '',
-            description: eventData[FIELD_DESCRIPTION] || '',
-            resources: eventData[FIELD_RESOURCES] || '', // Comma-separated string from checkboxes
-            responsible: eventData[FIELD_RESPONSIBLE] || '',
-            eventType: eventData[FIELD_EVENT_TYPE] || 'Öffentlich',
-            participantInfo: eventData[FIELD_PARTICIPANT_INFO] || '',
-        };
 
-        // Perform the update in Firestore
-        await eventRef.update(updatePayload);
-        console.log(`Event ${eventId} successfully updated.`);
-        // Send success response
-        res.json({ success: true, message: "Event updated successfully." });
+      // Update in Firestore durchführen
+      await eventRef.update(updatePayload);
+      console.log(`Event ${eventId} erfolgreich aktualisiert.`);
+      res.json({ success: true, message: "Event erfolgreich aktualisiert." });
 
-    } catch (error) {
-        console.error(`Error in PUT /api/events/${eventId}:`, error.message, error.stack);
-        res.status(500).json({ success: false, message: "Error updating event." });
-    }
+  } catch (error) {
+      console.error(`Fehler in PUT /api/events/${eventId}:`, error.message, error.stack);
+      res.status(500).json({ success: false, message: "Fehler beim Aktualisieren des Events." });
+  }
 });
 
 

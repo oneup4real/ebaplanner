@@ -230,6 +230,12 @@
                             </div>
                             <p id="no-edit-image" class="form-text" style="display: none;">Kein Bild für dieses Event hochgeladen.</p>
                         </div>
+                        <div class="mb-3">
+                            <label for="edit-event-image" class="form-label">Bild ändern / hinzufügen (Optional)</label>
+                            <input class="form-control" type="file" id="edit-event-image" name="eventImage" accept="image/png, image/jpeg, image/gif">
+                            <div class="form-text">Wähle eine neue Datei aus, um das aktuelle Bild beim Speichern zu ersetzen.</div>
+                        </div>
+
                         <div id="edit-form-feedback" class="mt-3"></div>
                     </form>
                 </div>
@@ -272,6 +278,7 @@
         let editModalElement, editModal, editForm, saveEventButton, saveSpinner, editFormFeedback, editImagePreview, editEventIdInput, noEditImageText; // For Edit modal
         let deleteEventButton, deleteSpinner;
         let addDeletePreviewButton, editDeleteImageButton;
+        let editEventImageInput;
 
         // Backend API Base URL (Empty for same-origin deployment)
         const API_BASE_URL = '';
@@ -549,57 +556,80 @@
              if(editDeleteImageButton) editDeleteImageButton.style.display = 'none'; // Verstecke X-Knopf
              }
 
+             if (editEventImageInput) {
+                editEventImageInput.value = null;
+            }
 
-            document.getElementById('editEventModalLabel').textContent = `Edit Event: ${event[FIELD_TITLE] || 'Untitled'}`;
+            document.getElementById('editEventModalLabel').textContent = `Event bearbeiten: ${event[FIELD_TITLE] || 'Unbenannt'}`;
             editModal.show();
         }
 
         function handleSaveChanges() {
-            // No image update capability in this simplified version
-            if (!saveEventButton || !saveSpinner || !editFormFeedback) return;
-            saveSpinner.classList.remove('d-none'); saveEventButton.disabled = true; clearEditFormFeedback(); hideMessages();
+    // Prüfung auf benötigte Elemente (inkl. neuem Input)
+    if (!saveEventButton || !saveSpinner || !editFormFeedback || !editEventImageInput) return;
+    saveSpinner.classList.remove('d-none'); saveEventButton.disabled = true; clearEditFormFeedback(); hideMessages();
 
-            const eventId = document.getElementById('edit-id').value; // Get Firestore ID
+    const eventId = document.getElementById('edit-id').value; // Firestore ID holen
+    const newImageFile = editEventImageInput.files[0]; // Prüfe, ob eine NEUE Datei ausgewählt wurde
 
-            // Collect text data + resource checkboxes
-            const selectedResources = Array.from(document.querySelectorAll('#edit-resources-checkboxes input[type="checkbox"]:checked')).map(checkbox => checkbox.value).join(', ');
-            const typeElEdit = document.querySelector('input[name="edit-event-type"]:checked');
+    // FormData erstellen, da potenziell eine Datei dabei ist
+    const formData = new FormData();
 
-            // Create JSON payload (no image)
-            const updatedData = {
-                [FIELD_TITLE]: document.getElementById('edit-title').value.trim(),
-                [FIELD_DATE]: document.getElementById('edit-date').value, // YYYY-MM-DD
-                [FIELD_START_TIME]: document.getElementById('edit-startTime').value,
-                [FIELD_END_TIME]: document.getElementById('edit-endTime').value,
-                [FIELD_DESCRIPTION]: document.getElementById('edit-description').value.trim(),
-                [FIELD_RESOURCES]: selectedResources,
-                [FIELD_RESPONSIBLE]: document.getElementById('edit-responsible').value.trim(),
-                [FIELD_EVENT_TYPE]: typeElEdit ? typeElEdit.value : 'Öffentlich',
-                [FIELD_PARTICIPANT_INFO]: document.getElementById('edit-participantInfo').value.trim()
-            };
+    // Textfelder und Ressourcen-Checkboxen zu FormData hinzufügen
+    const dateValue = document.getElementById('edit-date').value; // Format YYYY-MM-DD
+    const typeElEdit = document.querySelector('input[name="edit-event-type"]:checked');
+    const selectedResources = Array.from(document.querySelectorAll('#edit-resources-checkboxes input[type="checkbox"]:checked')).map(checkbox => checkbox.value).join(', ');
 
-            if (!updatedData[FIELD_TITLE] || !updatedData[FIELD_DATE] || !eventId) {
-                showEditFormFeedback("Title and Date are required fields.", false); saveSpinner.classList.add('d-none'); saveEventButton.disabled = false; return;
-            }
+    // Verwende die FIELD_* Konstanten als Schlüssel für FormData
+    formData.append(FIELD_TITLE, document.getElementById('edit-title').value.trim());
+    formData.append(FIELD_DATE, dateValue);
+    formData.append(FIELD_START_TIME, document.getElementById('edit-startTime').value);
+    formData.append(FIELD_END_TIME, document.getElementById('edit-endTime').value);
+    formData.append(FIELD_DESCRIPTION, document.getElementById('edit-description').value.trim());
+    formData.append(FIELD_RESOURCES, selectedResources);
+    formData.append(FIELD_RESPONSIBLE, document.getElementById('edit-responsible').value.trim());
+    formData.append(FIELD_EVENT_TYPE, typeElEdit ? typeElEdit.value : 'Öffentlich'); // Backend erwartet diesen Wert evtl.
+    formData.append(FIELD_PARTICIPANT_INFO, document.getElementById('edit-participantInfo').value.trim());
 
-            // Fetch to Backend (PUT with JSON)
-            fetch(`${API_BASE_URL}/api/events/${eventId}`, { // Use ID
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(updatedData) // Send JSON
-            })
-            .then(response => response.json().then(data => ({ ok: response.ok, status: response.status, data })))
-            .then(({ ok, status, data }) => {
-                saveSpinner.classList.add('d-none'); saveEventButton.disabled = false;
-                if (ok && data.success) {
-                    editModal.hide(); showSuccess(data.message || "Event updated successfully."); refreshData();
-                } else { throw new Error(data.message || data.error || `Error ${status}`); }
-            })
-            .catch(err => {
-                saveSpinner.classList.add('d-none'); saveEventButton.disabled = false; console.error("Error updating event:", err);
-                showEditFormFeedback("Communication error: " + err.message, false);
-            });
+    // Validierung der Pflichtfelder
+    if (!formData.get(FIELD_TITLE) || !formData.get(FIELD_DATE) || !eventId) {
+        showEditFormFeedback("Titel und Datum sind Pflichtfelder.", false);
+        saveSpinner.classList.add('d-none');
+        saveEventButton.disabled = false;
+        return;
+    }
+
+    // Füge die NEUE Bilddatei nur hinzu, wenn eine ausgewählt wurde
+    if (newImageFile) {
+        // Der Schlüssel 'eventImage' muss mit multer.single('eventImage') im Backend übereinstimmen
+        formData.append('eventImage', newImageFile, newImageFile.name);
+    }
+
+    // Fetch an Backend senden (PUT mit FormData)
+    fetch(`<span class="math-inline">\{API\_BASE\_URL\}/api/events/</span>{eventId}`, { // Verwende Firestore ID
+        method: 'PUT',
+        body: formData // Sende das FormData Objekt
+        // KEINEN 'Content-Type' Header setzen, der Browser macht das für FormData korrekt!
+    })
+    .then(response => response.json().then(data => ({ ok: response.ok, status: response.status, data }))) // Parse JSON immer
+    .then(({ ok, status, data }) => {
+        saveSpinner.classList.add('d-none'); saveEventButton.disabled = false;
+        if (ok && data.success) {
+            editModal.hide();
+            showSuccess(data.message || "Event erfolgreich aktualisiert.");
+            refreshData(); // Daten neu laden, um die Änderungen (auch neues Bild) anzuzeigen
+        } else {
+            // Fehler vom Server
+            throw new Error(data.message || data.error || `Fehler ${status}`);
         }
+    })
+    .catch(err => {
+        // Netzwerkfehler oder Fehler vom Server
+        saveSpinner.classList.add('d-none'); saveEventButton.disabled = false;
+        console.error("Fehler beim Aktualisieren:", err);
+        showEditFormFeedback("Kommunikationsfehler: " + err.message, false);
+    });
+    }   
         function showEditFormFeedback(message, isSuccess) { /* ... implement or keep ... */ }
         function clearEditFormFeedback() { /* ... implement or keep, clear preview ... */ }
 
@@ -677,9 +707,9 @@
         // --- Initialization and Event Listeners ---
         document.addEventListener('DOMContentLoaded', function () {
             // Get DOM references (ensure all new IDs are included)
-            eventView = document.getElementById('event-view'); addFormView = document.getElementById('add-form-view'); helpView = document.getElementById('help-view'); listElement = document.getElementById('event-liste'); loadingElement = document.getElementById('loading'); errorElement = document.getElementById('error-message'); successElement = document.getElementById('success-message'); searchTermInput = document.getElementById('search-term'); monthFilterSelect = document.getElementById('month-filter'); yearFilterSelect = document.getElementById('year-filter'); resetFiltersButton = document.getElementById('reset-filters'); typeFilterSelect = document.getElementById('type-filter'); addForm = document.getElementById('addEventForm'); addEventButton = document.getElementById('addEventButton'); addSpinner = addEventButton?.querySelector('.spinner-border'); addFormFeedback = document.getElementById('add-form-feedback'); addEventImageInput = document.getElementById('add-event-image'); addImagePreview = document.getElementById('add-image-preview'); menuShowList = document.getElementById('menu-show-list'); menuShowAddForm = document.getElementById('menu-show-add-form'); menuShowHelp = document.getElementById('menu-show-help'); editModalElement = document.getElementById('editEventModal'); if (editModalElement) editModal = new bootstrap.Modal(editModalElement); editForm = document.getElementById('editEventForm'); saveEventButton = document.getElementById('saveEventButton'); saveSpinner = saveEventButton?.querySelector('.spinner-border'); editFormFeedback = document.getElementById('edit-form-feedback'); editImagePreview = document.getElementById('edit-image-preview'); noEditImageText = document.getElementById('no-edit-image'); editEventIdInput = document.getElementById('edit-id'); deleteEventButton = document.getElementById('deleteEventButton'); deleteSpinner = deleteEventButton?.querySelector('.spinner-border'); addDeletePreviewButton = document.getElementById('add-delete-preview-button'); editDeleteImageButton = document.getElementById('edit-delete-image-button');
+            eventView = document.getElementById('event-view'); addFormView = document.getElementById('add-form-view'); helpView = document.getElementById('help-view'); listElement = document.getElementById('event-liste'); loadingElement = document.getElementById('loading'); errorElement = document.getElementById('error-message'); successElement = document.getElementById('success-message'); searchTermInput = document.getElementById('search-term'); monthFilterSelect = document.getElementById('month-filter'); yearFilterSelect = document.getElementById('year-filter'); resetFiltersButton = document.getElementById('reset-filters'); typeFilterSelect = document.getElementById('type-filter'); addForm = document.getElementById('addEventForm'); addEventButton = document.getElementById('addEventButton'); addSpinner = addEventButton?.querySelector('.spinner-border'); addFormFeedback = document.getElementById('add-form-feedback'); addEventImageInput = document.getElementById('add-event-image'); addImagePreview = document.getElementById('add-image-preview'); menuShowList = document.getElementById('menu-show-list'); menuShowAddForm = document.getElementById('menu-show-add-form'); menuShowHelp = document.getElementById('menu-show-help'); editModalElement = document.getElementById('editEventModal'); if (editModalElement) editModal = new bootstrap.Modal(editModalElement); editForm = document.getElementById('editEventForm'); saveEventButton = document.getElementById('saveEventButton'); saveSpinner = saveEventButton?.querySelector('.spinner-border'); editFormFeedback = document.getElementById('edit-form-feedback'); editImagePreview = document.getElementById('edit-image-preview'); noEditImageText = document.getElementById('no-edit-image'); editEventIdInput = document.getElementById('edit-id'); deleteEventButton = document.getElementById('deleteEventButton'); deleteSpinner = deleteEventButton?.querySelector('.spinner-border'); addDeletePreviewButton = document.getElementById('add-delete-preview-button'); editDeleteImageButton = document.getElementById('edit-delete-image-button');editEventImageInput = document.getElementById('edit-event-image');
             // Check critical elements
-            if (!listElement || !editModalElement || !addForm || !editForm || !deleteEventButton || !addEventImageInput || !addImagePreview || !editImagePreview || !editEventIdInput || !noEditImageText || !addDeletePreviewButton || !editDeleteImageButton) {
+            if (!listElement || !editModalElement || !addForm || !editForm || !deleteEventButton || !addEventImageInput || !addImagePreview || !editImagePreview || !editEventIdInput || !noEditImageText || !addDeletePreviewButton || !editDeleteImageButton || !editEventImageInput) {
                 console.error("Critical UI elements missing! Check HTML IDs for forms, modals, image previews, and hidden ID input.");
                 showError({ message: "Initialization Error: Core UI elements missing." }); return;
             }
