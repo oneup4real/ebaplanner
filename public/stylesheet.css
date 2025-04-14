@@ -264,7 +264,8 @@ h1 {
  .image-preview {
    display: none; /* Hidden by default */
    max-width: 200px; /* Max width */
-   max-height: 200px; /* Max height */
+   /* max-height: 200px; /* Max height */
+   height:auto
    margin-top: 10px; /* Space above */
    border-radius: 8px; /* Rounded corners */
    border: 1px solid #dee2e6; /* Light border */
@@ -306,4 +307,9 @@ h1 {
   }
  #edit-form-feedback.alert { /* Combined */
    font-size: 0.9rem; padding: 0.75rem 1rem; margin-bottom: 0; border-radius: 8px; text-align: center; font-weight: 500;
+ }
+
+ #add-delete-preview-button:hover,
+ #edit-delete-image-button:hover {
+    opacity: 0.8;
  }

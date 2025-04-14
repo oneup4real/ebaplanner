@@ -299,6 +299,56 @@ app.put('/api/events/:id', async (req, res) => {
     }
 });
 
+
+app.delete('/api/events/:id/image', async (req, res) => {
+  const eventId = req.params.id;
+  console.log(`API DELETE /api/events/${eventId}/image called`);
+
+  if (!eventId) {
+      return res.status(400).json({ error: 'Event ID missing.' });
+  }
+
+  try {
+      const eventRef = eventsCollection.doc(eventId);
+      const doc = await eventRef.get();
+
+      if (!doc.exists) {
+          return res.status(404).json({ success: false, message: 'Event not found.' });
+      }
+
+      const eventData = doc.data();
+
+      // Prüfen, ob überhaupt ein Bild vorhanden ist
+      if (!eventData.imageUrl) {
+          console.log(`Event ${eventId} has no image to delete.`);
+          return res.json({ success: true, message: 'No image found for this event.' });
+      }
+
+      // 1. Bild aus GCS löschen
+      console.log(`Attempting to delete image from GCS: ${eventData.imageUrl}`);
+      await deleteFromGcs(eventData.imageUrl); // Uses existing helper function
+
+      // 2. Feld in Firestore entfernen
+      console.log(`Attempting to remove imageUrl field from Firestore document ${eventId}`);
+      await eventRef.update({
+          imageUrl: FieldValue.delete() // FieldValue.delete() entfernt das Feld
+      });
+
+      console.log(`Image for event ${eventId} deleted successfully.`);
+      res.json({ success: true, message: 'Image deleted successfully.' });
+
+  } catch (error) {
+      console.error(`Error in DELETE /api/events/${eventId}/image:`, error.message);
+      if (error.response?.data?.error) {
+         console.error("Google API Error Details:", JSON.stringify(error.response.data.error, null, 2));
+      } else {
+         console.error("Stack:", error.stack);
+      }
+      res.status(500).json({ success: false, message: "Error deleting image." });
+  }
+});
+
+
 // DELETE /api/events/:id - Deletes an Event from Firestore & its image from GCS
 app.delete('/api/events/:id', async (req, res) => {
     const eventId = req.params.id; // Get Firestore document ID

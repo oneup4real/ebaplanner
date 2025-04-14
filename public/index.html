@@ -136,9 +136,13 @@
                             </div>
                     </div>
                     <div class="mb-3">
-                      <label for="add-event-image" class="form-label">Upload Image (Optional)</label>
-                      <input class="form-control" type="file" id="add-event-image" name="eventImage" accept="image/png, image/jpeg, image/gif">
-                      <img id="add-image-preview" src="#" alt="Image Preview" class="image-preview" /> </div>
+                        <label for="add-event-image" class="form-label">Bild hochladen (Optional)</label>
+                        <div style="position: relative; max-width: 205px;"> <input class="form-control" type="file" id="add-event-image" name="eventImage" accept="image/png, image/jpeg, image/gif">
+                            <img id="add-image-preview" src="#" alt="Bildvorschau" class="image-preview mt-2" /> <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 p-1 lh-1" id="add-delete-preview-button" style="display: none; transform: translate(30%, -30%); border-radius: 50%;" aria-label="Bildauswahl zurücksetzen">
+                                <i class="bi bi-x-lg" style="font-size: 0.7rem; vertical-align: top;"></i>
+                            </button>
+                        </div>
+                    </div>
                     <div class="d-flex justify-content-end"> <button type="submit" class="btn btn-success"
                             id="addEventButton"> <span class="spinner-border spinner-border-sm d-none me-1"></span><i
                                 class="bi bi-plus-lg me-1"></i> Add Event </button> </div>
@@ -217,9 +221,14 @@
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Current Image:</label>
-                            <img id="edit-image-preview" src="#" alt="Current Event Image" class="image-preview" style="display: none;" />
-                            <p id="no-edit-image" class="form-text" style="display: none;">No image uploaded for this event.</p>
+                            <label class="form-label">Aktuelles Bild:</label>
+                            <div style="position: relative; max-width: 205px;">
+                                <img id="edit-image-preview" src="#" alt="Aktuelles Event Bild" class="image-preview" style="display: none;" />
+                                <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 p-1 lh-1" id="edit-delete-image-button" style="display: none; transform: translate(30%, -30%); border-radius: 50%;" aria-label="Bild löschen">
+                                     <i class="bi bi-x-lg" style="font-size: 0.7rem; vertical-align: top;"></i>
+                                </button>
+                            </div>
+                            <p id="no-edit-image" class="form-text" style="display: none;">Kein Bild für dieses Event hochgeladen.</p>
                         </div>
                         <div id="edit-form-feedback" class="mt-3"></div>
                     </form>
@@ -262,6 +271,7 @@
         let menuShowList, menuShowAddForm, menuShowHelp;
         let editModalElement, editModal, editForm, saveEventButton, saveSpinner, editFormFeedback, editImagePreview, editEventIdInput, noEditImageText; // For Edit modal
         let deleteEventButton, deleteSpinner;
+        let addDeletePreviewButton, editDeleteImageButton;
 
         // Backend API Base URL (Empty for same-origin deployment)
         const API_BASE_URL = '';
@@ -527,6 +537,19 @@
                 editImagePreview.style.display = 'none'; editImagePreview.src = '#'; noEditImageText.style.display = 'block';
             }
 
+            if (event[FIELD_IMAGE_URL]) {
+                 editImagePreview.src = event[FIELD_IMAGE_URL];
+                 editImagePreview.style.display = 'block';
+                 noEditImageText.style.display = 'none';
+            if(editDeleteImageButton) editDeleteImageButton.style.display = 'inline-block'; // Zeige X-Knopf
+            } else {
+                 editImagePreview.style.display = 'none';
+                 editImagePreview.src = '#';
+                 noEditImageText.style.display = 'block';
+             if(editDeleteImageButton) editDeleteImageButton.style.display = 'none'; // Verstecke X-Knopf
+             }
+
+
             document.getElementById('editEventModalLabel').textContent = `Edit Event: ${event[FIELD_TITLE] || 'Untitled'}`;
             editModal.show();
         }
@@ -654,10 +677,9 @@
         // --- Initialization and Event Listeners ---
         document.addEventListener('DOMContentLoaded', function () {
             // Get DOM references (ensure all new IDs are included)
-            eventView = document.getElementById('event-view'); addFormView = document.getElementById('add-form-view'); helpView = document.getElementById('help-view'); listElement = document.getElementById('event-liste'); loadingElement = document.getElementById('loading'); errorElement = document.getElementById('error-message'); successElement = document.getElementById('success-message'); searchTermInput = document.getElementById('search-term'); monthFilterSelect = document.getElementById('month-filter'); yearFilterSelect = document.getElementById('year-filter'); resetFiltersButton = document.getElementById('reset-filters'); typeFilterSelect = document.getElementById('type-filter'); addForm = document.getElementById('addEventForm'); addEventButton = document.getElementById('addEventButton'); addSpinner = addEventButton?.querySelector('.spinner-border'); addFormFeedback = document.getElementById('add-form-feedback'); addEventImageInput = document.getElementById('add-event-image'); addImagePreview = document.getElementById('add-image-preview'); menuShowList = document.getElementById('menu-show-list'); menuShowAddForm = document.getElementById('menu-show-add-form'); menuShowHelp = document.getElementById('menu-show-help'); editModalElement = document.getElementById('editEventModal'); if (editModalElement) editModal = new bootstrap.Modal(editModalElement); editForm = document.getElementById('editEventForm'); saveEventButton = document.getElementById('saveEventButton'); saveSpinner = saveEventButton?.querySelector('.spinner-border'); editFormFeedback = document.getElementById('edit-form-feedback'); editImagePreview = document.getElementById('edit-image-preview'); noEditImageText = document.getElementById('no-edit-image'); editEventIdInput = document.getElementById('edit-id'); deleteEventButton = document.getElementById('deleteEventButton'); deleteSpinner = deleteEventButton?.querySelector('.spinner-border');
-
+            eventView = document.getElementById('event-view'); addFormView = document.getElementById('add-form-view'); helpView = document.getElementById('help-view'); listElement = document.getElementById('event-liste'); loadingElement = document.getElementById('loading'); errorElement = document.getElementById('error-message'); successElement = document.getElementById('success-message'); searchTermInput = document.getElementById('search-term'); monthFilterSelect = document.getElementById('month-filter'); yearFilterSelect = document.getElementById('year-filter'); resetFiltersButton = document.getElementById('reset-filters'); typeFilterSelect = document.getElementById('type-filter'); addForm = document.getElementById('addEventForm'); addEventButton = document.getElementById('addEventButton'); addSpinner = addEventButton?.querySelector('.spinner-border'); addFormFeedback = document.getElementById('add-form-feedback'); addEventImageInput = document.getElementById('add-event-image'); addImagePreview = document.getElementById('add-image-preview'); menuShowList = document.getElementById('menu-show-list'); menuShowAddForm = document.getElementById('menu-show-add-form'); menuShowHelp = document.getElementById('menu-show-help'); editModalElement = document.getElementById('editEventModal'); if (editModalElement) editModal = new bootstrap.Modal(editModalElement); editForm = document.getElementById('editEventForm'); saveEventButton = document.getElementById('saveEventButton'); saveSpinner = saveEventButton?.querySelector('.spinner-border'); editFormFeedback = document.getElementById('edit-form-feedback'); editImagePreview = document.getElementById('edit-image-preview'); noEditImageText = document.getElementById('no-edit-image'); editEventIdInput = document.getElementById('edit-id'); deleteEventButton = document.getElementById('deleteEventButton'); deleteSpinner = deleteEventButton?.querySelector('.spinner-border'); addDeletePreviewButton = document.getElementById('add-delete-preview-button'); editDeleteImageButton = document.getElementById('edit-delete-image-button');
             // Check critical elements
-            if (!listElement || !editModalElement || !addForm || !editForm || !deleteEventButton || !addEventImageInput || !addImagePreview || !editImagePreview || !editEventIdInput || !noEditImageText) {
+            if (!listElement || !editModalElement || !addForm || !editForm || !deleteEventButton || !addEventImageInput || !addImagePreview || !editImagePreview || !editEventIdInput || !noEditImageText || !addDeletePreviewButton || !editDeleteImageButton) {
                 console.error("Critical UI elements missing! Check HTML IDs for forms, modals, image previews, and hidden ID input.");
                 showError({ message: "Initialization Error: Core UI elements missing." }); return;
             }
@@ -672,26 +694,106 @@
             saveEventButton.addEventListener('click', handleSaveChanges);
             deleteEventButton.addEventListener('click', handleDeleteEvent);
             listElement.addEventListener('click', handleTileClick);
+            if (editDeleteImageButton) {
+                editDeleteImageButton.addEventListener('click', handleDeleteImage);
+            }
+            
 
              // Image preview listener for Add form
-             if (addEventImageInput && addImagePreview) {
-                addEventImageInput.addEventListener('change', function(e) {
-                    const file = e.target.files[0];
-                    if (file && file.type.startsWith('image/')) {
-                        const reader = new FileReader();
-                        reader.onload = function(loadEvent) { addImagePreview.src = loadEvent.target.result; addImagePreview.style.display = 'block'; }
-                        reader.readAsDataURL(file);
-                    } else {
-                        addEventImageInput.value = null; addImagePreview.src = '#'; addImagePreview.style.display = 'none';
-                    }
-                });
-             }
+             if (addEventImageInput && addImagePreview && addDeletePreviewButton) {
+    addEventImageInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        // currentAddFile = file; // Behalte ggf. Referenz, falls gebraucht
+
+        if (file && file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = function(loadEvent) {
+                addImagePreview.src = loadEvent.target.result;
+                addImagePreview.style.display = 'block';
+                addDeletePreviewButton.style.display = 'inline-block'; // Zeige Knopf
+            }
+            reader.readAsDataURL(file);
+        } else {
+            // Kein Bild oder ungültiger Typ
+            addEventImageInput.value = null; // Wichtig: Auswahl zurücksetzen
+            // currentAddFile = null;
+            addImagePreview.src = '#';
+            addImagePreview.style.display = 'none';
+            addDeletePreviewButton.style.display = 'none'; // Verstecke Knopf
+        }
+    });
+
+    // Listener für den "Vorschau Löschen"-Knopf im Add-Formular
+    addDeletePreviewButton.addEventListener('click', () => {
+        addEventImageInput.value = null; // Löscht die Dateiauswahl
+        // currentAddFile = null;
+        addImagePreview.src = '#';
+        addImagePreview.style.display = 'none'; // Versteckt Vorschau
+        addDeletePreviewButton.style.display = 'none'; // Versteckt sich selbst
+    });
+ }
 
             // Initial Setup
             console.log("DOM loaded. Initializing application...");
             showView('event-view');
             refreshData();
         });
+
+        /** Behandelt den Klick auf den Bild-Löschen-Knopf im Edit-Modal */
+async function handleDeleteImage() {
+    if (!editDeleteImageButton) return;
+    const eventIdInput = document.getElementById('edit-id');
+    const eventId = eventIdInput ? eventIdInput.value : null;
+    const currentImageUrl = editImagePreview.src;
+
+    if (!eventId || !currentImageUrl || currentImageUrl.startsWith('data:') || currentImageUrl.endsWith('#')) {
+        showEditFormFeedback("Kein gespeichertes Bild zum Löschen vorhanden oder Event-ID fehlt.", false);
+        return;
+    }
+
+    if (confirm(`Möchtest du das Bild für dieses Event wirklich löschen?\nDas Event selbst bleibt bestehen.`)) {
+        // Zeige Ladezustand (optional, da schnell)
+        editDeleteImageButton.disabled = true;
+        // Optional: add class to show spinner inside button
+        hideMessages();
+        clearEditFormFeedback();
+
+        try {
+            // Rufe den NEUEN Backend-Endpunkt auf
+            const response = await fetch(`<span class="math-inline">\{API\_BASE\_URL\}/api/events/</span>{eventId}/image`, {
+                method: 'DELETE'
+            });
+            const data = await response.json(); // Immer JSON parsen
+            if (!response.ok) {
+                throw new Error(data.message || data.error || `HTTP Error ${response.status}`);
+            }
+
+            // Erfolg: UI sofort aktualisieren
+            editImagePreview.src = '#';
+            editImagePreview.style.display = 'none';
+            editDeleteImageButton.style.display = 'none';
+            if(noEditImageText) noEditImageText.style.display = 'block';
+            showSuccess("Bild erfolgreich gelöscht."); // Globale Nachricht
+
+            // Wichtig: Lokale Daten aktualisieren, damit bei erneutem Öffnen
+            // des Modals (ohne Refresh) das Bild auch weg ist.
+            const eventIndex = allEvents.findIndex(e => e.id === eventId);
+            if (eventIndex > -1) {
+                allEvents[eventIndex][FIELD_IMAGE_URL] = null;
+                // Optional: Wenn Details gerade angezeigt werden, diese neu rendern
+                // oder auf den nächsten refreshData() warten.
+            }
+
+        } catch (error) {
+            console.error("Fehler beim Löschen des Bildes:", error);
+            showEditFormFeedback("Fehler beim Löschen des Bildes: " + error.message, false); // Fehler im Modal anzeigen
+        } finally {
+            // Knopf wieder aktivieren
+            editDeleteImageButton.disabled = false;
+            // Optional: Remove spinner class from button
+        }
+    }
+}
 
     </script>
 </body>
