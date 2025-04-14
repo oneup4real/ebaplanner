@@ -335,15 +335,23 @@
 
         /** Updates UI elements based on loggedIn state */
         function updateUIAfterLoginStateChange() {
+            // Controls visibility based on login state
             const protectedMenuItems = [menuShowAddForm];
+            const logoutMenuItem = logoutButton;
+
             if (isLoggedIn) {
                 protectedMenuItems.forEach(el => { if(el) el.style.display = 'block'; });
-                if (logoutButton) logoutButton.style.display = 'block';
+                if (logoutMenuItem) logoutMenuItem.style.display = 'block';
             } else {
                 protectedMenuItems.forEach(el => { if(el) el.style.display = 'none'; });
-                if (logoutButton) logoutButton.style.display = 'none';
+                if (logoutMenuItem) logoutMenuItem.style.display = 'none';
             }
-            document.querySelectorAll('.edit-event-btn').forEach(btn => btn.style.display = isLoggedIn ? 'inline-block' : 'none');
+            // Edit buttons on tiles are always rendered, but click handler checks login
+            document.querySelectorAll('.edit-event-btn').forEach(btn => {
+                // We keep the button in the DOM, the click handler decides action
+                // Optionally, add/remove a class for styling if needed
+                // btn.classList.toggle('disabled-visually', !isLoggedIn);
+            });
         }
 
 
