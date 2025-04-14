@@ -20,7 +20,7 @@
         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
             <li><a class="dropdown-item" href="#" id="menu-show-list"><i
                         class="bi bi-calendar-event-fill me-2"></i>Event Übersicht</a></li>
-            <li><a class="dropdown-item" href="#" id="menu-show-add-form" style="display: none;"><i
+            <li><a class="dropdown-item" href="#" id="menu-show-add-form"><i
                         class="bi bi-plus-circle-fill me-2"></i>Event erfassen</a></li>
             <li>
                 <hr class="dropdown-divider">
@@ -157,7 +157,6 @@
 
     <script>
         // --- Constants for Backend Field Names ---
-        // Use keys expected by the backend API
         const FIELD_DATE = 'eventDate';
         const FIELD_TITLE = 'title';
         const FIELD_START_TIME = 'startTime';
@@ -165,7 +164,7 @@
         const FIELD_DESCRIPTION = 'description';
         const FIELD_RESOURCES = 'resources';
         const FIELD_RESPONSIBLE = 'responsible';
-        const FIELD_EVENT_TYPE = 'eventType'; // Stores 'Öffentlich' or 'Privat'
+        const FIELD_EVENT_TYPE = 'eventType';
         const FIELD_PARTICIPANT_INFO = 'participantInfo';
         const FIELD_IMAGE_URL = 'imageUrl';
 
@@ -174,7 +173,6 @@
         let isLoggedIn = false; // Track login state
 
         // --- DOM References ---
-        // Declare all variables that will hold DOM elements globally
         let eventView, addFormView, helpView, listElement, loadingElement, errorElement, successElement;
         let searchTermInput, monthFilterSelect, yearFilterSelect, resetFiltersButton, typeFilterSelect;
         let addForm, addEventButton, addSpinner, addFormFeedback, addEventImageInput, addImagePreview, addGanzerRaumCheckbox, addDeletePreviewButton;
@@ -333,24 +331,28 @@
             showLoginFeedback("Du wurdest ausgeloggt.", true); // German Text
         }
 
-        /** Updates UI elements based on loggedIn state */
+        /** Updates UI elements based on loggedIn state - CORRECTED */
         function updateUIAfterLoginStateChange() {
-            // Controls visibility based on login state
-            const protectedMenuItems = [menuShowAddForm];
+            const addEventMenuItem = menuShowAddForm;
             const logoutMenuItem = logoutButton;
 
-            if (isLoggedIn) {
-                protectedMenuItems.forEach(el => { if(el) el.style.display = 'block'; });
-                if (logoutMenuItem) logoutMenuItem.style.display = 'block';
-            } else {
-                protectedMenuItems.forEach(el => { if(el) el.style.display = 'none'; });
-                if (logoutMenuItem) logoutMenuItem.style.display = 'none';
+            // Always ensure Add Event menu item is potentially visible
+            if (addEventMenuItem) {
+                addEventMenuItem.style.display = 'block';
             }
-            // Edit buttons on tiles are always rendered, but click handler checks login
+
+            // Only toggle the Logout button visibility
+            if (isLoggedIn) {
+                if (logoutMenuItem) logoutMenuItem.style.display = 'block'; // Show logout
+            } else {
+                if (logoutMenuItem) logoutMenuItem.style.display = 'none'; // Hide logout
+            }
+
+            // Edit buttons are always rendered, click handler checks login state
             document.querySelectorAll('.edit-event-btn').forEach(btn => {
-                // We keep the button in the DOM, the click handler decides action
-                // Optionally, add/remove a class for styling if needed
-                // btn.classList.toggle('disabled-visually', !isLoggedIn);
+                 // Ensure button is visible (might have been hidden by previous logic)
+                 // The click handler will decide if action is allowed
+                 btn.style.display = 'inline-block';
             });
         }
 
@@ -406,7 +408,7 @@
                     ${typeBadgeHTML ? `<div class="mb-2">${typeBadgeHTML}</div>` : ''}
                     <div class="d-flex justify-content-between align-items-start">
                         <h5 class="mb-1 flex-grow-1">${title || 'Unbenannter Event'}</h5>
-                        <button type="button" class="btn btn-sm btn-outline-secondary ms-2 edit-event-btn" data-id="${event.id}" aria-label="Bearbeiten" style="display: ${isLoggedIn ? 'inline-block' : 'none'};"><i class="bi bi-pencil"></i></button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary ms-2 edit-event-btn" data-id="${event.id}" aria-label="Bearbeiten"><i class="bi bi-pencil"></i></button>
                     </div>
                     <div class="row align-items-center mt-2">
                         <div class="col-md-6"> <div class="d-flex flex-column"> <small class="fw-bold">${displayDate}</small> <small class="mb-2">${timeString}</small> <small>${responsible ? `<strong class="me-1">Verantwortlich:</strong>${responsible}` : ''}</small> </div> </div>
@@ -419,6 +421,8 @@
                     `;
                 listElement.appendChild(eventElement);
              });
+             // Ensure UI state (like button visibility) is correct after rendering
+             updateUIAfterLoginStateChange();
         }
 
         /** Handles clicks within the event list for expand/collapse or edit trigger */
@@ -534,7 +538,7 @@
             if (loadingElement) loadingElement.classList.remove('d-none'); if (listElement) listElement.innerHTML = ''; hideMessages();
             try {
                 const response = await fetch(`${API_BASE_URL}/api/events`);
-                if (!response.ok) { const errData = await response.json().catch(() => ({ error: `HTTP Error ${response.status}: ${response.statusText}` })); throw new Error(errData.error || `HTTP Error ${response.status}`); }
+                if (!response.ok) { const errData = await response.json().catch(() => ({ error: `HTTP Fehler ${response.status}: ${response.statusText}` })); throw new Error(errData.error || `HTTP Fehler ${response.status}`); } // German Text
                 const data = await response.json(); if (!Array.isArray(data)) { throw new Error("Unerwartetes Datenformat vom Server."); } // German Text
                 allEvents = data; console.log("Events stored:", allEvents.length); // Keep log English
                 populateFilters(allEvents); applyFiltersAndRender(); updateUIAfterLoginStateChange(); console.log("Render complete."); // Keep log English
