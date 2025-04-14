@@ -1,6 +1,6 @@
 // server.js (Complete Single Container Version - Firestore/GCS Backend + Static Frontend)
 
-// Load .env file for local development environment variables (must be the first line)
+// Load .env file for local development environment variables (must be the first lnine)
 require('dotenv').config();
 
 const express = require('express');
