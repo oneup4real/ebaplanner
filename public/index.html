@@ -144,526 +144,566 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // --- Constants for Backend Field Names ---
-        // Use keys expected by the backend API (lowercase often preferred for JSON/Firestore)
-        const FIELD_DATE = 'eventDate'; // Expects/Sends YYYY-MM-DD format
-        const FIELD_TITLE = 'title';
-        const FIELD_START_TIME = 'startTime';
-        const FIELD_END_TIME = 'endTime';
-        const FIELD_DESCRIPTION = 'description';
-        const FIELD_RESOURCES = 'resources'; // Comma-separated string or 'Ganzer Raum'
-        const FIELD_RESPONSIBLE = 'responsible';
-        const FIELD_EVENT_TYPE = 'eventType'; // Stores 'Öffentlich' or 'Privat'
-        const FIELD_PARTICIPANT_INFO = 'participantInfo';
-        const FIELD_IMAGE_URL = 'imageUrl'; // Field name for the image URL from GCS
+      // --- Constants for Backend Field Names ---
+// Use keys expected by the backend API (lowercase often preferred for JSON/Firestore)
+const FIELD_DATE = 'eventDate'; // Expects/Sends YYYY-MM-DD format
+const FIELD_TITLE = 'title';
+const FIELD_START_TIME = 'startTime';
+const FIELD_END_TIME = 'endTime';
+const FIELD_DESCRIPTION = 'description';
+const FIELD_RESOURCES = 'resources'; // Comma-separated string or 'Ganzer Raum'
+const FIELD_RESPONSIBLE = 'responsible';
+const FIELD_EVENT_TYPE = 'eventType'; // Stores 'Öffentlich' or 'Privat'
+const FIELD_PARTICIPANT_INFO = 'participantInfo';
+const FIELD_IMAGE_URL = 'imageUrl'; // Field name for the image URL from GCS
 
-        // --- Global Variables ---
-        let allEvents = [];
-        let isLoggedIn = false; // Track login state
+// --- Global Variables ---
+let allEvents = []; // Stores all fetched events
+let isLoggedIn = false; // Track login state
 
-        // --- DOM References ---
-        // Declare all variables that will hold DOM elements globally or module-scoped
-        let eventView, addFormView, helpView, listElement, loadingElement, errorElement, successElement;
-        let searchTermInput, monthFilterSelect, yearFilterSelect, resetFiltersButton, typeFilterSelect;
-        let addForm, addEventButton, addSpinner, addFormFeedback, addEventImageInput, addImagePreview, addGanzerRaumCheckbox, addDeletePreviewButton;
-        let menuShowList, menuShowAddForm, menuShowHelp, logoutButton;
-        let editModalElement, editModal, editForm, saveEventButton, saveSpinner, editFormFeedback, editImagePreview, noEditImageText, editEventIdInput, editGanzerRaumCheckbox, editEventImageInput, editDeleteImageButton;
-        let deleteEventButton, deleteSpinner;
-        let loginView, loginPasswordInput, loginButton, loginFeedback;
+// --- DOM References ---
+// Declare all variables that will hold DOM elements globally or module-scoped
+let eventView, addFormView, helpView, listElement, loadingElement, errorElement, successElement;
+let searchTermInput, monthFilterSelect, yearFilterSelect, resetFiltersButton, typeFilterSelect;
+let addForm, addEventButton, addSpinner, addFormFeedback, addEventImageInput, addImagePreview, addGanzerRaumCheckbox, addDeletePreviewButton;
+let menuShowList, menuShowAddForm, menuShowHelp, logoutButton;
+let editModalElement, editModal, editForm, saveEventButton, saveSpinner, editFormFeedback, editImagePreview, noEditImageText, editEventIdInput, editGanzerRaumCheckbox, editEventImageInput, editDeleteImageButton;
+let deleteEventButton, deleteSpinner;
+let loginView, loginPasswordInput, loginButton, loginFeedback;
 
-        // Backend API Base URL (Empty for same-origin deployment in monolith)
-        const API_BASE_URL = '';
+// Backend API Base URL (Empty for same-origin deployment in monolith)
+const API_BASE_URL = '';
 
-        // --- UI Helper Functions ---
+// --- UI Helper Functions ---
 
-        /** Displays the specified view and hides others */
-        function showView(viewId) {
-            const views = [loginView, eventView, addFormView, helpView];
-            views.forEach(view => {
-                if (view) {
-                    if (view.id === viewId) { view.classList.remove('d-none'); }
-                    else { view.classList.add('d-none'); }
-                } else { console.warn(`View element for ${viewId} not found.`); }
-            });
-            hideMessages();
-            if (viewId === 'add-form-view') {
-                 if (addForm) addForm.reset();
-                 clearAddFormFeedback();
-            }
-        }
-
-        /** Shows a global error message */
-        function showError(error) {
-             if (!errorElement) return;
-             console.error("Error displayed:", error);
-             let t = "An unknown error occurred.";
-             if (typeof error === 'string') t = error; else if (error && error.message) t = error.message; else if (error && error.error) t = error.error; else if (error && error.name) t = `Error: ${error.name}`;
-             hideMessages(); errorElement.textContent = `Error: ${t}`; errorElement.classList.remove('d-none');
-         }
-        /** Shows a global success message */
-         function showSuccess(message) {
-             if (!successElement) return;
-             hideMessages(); successElement.textContent = message; successElement.classList.remove('d-none');
-             setTimeout(hideMessages, 4000);
-         }
-        /** Shows a global loading/info message */
-         function showLoadingFeedback(message) {
-             if (!successElement) return;
-             hideMessages(); successElement.textContent = message; successElement.classList.remove('alert-success'); successElement.classList.add('alert-info'); successElement.classList.remove('d-none');
-         }
-        /** Hides global messages */
-         function hideMessages() {
-             if (errorElement) errorElement.classList.add('d-none');
-             if (successElement) { successElement.classList.add('d-none'); successElement.classList.remove('alert-info'); successElement.classList.add('alert-success'); }
-             hideLoginFeedback(); // Also hide login specific feedback
-         }
-        /** Resets all filters */
-         function resetAllFilters() {
-             if (searchTermInput) searchTermInput.value = ''; if (monthFilterSelect) monthFilterSelect.value = ''; if (yearFilterSelect) yearFilterSelect.value = ''; if (typeFilterSelect) typeFilterSelect.value = '';
-             applyFiltersAndRender();
-         }
-
-         /** Clears feedback and resets specific add form elements */
-         function clearAddFormFeedback() {
-            if (addFormFeedback) { addFormFeedback.textContent = ''; addFormFeedback.className = 'mt-3'; }
-            if (addEventImageInput) { addEventImageInput.value = null; }
-            if (addImagePreview) { addImagePreview.style.display = 'none'; addImagePreview.src = '#'; }
-            if (addDeletePreviewButton) { addDeletePreviewButton.style.display = 'none'; }
-            const addOtherCheckboxes = document.querySelectorAll('#add-resources-checkboxes .resource-checkbox');
-            addOtherCheckboxes.forEach(cb => { cb.checked = false; cb.disabled = false; });
-            if (addGanzerRaumCheckbox) {
-                addGanzerRaumCheckbox.checked = false;
-                toggleResourceCheckboxes(addGanzerRaumCheckbox, '#add-resources-checkboxes'); // Ensure others are enabled
-            }
-            const addTypePublic = document.getElementById('add-type-public');
-            if (addTypePublic) addTypePublic.checked = true;
-         }
-
-         /** Clears feedback and resets specific edit form elements */
-         function clearEditFormFeedback() {
-             if (editFormFeedback) { editFormFeedback.textContent = ''; editFormFeedback.className = 'mt-3'; }
-             if (editImagePreview) { editImagePreview.style.display = 'none'; editImagePreview.src = '#'; }
-             if (noEditImageText) { noEditImageText.style.display = 'none'; }
-             if (editDeleteImageButton) { editDeleteImageButton.style.display = 'none'; }
-             if (editEventImageInput) { editEventImageInput.value = null; }
-             // Checkboxes are reset when modal is opened by openEditModal based on saved data
-         }
-
-         /** Shows feedback message within the login UI */
-         function showLoginFeedback(message, isSuccess) {
-             if (!loginFeedback) return;
-             loginFeedback.textContent = message;
-             loginFeedback.className = `mt-3 alert alert-${isSuccess ? 'success' : 'danger'}`;
-             loginFeedback.classList.remove('d-none');
-         }
-
-         /** Hides login feedback */
-         function hideLoginFeedback() {
-             if (loginFeedback) {
-                 loginFeedback.classList.add('d-none');
-                 loginFeedback.textContent = '';
-                 loginFeedback.className = 'mt-3 alert d-none';
-             }
-         }
-
-         /** Toggles resource checkboxes based on 'Ganzer Raum' state */
-         function toggleResourceCheckboxes(ganzerRaumCheckbox, containerSelector) {
-             const container = document.querySelector(containerSelector);
-             if (!container || !ganzerRaumCheckbox) return;
-             const otherCheckboxes = container.querySelectorAll('.resource-checkbox');
-             const shouldBeDisabled = ganzerRaumCheckbox.checked;
-             otherCheckboxes.forEach(cb => { cb.disabled = shouldBeDisabled; if (shouldBeDisabled) { cb.checked = false; } });
-         }
-
-        // --- Authentication and Session Functions ---
-
-        /** Calls backend to login and create session */
-        async function loginApi(password) {
-            hideLoginFeedback(); showLoadingFeedback("Attempting login...");
-            if (loginButton) loginButton.disabled = true;
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: password }) });
-                const data = await response.json(); hideMessages();
-                if (!response.ok || !data.success) { throw new Error(data.message || "Login failed."); }
-                return true; // Success
-            } catch (error) {
-                hideMessages(); console.error("Error during login API call:", error);
-                showLoginFeedback("Login failed: " + error.message, false);
-                if (loginPasswordInput) { loginPasswordInput.value = ''; loginPasswordInput.focus(); }
-                return false; // Failure
-            } finally { if (loginButton) loginButton.disabled = false; }
-        }
-
-        /** Checks current session status with the backend */
-        async function checkAuthStatusApi() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/auth/status`);
-                if (!response.ok) { console.error(`Auth status check failed with status: ${response.status}`); return false; }
-                const data = await response.json(); return data.loggedIn;
-            } catch (error) { console.error("Error checking auth status:", error); return false; }
-        }
-
-        /** Calls the logout endpoint */
-        async function logoutApi() {
-            try {
-                 const response = await fetch(`${API_BASE_URL}/api/logout`, { method: 'POST' });
-                 if (!response.ok) { console.warn("Logout API call failed, clearing session locally anyway."); }
-            } catch(e) { console.error("Logout API call failed:", e); }
-            isLoggedIn = false;
-            updateUIAfterLoginStateChange();
-            showView('event-view'); // Go back to overview after logout
-            showSuccess("You have been logged out.");
-        }
-
-        /** Updates UI elements based on loggedIn state */
-        function updateUIAfterLoginStateChange() {
-            const protectedMenuItems = [menuShowAddForm];
-            const publicMenuItems = [menuShowList, menuShowHelp]; // Login button is handled separately
-            const loginViewElements = [loginView];
-            const mainViews = [eventView, addFormView, helpView]; // Views hidden when showing login
-
-            if (isLoggedIn) {
-                protectedMenuItems.forEach(el => { if(el) el.style.display = 'block'; });
-                if (logoutButton) logoutButton.style.display = 'block'; // Show logout
-                if (loginView) loginView.classList.add('d-none'); // Hide login form
-                // Ensure main view area is potentially visible (showView handles specifics)
-
+/** Displays the specified view and hides others */
+function showView(viewId) {
+    const views = [loginView, eventView, addFormView, helpView];
+    views.forEach(view => {
+        if (view) { // Check if element exists
+            if (view.id === viewId) {
+                view.classList.remove('d-none');
             } else {
-                protectedMenuItems.forEach(el => { if(el) el.style.display = 'none'; });
-                if (logoutButton) logoutButton.style.display = 'none'; // Hide logout
-                // Don't automatically show login view here, let initial load or navigation handle it
+                view.classList.add('d-none');
             }
-            // Update edit buttons on existing tiles (if rendered)
-            document.querySelectorAll('.edit-event-btn').forEach(btn => btn.style.display = isLoggedIn ? 'inline-block' : 'none');
+        } else {
+          // This warning might appear if loginView etc. aren't found initially, which might be okay
+          // console.warn(`View element for ${viewId} not found during showView call.`);
         }
-
-
-        // --- Core Application Logic Functions ---
-
-        /** Populates year filter dropdown */
-        function populateFilters(events) {
-             if (!yearFilterSelect) return; const years = new Set();
-             events.forEach(event => { const dateStr = event[FIELD_DATE]; if (dateStr) { try { years.add(dateStr.substring(0, 4)); } catch(e) {} } });
-             const sortedYears = Array.from(years).sort((a, b) => b.localeCompare(a)); yearFilterSelect.innerHTML = '<option value="" selected>Year (All)</option>';
-             sortedYears.forEach(year => { const opt = document.createElement('option'); opt.value = year; opt.textContent = year; yearFilterSelect.appendChild(opt); });
-        }
-
-        /** Applies filters and re-renders the event list */
-        function applyFiltersAndRender() {
-             if (!searchTermInput || !monthFilterSelect || !yearFilterSelect || !typeFilterSelect || !allEvents) { console.error("Filter inputs or events not ready."); return; }
-             const searchTerm = searchTermInput.value.toLowerCase().trim(); const selectedMonth = monthFilterSelect.value; const selectedYear = yearFilterSelect.value; const selectedType = typeFilterSelect.value;
-             const filteredEvents = allEvents.filter(event => { const title = String(event[FIELD_TITLE] || '').toLowerCase(); const desc = String(event[FIELD_DESCRIPTION] || '').toLowerCase(); const searchMatch = searchTerm === '' || title.includes(searchTerm) || desc.includes(searchTerm); let dateMatch = true; const eventDateStr = event[FIELD_DATE]; if ((selectedMonth || selectedYear) && eventDateStr) { const y = eventDateStr.substring(0, 4); const m = eventDateStr.substring(5, 7); dateMatch = (selectedYear === '' || y === selectedYear) && (selectedMonth === '' || m === selectedMonth); } else if (selectedMonth || selectedYear) { dateMatch = false; } const eventType = String(event[FIELD_EVENT_TYPE] || '').trim(); const typeMatch = selectedType === '' || eventType === selectedType; return searchMatch && dateMatch && typeMatch; });
-             displayEvents(filteredEvents);
-        }
-
-        /** Displays the events in the list, including image and details section */
-        function displayEvents(events) {
-            if (!listElement || !loadingElement) { console.error("List/Loading element not found"); return; }
-            console.log("displayEvents called for:", events.length, "Events");
-            loadingElement.classList.add('d-none'); errorElement.classList.add('d-none');
-            listElement.innerHTML = '';
-            if (!events || events.length === 0) { listElement.innerHTML = '<p class="text-muted text-center p-3">No events match the current filters.</p>'; return; }
-
-            let currentMonthYear = null;
-            events.forEach(event => {
-                // Month Separator Logic
-                let eventMonthYear = null; const eventDateStr = event[FIELD_DATE]; if (eventDateStr) { eventMonthYear = eventDateStr.substring(0, 7); if (eventMonthYear !== currentMonthYear) { currentMonthYear = eventMonthYear; try { const mhDate = new Date(eventDateStr + 'T00:00:00Z'); const mhString = mhDate.toLocaleDateString('en-GB', { month: 'long', year: 'numeric', timeZone: 'Europe/Zurich' }); const sep = document.createElement('h2'); sep.className = 'mt-4 mb-3 h4 text-secondary month-separator'; sep.textContent = mhString; listElement.appendChild(sep); } catch (e) { console.error("Error creating month header:", e); } } }
-
-                const eventElement = document.createElement('div');
-                eventElement.classList.add('list-group-item', 'mb-3', 'p-3', 'event-kachel');
-                eventElement.dataset.id = event.id; // Use Firestore ID
-
-                // Extract Data
-                const { [FIELD_TITLE]: title = '', [FIELD_EVENT_TYPE]: eventType = '', [FIELD_DESCRIPTION]: description = '', [FIELD_START_TIME]: startTime = '', [FIELD_END_TIME]: endTime = '', [FIELD_RESOURCES]: resources = '', [FIELD_RESPONSIBLE]: responsible = '', [FIELD_PARTICIPANT_INFO]: participantInfo = '', [FIELD_IMAGE_URL]: imageUrl = null } = event;
-                const startTimeShort = startTime.substring(0, 5); const endTimeShort = endTime.substring(0, 5);
-
-                // Format Date
-                let displayDate = 'No Date'; if (eventDateStr) { try { const d = new Date(eventDateStr + 'T00:00:00Z'); if (!isNaN(d)) displayDate = d.toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Europe/Zurich' }); else displayDate = 'Invalid Date'; } catch (e) { displayDate = 'Date Error'; } }
-                // Format Time
-                let timeString = ''; if (startTimeShort && endTimeShort) timeString = `${startTimeShort} - ${endTimeShort}`; else if (startTimeShort) timeString = `From ${startTimeShort}`; else timeString = 'No Time Specified';
-                // Format Type Badge
-                let typeBadgeHTML = ''; if (eventType === 'Privat') typeBadgeHTML = `<span class="badge rounded-pill bg-danger">Private</span>`; else if (eventType === 'Öffentlich') typeBadgeHTML = `<span class="badge rounded-pill bg-success">Public</span>`;
-
-                // Build Tile HTML
-                eventElement.innerHTML = `
-                    ${typeBadgeHTML ? `<div class="mb-2">${typeBadgeHTML}</div>` : ''}
-                    <div class="d-flex justify-content-between align-items-start">
-                        <h5 class="mb-1 flex-grow-1">${title || 'Untitled Event'}</h5>
-                        <button type="button" class="btn btn-sm btn-outline-secondary ms-2 edit-event-btn" data-id="${event.id}" aria-label="Edit" style="display: ${isLoggedIn ? 'inline-block' : 'none'};"><i class="bi bi-pencil"></i></button>
-                    </div>
-                    <div class="row align-items-center mt-2">
-                        <div class="col-md-6"> <div class="d-flex flex-column"> <small class="fw-bold">${displayDate}</small> <small class="mb-2">${timeString}</small> <small>${responsible ? `<strong class="me-1">Responsible:</strong>${responsible}` : ''}</small> </div> </div>
-                        <div class="col-md-6 border-start ps-md-3"> <div class="d-flex flex-column"> ${description ? `<p class="mb-1 small"><strong class="me-1">Description:</strong>${description}</p>` : '<p class="mb-1 small">&nbsp;</p>'} <small>${resources ? `<strong class="me-1">Resources:</strong>${resources}` : ''}</small> </div> </div>
-                    </div>
-                    <div class="event-details mt-3 pt-3 border-top">
-                        ${participantInfo ? `<h6>Additional Information for Participants:</h6><p class="small mb-2">${participantInfo.replace(/\n/g, '<br>')}</p>` : ''}
-                        ${imageUrl ? `<h6>Image:</h6><img src="${imageUrl}" alt="Event Image for ${title}" class="event-image mb-0">` : '<p class="small fst-italic mb-0">No image available.</p>'}
-                    </div>
-                    `;
-                listElement.appendChild(eventElement);
-             });
-        }
-
-        /** Handles clicks within the event list for expand/collapse or edit trigger */
-        function handleTileClick(event) {
-            const clickedEditButton = event.target.closest('.edit-event-btn');
-            const clickedTile = event.target.closest('.event-kachel');
-            const clickedLink = event.target.closest('a');
-
-            if (clickedEditButton) { // Handle edit button click
-                event.stopPropagation();
-                if (isLoggedIn) {
-                     const eventId = clickedEditButton.getAttribute('data-id');
-                     if (eventId) { openEditModal(eventId); } // Open modal directly if logged in
-                } else {
-                     alert("Please log in to edit events.");
-                     showView('login-view');
-                }
-                return;
-            }
-            if (clickedLink) { return; } // Allow links to work normally
-
-            if (clickedTile) { // Handle tile expand/collapse
-                const currentlyExpanded = listElement.querySelector('.event-kachel.expanded');
-                if (currentlyExpanded && currentlyExpanded !== clickedTile) { currentlyExpanded.classList.remove('expanded'); }
-                clickedTile.classList.toggle('expanded');
-            }
-        };
-
-        // --- Add/Edit/Delete Function Implementations ---
-
-        /** Handles the submission of the "Add Event" form */
-        function handleAddEventSubmit(submitEvent) {
-            submitEvent.preventDefault();
-            if (!addEventButton || !addSpinner || !addFormFeedback || !addEventImageInput || !addGanzerRaumCheckbox) return;
-            addSpinner.classList.remove('d-none'); addEventButton.disabled = true; clearAddFormFeedback(); hideMessages();
-
-            const formData = new FormData();
-            let resourcesString = '';
-            if (addGanzerRaumCheckbox.checked) { resourcesString = 'Ganzer Raum'; }
-            else { const nodes = document.querySelectorAll('#add-resources-checkboxes .resource-checkbox:checked'); resourcesString = Array.from(nodes).map(cb => cb.value).join(', '); }
-
-            formData.append(FIELD_TITLE, document.getElementById('add-title').value.trim());
-            formData.append(FIELD_DATE, document.getElementById('add-date').value);
-            formData.append(FIELD_START_TIME, document.getElementById('add-startTime').value);
-            formData.append(FIELD_END_TIME, document.getElementById('add-endTime').value);
-            formData.append(FIELD_DESCRIPTION, document.getElementById('add-description').value.trim());
-            formData.append(FIELD_RESOURCES, resourcesString);
-            formData.append(FIELD_RESPONSIBLE, document.getElementById('add-responsible').value.trim());
-            const typeEl = document.querySelector('input[name="add-event-type"]:checked');
-            formData.append(FIELD_EVENT_TYPE, typeEl ? typeEl.value : 'Öffentlich');
-            formData.append(FIELD_PARTICIPANT_INFO, document.getElementById('add-participantInfo').value.trim());
-            const imageFile = addEventImageInput.files[0];
-
-            if (!formData.get(FIELD_TITLE) || !formData.get(FIELD_DATE)) { showAddFormFeedback("Title and Date are required fields.", false); addSpinner.classList.add('d-none'); addEventButton.disabled = false; return; }
-            if (imageFile) { formData.append('eventImage', imageFile, imageFile.name); }
-
-            fetch(`${API_BASE_URL}/api/events`, { method: 'POST', body: formData })
-            .then(response => response.json().then(data => ({ ok: response.ok, status: response.status, data })))
-            .then(({ ok, status, data }) => {
-                addSpinner.classList.add('d-none'); addEventButton.disabled = false;
-                if (ok && data.success) { if (addForm) addForm.reset(); clearAddFormFeedback(); showAddFormFeedback("Event created successfully.", true, "Redirecting to overview..."); setTimeout(() => { showView('event-view'); refreshData(); }, 3000); }
-                else { throw new Error(data.message || data.error || `Error ${status}`); }
-            })
-            .catch(err => { addSpinner.classList.add('d-none'); addEventButton.disabled = false; console.error("Error adding event:", err); showAddFormFeedback("Communication error: " + err.message, false); });
-        }
-
-        /** Populates and opens the Edit Event modal */
-        function openEditModal(eventId) {
-            if (!editModal || !allEvents || !editFormFeedback || !editImagePreview || !noEditImageText || !editEventIdInput || !editGanzerRaumCheckbox || !editEventImageInput) { console.error("Edit Modal elements or event data not ready"); showError({ message: "Cannot open edit form. UI elements missing." }); return; }
-            const event = allEvents.find(e => e.id === eventId);
-            if (!event) { showError({ message: "Event not found for editing." }); return; }
-            clearEditFormFeedback();
-
-            editEventIdInput.value = event.id;
-            document.getElementById('edit-title').value = event[FIELD_TITLE] || '';
-            document.getElementById('edit-date').value = event[FIELD_DATE] || '';
-            document.getElementById('edit-startTime').value = event[FIELD_START_TIME] || '';
-            document.getElementById('edit-endTime').value = event[FIELD_END_TIME] || '';
-            document.getElementById('edit-description').value = event[FIELD_DESCRIPTION] || '';
-            document.getElementById('edit-responsible').value = event[FIELD_RESPONSIBLE] || '';
-            document.getElementById('edit-participantInfo').value = event[FIELD_PARTICIPANT_INFO] || '';
-
-            const savedResources = String(event[FIELD_RESOURCES] || '');
-            const otherResourceCheckboxes = document.querySelectorAll('#edit-resources-checkboxes .resource-checkbox');
-            if (savedResources === 'Ganzer Raum') { editGanzerRaumCheckbox.checked = true; otherResourceCheckboxes.forEach(cb => { cb.checked = false; cb.disabled = true; }); }
-            else { editGanzerRaumCheckbox.checked = false; const eventResourcesArray = savedResources.split(',').map(r => r.trim()).filter(r => r); otherResourceCheckboxes.forEach(cb => { cb.disabled = false; cb.checked = eventResourcesArray.includes(cb.value); }); }
-
-            const eventTypeEdit = String(event[FIELD_EVENT_TYPE] || '').trim();
-            if (eventTypeEdit === 'Privat') { document.getElementById('edit-type-private').checked = true; } else { document.getElementById('edit-type-public').checked = true; }
-
-            if (event[FIELD_IMAGE_URL]) { editImagePreview.src = event[FIELD_IMAGE_URL]; editImagePreview.style.display = 'block'; noEditImageText.style.display = 'none'; if(editDeleteImageButton) editDeleteImageButton.style.display = 'inline-block'; }
-            else { editImagePreview.style.display = 'none'; editImagePreview.src = '#'; noEditImageText.style.display = 'block'; if(editDeleteImageButton) editDeleteImageButton.style.display = 'none'; }
-
-            editEventImageInput.value = null; // Reset file input
-
-            document.getElementById('editEventModalLabel').textContent = `Edit Event: ${event[FIELD_TITLE] || 'Untitled'}`;
-            editModal.show();
-        }
-
-        /** Handles saving changes from the "Edit Event" modal */
-        function handleSaveChanges() {
-            if (!saveEventButton || !saveSpinner || !editFormFeedback || !editEventImageInput || !editGanzerRaumCheckbox) return;
-            saveSpinner.classList.remove('d-none'); saveEventButton.disabled = true; clearEditFormFeedback(); hideMessages();
-
-            const eventId = document.getElementById('edit-id').value;
-            const newImageFile = editEventImageInput.files[0];
-            const formData = new FormData(); // Use FormData for potential image update
-
-            let resourcesString = '';
-            if (editGanzerRaumCheckbox.checked) { resourcesString = 'Ganzer Raum'; }
-            else { const selectedResourcesNodes = document.querySelectorAll('#edit-resources-checkboxes .resource-checkbox:checked'); resourcesString = Array.from(selectedResourcesNodes).map(checkbox => checkbox.value).join(', '); }
-
-            formData.append(FIELD_TITLE, document.getElementById('edit-title').value.trim());
-            formData.append(FIELD_DATE, document.getElementById('edit-date').value);
-            formData.append(FIELD_START_TIME, document.getElementById('edit-startTime').value);
-            formData.append(FIELD_END_TIME, document.getElementById('edit-endTime').value);
-            formData.append(FIELD_DESCRIPTION, document.getElementById('edit-description').value.trim());
-            formData.append(FIELD_RESOURCES, resourcesString);
-            formData.append(FIELD_RESPONSIBLE, document.getElementById('edit-responsible').value.trim());
-            const typeElEdit = document.querySelector('input[name="edit-event-type"]:checked');
-            formData.append(FIELD_EVENT_TYPE, typeElEdit ? typeElEdit.value : 'Öffentlich');
-            formData.append(FIELD_PARTICIPANT_INFO, document.getElementById('edit-participantInfo').value.trim());
-
-            if (!formData.get(FIELD_TITLE) || !formData.get(FIELD_DATE) || !eventId) { showEditFormFeedback("Title and Date are required fields.", false); saveSpinner.classList.add('d-none'); saveEventButton.disabled = false; return; }
-            if (newImageFile) { formData.append('eventImage', newImageFile, newImageFile.name); }
-
-            fetch(`${API_BASE_URL}/api/events/${eventId}`, { method: 'PUT', body: formData })
-            .then(response => response.json().then(data => ({ ok: response.ok, status: response.status, data })))
-            .then(({ ok, status, data }) => {
-                saveSpinner.classList.add('d-none'); saveEventButton.disabled = false;
-                if (ok && data.success) { editModal.hide(); showSuccess(data.message || "Event updated successfully."); refreshData(); }
-                else { throw new Error(data.message || data.error || `Error ${status}`); }
-            })
-            .catch(err => { saveSpinner.classList.add('d-none'); saveEventButton.disabled = false; console.error("Error updating event:", err); showEditFormFeedback("Communication error: " + err.message, false); });
-        }
-
-        /** Handles deleting only the image from the Edit modal */
-        async function handleDeleteImage() {
-            if (!editDeleteImageButton) return;
-            const eventId = document.getElementById('edit-id')?.value;
-            const currentImageUrl = editImagePreview.src;
-            if (!eventId || !currentImageUrl || currentImageUrl.endsWith('#')) { showEditFormFeedback("No saved image to delete or Event ID missing.", false); return; }
-
-            if (confirm(`Are you sure you want to delete the image for this event?\nThe event itself will remain.`)) {
-                editDeleteImageButton.disabled = true; hideMessages(); clearEditFormFeedback(); // Add spinner logic if desired
-                try {
-                    const response = await fetch(`${API_BASE_URL}/api/events/${eventId}/image`, { method: 'DELETE' });
-                    const data = await response.json();
-                    if (!response.ok) { throw new Error(data.message || data.error || `HTTP Error ${response.status}`); }
-                    editImagePreview.src = '#'; editImagePreview.style.display = 'none'; editDeleteImageButton.style.display = 'none'; if(noEditImageText) noEditImageText.style.display = 'block';
-                    showSuccess("Image deleted successfully.");
-                    const eventIndex = allEvents.findIndex(e => e.id === eventId); if (eventIndex > -1) { allEvents[eventIndex][FIELD_IMAGE_URL] = null; }
-                } catch (error) { console.error("Error deleting image:", error); showEditFormFeedback("Error deleting image: " + error.message, false); }
-                finally { editDeleteImageButton.disabled = false; }
-            }
-        }
-
-        /** Handles deleting the entire event from the Edit modal */
-        async function handleDeleteEvent() {
-            if (!deleteEventButton || !deleteSpinner || !editModal) return;
-            const eventId = document.getElementById('edit-id')?.value;
-            const title = document.getElementById('edit-title')?.value || 'this event';
-            if (!eventId) { showEditFormFeedback("Error: Event ID not found for deletion.", false); return; }
-
-            if (confirm(`Are you sure you want to permanently delete the event "${title}"? (Associated image will also be deleted!)`)) {
-                deleteSpinner.classList.remove('d-none'); deleteEventButton.disabled = true; if (saveEventButton) saveEventButton.disabled = true; clearEditFormFeedback(); hideMessages();
-                try {
-                    const response = await fetch(`${API_BASE_URL}/api/events/${eventId}`, { method: 'DELETE' });
-                    const data = await response.json();
-                    if (!response.ok) { throw new Error(data.message || data.error || `HTTP Error ${response.status}`); }
-                    deleteSpinner.classList.add('d-none'); editModal.hide(); showSuccess(data.message || "Event deleted successfully."); refreshData();
-                } catch (error) {
-                    console.error("Error deleting event:", error); deleteSpinner.classList.add('d-none'); deleteEventButton.disabled = false; if (saveEventButton) saveEventButton.disabled = false;
-                    showEditFormFeedback("Error deleting event: " + error.message, false);
-                }
-            } else { console.log("Delete operation cancelled."); }
-        }
-        // PASTE THIS FUNCTION DEFINITION INSIDE YOUR <script> TAG
-
-    /** Fetches the latest event data from the backend API and updates the list */
-    async function refreshData() { // Ensure it's async as it uses await
-        console.log("Loading data via API endpoint /api/events...");
-        if (loadingElement) loadingElement.classList.remove('d-none'); // Show loading indicator
-        if (listElement) listElement.innerHTML = ''; // Clear old list
-        hideMessages(); // Hide any previous success/error messages
-
-        try {
-            // Fetch events using the API_BASE_URL (should be '' for same-origin)
-            const response = await fetch(`${API_BASE_URL}/api/events`);
-
-            if (!response.ok) {
-                 // Try to parse error json from server, fallback to status text
-                 // Use await here as response.json() is async
-                 const errData = await response.json().catch(() => ({ error: `HTTP Error ${response.status}: ${response.statusText}` }));
-                 // Throw an error object to be caught below
-                 throw new Error(errData.error || `HTTP Error ${response.status}`);
-             }
-            // Parse the successful JSON response
-            const data = await response.json();
-
-            // Validate the received data structure
-            if (!Array.isArray(data)) {
-                throw new Error("Unexpected data format received from server.");
-            }
-
-            allEvents = data; // Store events globally (now includes 'id')
-            console.log("Events stored:", allEvents.length);
-
-            // Update UI elements that depend on the event data
-            populateFilters(allEvents); // Update year filter options
-            applyFiltersAndRender(); // Filter and display events (this calls displayEvents)
-            updateUIAfterLoginStateChange(); // Ensure button visibility is correct after render
-
-            console.log("Render complete.");
-
-        } catch (err) {
-            // Catch errors from fetch or data processing
-            console.error("Error loading events:", err);
-            showError(err); // Show error message in the UI
-        } finally {
-             // Hide loading indicator regardless of success or error
-             if (loadingElement) loadingElement.classList.add('d-none');
-        }
+    });
+    hideMessages(); // Hide global messages when changing views
+    // Special handling for add form reset
+    if (viewId === 'add-form-view') {
+         if (addForm) addForm.reset();
+         clearAddFormFeedback(); // Also reset checkboxes/preview
     }
+}
+
+/** Shows a global error message */
+function showError(error) {
+     if (!errorElement) return;
+     console.error("Error displayed:", error);
+     let t = "An unknown error occurred.";
+     // Try to extract a meaningful message from various error formats
+     if (typeof error === 'string') t = error;
+     else if (error && error.message) t = error.message; // Standard Error object
+     else if (error && error.error) t = error.error; // Often used in { error: '...' } objects
+     else if (error && error.name) t = `Error: ${error.name}`; // Fallback to error name
+     else if (typeof error === 'object') t = JSON.stringify(error); // Last resort for objects
+
+     hideMessages();
+     errorElement.textContent = `Error: ${t}`;
+     errorElement.classList.remove('d-none');
+ }
+/** Shows a global success message */
+ function showSuccess(message) {
+     if (!successElement) return;
+     hideMessages();
+     successElement.textContent = message;
+     successElement.classList.remove('d-none');
+     setTimeout(hideMessages, 4000); // Auto-hide after 4 seconds
+ }
+/** Shows a global loading/info message */
+ function showLoadingFeedback(message) {
+     if (!successElement) return;
+     hideMessages();
+     successElement.textContent = message;
+     successElement.classList.remove('alert-success'); // Make it look different
+     successElement.classList.add('alert-info');
+     successElement.classList.remove('d-none');
+ }
+/** Hides global messages */
+ function hideMessages() {
+     if (errorElement) errorElement.classList.add('d-none');
+     if (successElement) {
+         successElement.classList.add('d-none');
+         successElement.classList.remove('alert-info'); // Reset style
+         successElement.classList.add('alert-success');
+     }
+     hideLoginFeedback(); // Also hide login specific feedback
+ }
+/** Resets all filters */
+ function resetAllFilters() {
+     if (searchTermInput) searchTermInput.value = '';
+     if (monthFilterSelect) monthFilterSelect.value = '';
+     if (yearFilterSelect) yearFilterSelect.value = '';
+     if (typeFilterSelect) typeFilterSelect.value = '';
+     applyFiltersAndRender();
+ }
+
+ /** Clears feedback and resets specific add form elements */
+ function clearAddFormFeedback() {
+    if (addFormFeedback) { addFormFeedback.textContent = ''; addFormFeedback.className = 'mt-3'; }
+    if (addEventImageInput) { addEventImageInput.value = null; }
+    if (addImagePreview) { addImagePreview.style.display = 'none'; addImagePreview.src = '#'; }
+    if (addDeletePreviewButton) { addDeletePreviewButton.style.display = 'none'; }
+    const addOtherCheckboxes = document.querySelectorAll('#add-resources-checkboxes .resource-checkbox');
+    addOtherCheckboxes.forEach(cb => { cb.checked = false; cb.disabled = false; });
+    if (addGanzerRaumCheckbox) {
+        addGanzerRaumCheckbox.checked = false;
+        // Ensure other checkboxes are enabled after reset
+        toggleResourceCheckboxes(addGanzerRaumCheckbox, '#add-resources-checkboxes');
+    }
+    const addTypePublic = document.getElementById('add-type-public');
+    if (addTypePublic) addTypePublic.checked = true; // Default to public
+ }
+
+ /** Clears feedback and resets specific edit form elements */
+ function clearEditFormFeedback() {
+     if (editFormFeedback) { editFormFeedback.textContent = ''; editFormFeedback.className = 'mt-3'; }
+     // Don't reset image preview here, openEditModal handles showing the current image
+     if (editEventImageInput) { editEventImageInput.value = null; } // Clear potential new file selection
+     // Checkboxes are reset when modal is opened by openEditModal based on saved data
+ }
+
+ /** Shows feedback message within the login UI */
+ function showLoginFeedback(message, isSuccess) {
+     if (!loginFeedback) return;
+     loginFeedback.textContent = message;
+     loginFeedback.className = `mt-3 alert alert-${isSuccess ? 'success' : 'danger'}`;
+     loginFeedback.classList.remove('d-none');
+ }
+
+ /** Hides login feedback */
+ function hideLoginFeedback() {
+     if (loginFeedback) {
+         loginFeedback.classList.add('d-none');
+         loginFeedback.textContent = '';
+         loginFeedback.className = 'mt-3 alert d-none';
+     }
+ }
+
+ /** Toggles resource checkboxes based on 'Ganzer Raum' state */
+ function toggleResourceCheckboxes(ganzerRaumCheckbox, containerSelector) {
+     const container = document.querySelector(containerSelector);
+     if (!container || !ganzerRaumCheckbox) return;
+     const otherCheckboxes = container.querySelectorAll('.resource-checkbox');
+     const shouldBeDisabled = ganzerRaumCheckbox.checked;
+     otherCheckboxes.forEach(cb => {
+         cb.disabled = shouldBeDisabled;
+         if (shouldBeDisabled) {
+             cb.checked = false; // Deselect when 'Ganzer Raum' is checked
+         }
+     });
+ }
+
+// --- Authentication and Session Functions ---
+
+/** Calls backend to login and create session */
+async function loginApi(password) {
+    hideLoginFeedback(); showLoadingFeedback("Attempting login...");
+    if (loginButton) loginButton.disabled = true;
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password: password })
+        });
+        const data = await response.json(); // Always parse JSON
+        hideMessages(); // Hide loading message
+        if (!response.ok || !data.success) {
+            // Throw error with message from server if available
+            throw new Error(data.message || "Login failed.");
+        }
+        return true; // Indicate success
+    } catch (error) {
+        hideMessages();
+        console.error("Error during login API call:", error);
+        showLoginFeedback("Login failed: " + error.message, false); // Show error in login area
+        if (loginPasswordInput) { loginPasswordInput.value = ''; loginPasswordInput.focus(); }
+        return false; // Indicate failure
+    } finally {
+         if (loginButton) loginButton.disabled = false;
+    }
+}
+
+/** Checks current session status with the backend */
+async function checkAuthStatusApi() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/auth/status`);
+        if (!response.ok) {
+            console.error(`Auth status check failed with status: ${response.status}`);
+            return false; // Not logged in if status fails
+        }
+        const data = await response.json();
+        return data.loggedIn; // Return true or false from API
+    } catch (error) {
+        console.error("Error checking auth status:", error);
+        return false; // Assume not logged in if API call fails
+    }
+}
+
+/** Calls the logout endpoint */
+async function logoutApi() {
+    showLoadingFeedback("Logging out...");
+    try {
+         const response = await fetch(`${API_BASE_URL}/api/logout`, { method: 'POST' });
+         if (!response.ok) { console.warn("Logout API call failed, clearing session locally anyway."); }
+    } catch(e) { console.error("Logout API call failed:", e); } // Log error but proceed
+    isLoggedIn = false;
+    hideMessages();
+    updateUIAfterLoginStateChange();
+    showView('login-view'); // Go back to login view after logout
+    showLoginFeedback("You have been logged out.", true); // Show feedback on login page
+}
+
+/** Updates UI elements based on loggedIn state */
+function updateUIAfterLoginStateChange() {
+    const protectedMenuItems = [menuShowAddForm];
+    const publicMenuItems = [menuShowList, menuShowHelp]; // Login button is handled separately
+    // const loginViewElements = [loginView]; // Login view visibility handled by showView
+
+    if (isLoggedIn) {
+        protectedMenuItems.forEach(el => { if(el) el.style.display = 'block'; });
+        if (logoutButton) logoutButton.style.display = 'block'; // Show logout
+        // if (loginView) loginView.classList.add('d-none'); // Hide login form (handled by showView)
+
+    } else {
+        protectedMenuItems.forEach(el => { if(el) el.style.display = 'none'; });
+        if (logoutButton) logoutButton.style.display = 'none'; // Hide logout
+    }
+    // Update edit buttons on potentially existing tiles
+    document.querySelectorAll('.edit-event-btn').forEach(btn => btn.style.display = isLoggedIn ? 'inline-block' : 'none');
+}
 
 
-        // --- Initialization ---
-        document.addEventListener('DOMContentLoaded', async function () {
-             // Get DOM references
-             loginView = document.getElementById('login-view'); loginPasswordInput = document.getElementById('login-password'); loginButton = document.getElementById('login-button'); loginFeedback = document.getElementById('login-feedback'); eventView = document.getElementById('event-view'); addFormView = document.getElementById('add-form-view'); helpView = document.getElementById('help-view'); listElement = document.getElementById('event-liste'); loadingElement = document.getElementById('loading'); errorElement = document.getElementById('error-message'); successElement = document.getElementById('success-message'); searchTermInput = document.getElementById('search-term'); monthFilterSelect = document.getElementById('month-filter'); yearFilterSelect = document.getElementById('year-filter'); resetFiltersButton = document.getElementById('reset-filters'); typeFilterSelect = document.getElementById('type-filter'); addForm = document.getElementById('addEventForm'); addEventButton = document.getElementById('addEventButton'); addSpinner = addEventButton?.querySelector('.spinner-border'); addFormFeedback = document.getElementById('add-form-feedback'); addEventImageInput = document.getElementById('add-event-image'); addImagePreview = document.getElementById('add-image-preview'); addGanzerRaumCheckbox = document.getElementById('add-res-ganzer-raum'); addDeletePreviewButton = document.getElementById('add-delete-preview-button'); menuShowList = document.getElementById('menu-show-list'); menuShowAddForm = document.getElementById('menu-show-add-form'); menuShowHelp = document.getElementById('menu-show-help'); logoutButton = document.getElementById('logout-button'); editModalElement = document.getElementById('editEventModal'); if (editModalElement) { try { editModal = new bootstrap.Modal(editModalElement); } catch(e) { console.error("Error init bootstrap modal:", e); editModal = null; }} else { editModal = null; } editForm = document.getElementById('editEventForm'); saveEventButton = document.getElementById('saveEventButton'); saveSpinner = saveEventButton?.querySelector('.spinner-border'); editFormFeedback = document.getElementById('edit-form-feedback'); editImagePreview = document.getElementById('edit-image-preview'); noEditImageText = document.getElementById('no-edit-image'); editEventIdInput = document.getElementById('edit-id'); editGanzerRaumCheckbox = document.getElementById('edit-res-ganzer-raum'); editEventImageInput = document.getElementById('edit-event-image'); editDeleteImageButton = document.getElementById('edit-delete-image-button'); deleteEventButton = document.getElementById('deleteEventButton'); deleteSpinner = deleteEventButton?.querySelector('.spinner-border');
+// --- Core Application Logic Functions ---
 
-            // Check critical elements
-            const criticalIds = ['event-view', 'add-form-view', 'help-view', 'event-liste', 'loading', 'error-message', 'success-message', 'search-term', 'month-filter', 'year-filter', 'reset-filters', 'type-filter', 'addEventForm', 'addEventButton', 'add-form-feedback', 'add-event-image', 'add-image-preview', 'add-res-ganzer-raum', 'add-delete-preview-button', 'menu-show-list', 'menu-show-add-form', 'menu-show-help', 'logout-button', 'editEventModal', 'editEventForm', 'saveEventButton', 'edit-form-feedback', 'edit-image-preview', 'no-edit-image', 'edit-id', 'edit-res-ganzer-raum', 'edit-event-image', 'edit-delete-image-button', 'deleteEventButton', 'login-view', 'login-password', 'login-button', 'login-feedback'];
-            let missingIds = [];
-            criticalIds.forEach(id => { if (!document.getElementById(id)) missingIds.push(id); });
-            if (missingIds.length > 0 || !editModal) { console.error("Critical UI elements missing! Check HTML IDs:", missingIds); showError({ message: `Initialization Error: ${missingIds.length} critical UI element(s) missing or Modal init failed. Check console.` }); return; }
+/** Populates year filter dropdown */
+function populateFilters(events) {
+     if (!yearFilterSelect) return;
+     const years = new Set();
+     events.forEach(event => {
+         const dateStr = event[FIELD_DATE]; // Use the date field (YYYY-MM-DD string from backend)
+         if (dateStr) {
+            try { years.add(dateStr.substring(0, 4)); } catch(e) {}
+          }
+      });
+     const sortedYears = Array.from(years).sort((a, b) => b.localeCompare(a));
+     yearFilterSelect.innerHTML = '<option value="" selected>Year (All)</option>';
+     sortedYears.forEach(year => {
+         const opt = document.createElement('option');
+         opt.value = year; opt.textContent = year;
+         yearFilterSelect.appendChild(opt);
+     });
+}
 
-            // Register Event Listeners
-            menuShowList.addEventListener('click', (e) => { e.preventDefault(); showView('event-view'); });
-            menuShowAddForm.addEventListener('click', (e) => { e.preventDefault(); if(isLoggedIn) showView('add-form-view'); else showView('login-view'); });
-            menuShowHelp.addEventListener('click', (e) => { e.preventDefault(); showView('help-view'); });
-            logoutButton.addEventListener('click', (e) => { e.preventDefault(); logoutApi(); });
-            loginButton.addEventListener('click', async () => { const password = loginPasswordInput.value; if (!password) { showLoginFeedback("Please enter the password.", false); return; } const success = await loginApi(password); if(success) { isLoggedIn = true; hideLoginFeedback(); showView('event-view'); updateUIAfterLoginStateChange(); refreshData(); } });
-            searchTermInput.addEventListener('input', applyFiltersAndRender); monthFilterSelect.addEventListener('change', applyFiltersAndRender); yearFilterSelect.addEventListener('change', applyFiltersAndRender); typeFilterSelect.addEventListener('change', applyFiltersAndRender); resetFiltersButton.addEventListener('click', resetAllFilters);
-            addForm.addEventListener('submit', handleAddEventSubmit);
-            saveEventButton.addEventListener('click', handleSaveChanges);
-            deleteEventButton.addEventListener('click', handleDeleteEvent);
-            editDeleteImageButton.addEventListener('click', handleDeleteImage);
-            listElement.addEventListener('click', handleTileClick);
-            addGanzerRaumCheckbox.addEventListener('change', () => toggleResourceCheckboxes(addGanzerRaumCheckbox, '#add-resources-checkboxes'));
-            editGanzerRaumCheckbox.addEventListener('change', () => toggleResourceCheckboxes(editGanzerRaumCheckbox, '#edit-resources-checkboxes'));
-            addEventImageInput.addEventListener('change', function(e) { const file = e.target.files[0]; if (file && file.type.startsWith('image/')) { const reader = new FileReader(); reader.onload = function(loadEvent) { addImagePreview.src = loadEvent.target.result; addImagePreview.style.display = 'block'; addDeletePreviewButton.style.display = 'inline-block'; }; reader.readAsDataURL(file); } else { addEventImageInput.value = null; addImagePreview.src = '#'; addImagePreview.style.display = 'none'; addDeletePreviewButton.style.display = 'none'; } });
-            addDeletePreviewButton.addEventListener('click', () => { addEventImageInput.value = null; addImagePreview.src = '#'; addImagePreview.style.display = 'none'; addDeletePreviewButton.style.display = 'none'; });
+/** Applies filters and re-renders the event list */
+function applyFiltersAndRender() {
+     if (!searchTermInput || !monthFilterSelect || !yearFilterSelect || !typeFilterSelect || !allEvents) { console.error("Filter inputs or events not ready."); return; }
+     const searchTerm = searchTermInput.value.toLowerCase().trim();
+     const selectedMonth = monthFilterSelect.value;
+     const selectedYear = yearFilterSelect.value;
+     const selectedType = typeFilterSelect.value;
 
-             // Initial Application Setup
-             console.log("DOM loaded. Initializing application...");
-             isLoggedIn = await checkAuthStatusApi();
-             console.log("Initial login state:", isLoggedIn);
-             updateUIAfterLoginStateChange();
-             if (!isLoggedIn) { showView('login-view'); }
-             else { showView('event-view'); refreshData(); }
-         }); // End DOMContentLoaded Listener
+     const filteredEvents = allEvents.filter(event => {
+         const title = String(event[FIELD_TITLE] || '').toLowerCase();
+         const desc = String(event[FIELD_DESCRIPTION] || '').toLowerCase();
+         const searchMatch = searchTerm === '' || title.includes(searchTerm) || desc.includes(searchTerm);
+
+         let dateMatch = true;
+         const eventDateStr = event[FIELD_DATE]; // Use YYYY-MM-DD string
+         if ((selectedMonth || selectedYear) && eventDateStr) {
+             const y = eventDateStr.substring(0, 4);
+             const m = eventDateStr.substring(5, 7);
+             dateMatch = (selectedYear === '' || y === selectedYear) && (selectedMonth === '' || m === selectedMonth);
+         } else if (selectedMonth || selectedYear) {
+             dateMatch = false; // Event must have a date if date filter is active
+         }
+
+         const eventType = String(event[FIELD_EVENT_TYPE] || '').trim();
+         const typeMatch = selectedType === '' || eventType === selectedType;
+
+         return searchMatch && dateMatch && typeMatch;
+     });
+     displayEvents(filteredEvents);
+}
+
+/** Displays the events in the list, including image and details section */
+function displayEvents(events) {
+    if (!listElement || !loadingElement) { console.error("List/Loading element not found"); return; }
+    console.log("displayEvents called for:", events.length, "Events");
+    loadingElement.classList.add('d-none'); errorElement.classList.add('d-none');
+    listElement.innerHTML = ''; // Clear previous list
+    if (!events || events.length === 0) { listElement.innerHTML = '<p class="text-muted text-center p-3">No events match the current filters.</p>'; return; }
+
+    let currentMonthYear = null;
+    events.forEach(event => {
+        // --- Month Separator Logic ---
+        let eventMonthYear = null; const eventDateStr = event[FIELD_DATE]; // Use YYYY-MM-DD
+        if (eventDateStr) { eventMonthYear = eventDateStr.substring(0, 7); if (eventMonthYear !== currentMonthYear) { currentMonthYear = eventMonthYear; try { const mhDate = new Date(eventDateStr + 'T00:00:00Z'); const mhString = mhDate.toLocaleDateString('en-GB', { month: 'long', year: 'numeric', timeZone: 'Europe/Zurich' }); const sep = document.createElement('h2'); sep.className = 'mt-4 mb-3 h4 text-secondary month-separator'; sep.textContent = mhString; listElement.appendChild(sep); } catch (e) { console.error("Error creating month header:", e); } } }
+
+        // --- Create Event Tile Element ---
+        const eventElement = document.createElement('div');
+        eventElement.classList.add('list-group-item', 'mb-3', 'p-3', 'event-kachel');
+        eventElement.dataset.id = event.id; // Use Firestore ID
+
+        // --- Extract Data ---
+        const { [FIELD_TITLE]: title = '', [FIELD_EVENT_TYPE]: eventType = '', [FIELD_DESCRIPTION]: description = '', [FIELD_START_TIME]: startTime = '', [FIELD_END_TIME]: endTime = '', [FIELD_RESOURCES]: resources = '', [FIELD_RESPONSIBLE]: responsible = '', [FIELD_PARTICIPANT_INFO]: participantInfo = '', [FIELD_IMAGE_URL]: imageUrl = null } = event;
+        const startTimeShort = startTime.substring(0, 5); const endTimeShort = endTime.substring(0, 5);
+
+        // --- Format Data for Display ---
+        let displayDate = 'No Date'; if (eventDateStr) { try { const d = new Date(eventDateStr + 'T00:00:00Z'); if (!isNaN(d)) displayDate = d.toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Europe/Zurich' }); else displayDate = 'Invalid Date'; } catch (e) { displayDate = 'Date Error'; } }
+        let timeString = ''; if (startTimeShort && endTimeShort) timeString = `${startTimeShort} - ${endTimeShort}`; else if (startTimeShort) timeString = `From ${startTimeShort}`; else timeString = 'No Time Specified';
+        let typeBadgeHTML = ''; if (eventType === 'Privat') typeBadgeHTML = `<span class="badge rounded-pill bg-danger">Private</span>`; else if (eventType === 'Öffentlich') typeBadgeHTML = `<span class="badge rounded-pill bg-success">Public</span>`;
+
+        // --- Build Tile HTML ---
+        eventElement.innerHTML = `
+            ${typeBadgeHTML ? `<div class="mb-2">${typeBadgeHTML}</div>` : ''}
+            <div class="d-flex justify-content-between align-items-start">
+                <h5 class="mb-1 flex-grow-1">${title || 'Untitled Event'}</h5>
+                <button type="button" class="btn btn-sm btn-outline-secondary ms-2 edit-event-btn" data-id="${event.id}" aria-label="Edit" style="display: ${isLoggedIn ? 'inline-block' : 'none'};"><i class="bi bi-pencil"></i></button>
+            </div>
+            <div class="row align-items-center mt-2">
+                <div class="col-md-6"> <div class="d-flex flex-column"> <small class="fw-bold">${displayDate}</small> <small class="mb-2">${timeString}</small> <small>${responsible ? `<strong class="me-1">Responsible:</strong>${responsible}` : ''}</small> </div> </div>
+                <div class="col-md-6 border-start ps-md-3"> <div class="d-flex flex-column"> ${description ? `<p class="mb-1 small"><strong class="me-1">Description:</strong>${description}</p>` : '<p class="mb-1 small">&nbsp;</p>'} <small>${resources ? `<strong class="me-1">Resources:</strong>${resources}` : ''}</small> </div> </div>
+            </div>
+            <div class="event-details mt-3 pt-3 border-top">
+                ${participantInfo ? `<h6>Additional Information for Participants:</h6><p class="small mb-2">${participantInfo.replace(/\n/g, '<br>')}</p>` : ''}
+                ${imageUrl ? `<h6>Image:</h6><img src="${imageUrl}" alt="Event Image for ${title || 'event'}" class="event-image mb-0">` : '<p class="small fst-italic mb-0">No image available.</p>'}
+            </div>
+            `;
+        listElement.appendChild(eventElement);
+     });
+}
+
+/** Handles clicks within the event list for expand/collapse or edit trigger */
+function handleTileClick(event) {
+    const clickedEditButton = event.target.closest('.edit-event-btn');
+    const clickedTile = event.target.closest('.event-kachel');
+    const clickedLink = event.target.closest('a');
+
+    if (clickedEditButton) { // Handle edit button click
+        event.stopPropagation();
+        if (isLoggedIn) {
+             const eventId = clickedEditButton.getAttribute('data-id');
+             if (eventId) { openEditModal(eventId); } // Open modal directly if logged in
+        } else {
+             // alert("Please log in to edit events."); // Old way
+             showView('login-view'); // Show login view if not logged in
+             showLoginFeedback("Please log in to edit events.", false);
+        }
+        return;
+    }
+    if (clickedLink) { return; } // Allow links to work normally
+
+    if (clickedTile) { // Handle tile expand/collapse
+        const currentlyExpanded = listElement.querySelector('.event-kachel.expanded');
+        if (currentlyExpanded && currentlyExpanded !== clickedTile) { currentlyExpanded.classList.remove('expanded'); }
+        clickedTile.classList.toggle('expanded');
+    }
+};
+
+// --- Add/Edit/Delete Function Implementations ---
+
+/** Handles the submission of the "Add Event" form */
+function handleAddEventSubmit(submitEvent) {
+    submitEvent.preventDefault();
+    if (!addEventButton || !addSpinner || !addFormFeedback || !addEventImageInput || !addGanzerRaumCheckbox) return;
+    addSpinner.classList.remove('d-none'); addEventButton.disabled = true; clearAddFormFeedback(); hideMessages();
+
+    const formData = new FormData();
+    let resourcesString = '';
+    if (addGanzerRaumCheckbox.checked) { resourcesString = 'Ganzer Raum'; }
+    else { const nodes = document.querySelectorAll('#add-resources-checkboxes .resource-checkbox:checked'); resourcesString = Array.from(nodes).map(cb => cb.value).join(', '); }
+
+    // Append using FIELD_* constants as keys for consistency with backend expectations via multer/body
+    formData.append(FIELD_TITLE, document.getElementById('add-title').value.trim());
+    formData.append(FIELD_DATE, document.getElementById('add-date').value); // Send YYYY-MM-DD
+    formData.append(FIELD_START_TIME, document.getElementById('add-startTime').value);
+    formData.append(FIELD_END_TIME, document.getElementById('add-endTime').value);
+    formData.append(FIELD_DESCRIPTION, document.getElementById('add-description').value.trim());
+    formData.append(FIELD_RESOURCES, resourcesString);
+    formData.append(FIELD_RESPONSIBLE, document.getElementById('add-responsible').value.trim());
+    const typeEl = document.querySelector('input[name="add-event-type"]:checked');
+    formData.append(FIELD_EVENT_TYPE, typeEl ? typeEl.value : 'Öffentlich');
+    formData.append(FIELD_PARTICIPANT_INFO, document.getElementById('add-participantInfo').value.trim());
+    const imageFile = addEventImageInput.files[0];
+
+    if (!formData.get(FIELD_TITLE) || !formData.get(FIELD_DATE)) { showAddFormFeedback("Title and Date are required fields.", false); addSpinner.classList.add('d-none'); addEventButton.disabled = false; return; }
+    if (imageFile) { formData.append('eventImage', imageFile, imageFile.name); } // Key 'eventImage' matches backend multer
+
+    fetch(`${API_BASE_URL}/api/events`, { method: 'POST', body: formData })
+    .then(response => response.json().then(data => ({ ok: response.ok, status: response.status, data })))
+    .then(({ ok, status, data }) => {
+        addSpinner.classList.add('d-none'); addEventButton.disabled = false;
+        if (ok && data.success) { if (addForm) addForm.reset(); clearAddFormFeedback(); showAddFormFeedback("Event created successfully.", true, "Redirecting to overview..."); setTimeout(() => { showView('event-view'); refreshData(); }, 3000); }
+        else { throw new Error(data.message || data.error || `Error ${status}`); }
+    })
+    .catch(err => { addSpinner.classList.add('d-none'); addEventButton.disabled = false; console.error("Error adding event:", err); showAddFormFeedback("Communication error: " + err.message, false); });
+}
+
+/** Populates and opens the Edit Event modal */
+function openEditModal(eventId) {
+    if (!editModal || !allEvents || !editFormFeedback || !editImagePreview || !noEditImageText || !editEventIdInput || !editGanzerRaumCheckbox || !editEventImageInput) { console.error("Edit Modal elements or event data not ready"); showError({ message: "Cannot open edit form. UI elements missing." }); return; }
+    const event = allEvents.find(e => e.id === eventId);
+    if (!event) { showError({ message: "Event not found for editing." }); return; }
+    clearEditFormFeedback();
+
+    editEventIdInput.value = event.id;
+    document.getElementById('edit-title').value = event[FIELD_TITLE] || '';
+    document.getElementById('edit-date').value = event[FIELD_DATE] || ''; // Uses YYYY-MM-DD
+    document.getElementById('edit-startTime').value = event[FIELD_START_TIME] || '';
+    document.getElementById('edit-endTime').value = event[FIELD_END_TIME] || '';
+    document.getElementById('edit-description').value = event[FIELD_DESCRIPTION] || '';
+    document.getElementById('edit-responsible').value = event[FIELD_RESPONSIBLE] || '';
+    document.getElementById('edit-participantInfo').value = event[FIELD_PARTICIPANT_INFO] || '';
+
+    const savedResources = String(event[FIELD_RESOURCES] || '');
+    const otherResourceCheckboxes = document.querySelectorAll('#edit-resources-checkboxes .resource-checkbox');
+    if (savedResources === 'Ganzer Raum') { editGanzerRaumCheckbox.checked = true; otherResourceCheckboxes.forEach(cb => { cb.checked = false; cb.disabled = true; }); }
+    else { editGanzerRaumCheckbox.checked = false; const eventResourcesArray = savedResources.split(',').map(r => r.trim()).filter(r => r); otherResourceCheckboxes.forEach(cb => { cb.disabled = false; cb.checked = eventResourcesArray.includes(cb.value); }); }
+
+    const eventTypeEdit = String(event[FIELD_EVENT_TYPE] || '').trim();
+    if (eventTypeEdit === 'Privat') { document.getElementById('edit-type-private').checked = true; } else { document.getElementById('edit-type-public').checked = true; }
+
+    if (event[FIELD_IMAGE_URL]) { editImagePreview.src = event[FIELD_IMAGE_URL]; editImagePreview.style.display = 'block'; noEditImageText.style.display = 'none'; if(editDeleteImageButton) editDeleteImageButton.style.display = 'inline-block'; }
+    else { editImagePreview.style.display = 'none'; editImagePreview.src = '#'; noEditImageText.style.display = 'block'; if(editDeleteImageButton) editDeleteImageButton.style.display = 'none'; }
+
+    editEventImageInput.value = null; // Reset file input
+
+    document.getElementById('editEventModalLabel').textContent = `Edit Event: ${event[FIELD_TITLE] || 'Untitled'}`;
+    editModal.show();
+}
+
+/** Handles saving changes from the "Edit Event" modal */
+function handleSaveChanges() {
+    if (!saveEventButton || !saveSpinner || !editFormFeedback || !editEventImageInput || !editGanzerRaumCheckbox) return;
+    saveSpinner.classList.remove('d-none'); saveEventButton.disabled = true; clearEditFormFeedback(); hideMessages();
+
+    const eventId = document.getElementById('edit-id').value;
+    const newImageFile = editEventImageInput.files[0];
+    const formData = new FormData(); // Use FormData for potential image update
+
+    let resourcesString = '';
+    if (editGanzerRaumCheckbox.checked) { resourcesString = 'Ganzer Raum'; }
+    else { const selectedResourcesNodes = document.querySelectorAll('#edit-resources-checkboxes .resource-checkbox:checked'); resourcesString = Array.from(selectedResourcesNodes).map(checkbox => checkbox.value).join(', '); }
+
+    // Append text fields using FIELD_* constants or keys expected by backend
+    formData.append(FIELD_TITLE, document.getElementById('edit-title').value.trim());
+    formData.append(FIELD_DATE, document.getElementById('edit-date').value); // Send YYYY-MM-DD
+    formData.append(FIELD_START_TIME, document.getElementById('edit-startTime').value);
+    formData.append(FIELD_END_TIME, document.getElementById('edit-endTime').value);
+    formData.append(FIELD_DESCRIPTION, document.getElementById('edit-description').value.trim());
+    formData.append(FIELD_RESOURCES, resourcesString);
+    formData.append(FIELD_RESPONSIBLE, document.getElementById('edit-responsible').value.trim());
+    const typeElEdit = document.querySelector('input[name="edit-event-type"]:checked');
+    formData.append(FIELD_EVENT_TYPE, typeElEdit ? typeElEdit.value : 'Öffentlich');
+    formData.append(FIELD_PARTICIPANT_INFO, document.getElementById('edit-participantInfo').value.trim());
+
+    if (!formData.get(FIELD_TITLE) || !formData.get(FIELD_DATE) || !eventId) { showEditFormFeedback("Title and Date are required fields.", false); saveSpinner.classList.add('d-none'); saveEventButton.disabled = false; return; }
+    if (newImageFile) { formData.append('eventImage', newImageFile, newImageFile.name); } // Append NEW image if selected
+
+    fetch(`${API_BASE_URL}/api/events/${eventId}`, { method: 'PUT', body: formData }) // Send FormData
+    .then(response => response.json().then(data => ({ ok: response.ok, status: response.status, data })))
+    .then(({ ok, status, data }) => {
+        saveSpinner.classList.add('d-none'); saveEventButton.disabled = false;
+        if (ok && data.success) { editModal.hide(); showSuccess(data.message || "Event updated successfully."); refreshData(); }
+        else { throw new Error(data.message || data.error || `Error ${status}`); }
+    })
+    .catch(err => { saveSpinner.classList.add('d-none'); saveEventButton.disabled = false; console.error("Error updating event:", err); showEditFormFeedback("Communication error: " + err.message, false); });
+}
+
+/** Handles deleting only the image from the Edit modal */
+async function handleDeleteImage() {
+    if (!editDeleteImageButton) return;
+    const eventId = document.getElementById('edit-id')?.value;
+    const currentImageUrl = editImagePreview.src;
+    if (!eventId || !currentImageUrl || currentImageUrl.endsWith('#')) { showEditFormFeedback("No saved image to delete or Event ID missing.", false); return; }
+
+    if (confirm(`Are you sure you want to delete the image for this event?\nThe event itself will remain.`)) {
+        editDeleteImageButton.disabled = true; hideMessages(); clearEditFormFeedback();
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/events/${eventId}/image`, { method: 'DELETE' });
+            const data = await response.json();
+            if (!response.ok) { throw new Error(data.message || data.error || `HTTP Error ${response.status}`); }
+            editImagePreview.src = '#'; editImagePreview.style.display = 'none'; editDeleteImageButton.style.display = 'none'; if(noEditImageText) noEditImageText.style.display = 'block';
+            showSuccess("Image deleted successfully.");
+            const eventIndex = allEvents.findIndex(e => e.id === eventId); if (eventIndex > -1) { allEvents[eventIndex][FIELD_IMAGE_URL] = null; }
+        } catch (error) { console.error("Error deleting image:", error); showEditFormFeedback("Error deleting image: " + error.message, false); }
+        finally { editDeleteImageButton.disabled = false; }
+    }
+}
+
+/** Handles deleting the entire event from the Edit modal */
+async function handleDeleteEvent() {
+    if (!deleteEventButton || !deleteSpinner || !editModal) return;
+    const eventId = document.getElementById('edit-id')?.value;
+    const title = document.getElementById('edit-title')?.value || 'this event';
+    if (!eventId) { showEditFormFeedback("Error: Event ID not found for deletion.", false); return; }
+
+    if (confirm(`Are you sure you want to permanently delete the event "${title}"? (Associated image will also be deleted!)`)) {
+        deleteSpinner.classList.remove('d-none'); deleteEventButton.disabled = true; if (saveEventButton) saveEventButton.disabled = true; clearEditFormFeedback(); hideMessages();
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/events/${eventId}`, { method: 'DELETE' });
+            const data = await response.json();
+            if (!response.ok) { throw new Error(data.message || data.error || `HTTP Error ${response.status}`); }
+            deleteSpinner.classList.add('d-none'); editModal.hide(); showSuccess(data.message || "Event deleted successfully."); refreshData();
+        } catch (error) {
+            console.error("Error deleting event:", error); deleteSpinner.classList.add('d-none'); deleteEventButton.disabled = false; if (saveEventButton) saveEventButton.disabled = false;
+            showEditFormFeedback("Error deleting event: " + error.message, false);
+        }
+    } else { console.log("Delete operation cancelled."); }
+}
+
+
+// --- Initialization ---
+document.addEventListener('DOMContentLoaded', async function () {
+     // Get DOM references
+     loginView = document.getElementById('login-view'); loginPasswordInput = document.getElementById('login-password'); loginButton = document.getElementById('login-button'); loginFeedback = document.getElementById('login-feedback'); eventView = document.getElementById('event-view'); addFormView = document.getElementById('add-form-view'); helpView = document.getElementById('help-view'); listElement = document.getElementById('event-liste'); loadingElement = document.getElementById('loading'); errorElement = document.getElementById('error-message'); successElement = document.getElementById('success-message'); searchTermInput = document.getElementById('search-term'); monthFilterSelect = document.getElementById('month-filter'); yearFilterSelect = document.getElementById('year-filter'); resetFiltersButton = document.getElementById('reset-filters'); typeFilterSelect = document.getElementById('type-filter'); addForm = document.getElementById('addEventForm'); addEventButton = document.getElementById('addEventButton'); addSpinner = addEventButton?.querySelector('.spinner-border'); addFormFeedback = document.getElementById('add-form-feedback'); addEventImageInput = document.getElementById('add-event-image'); addImagePreview = document.getElementById('add-image-preview'); addGanzerRaumCheckbox = document.getElementById('add-res-ganzer-raum'); addDeletePreviewButton = document.getElementById('add-delete-preview-button'); menuShowList = document.getElementById('menu-show-list'); menuShowAddForm = document.getElementById('menu-show-add-form'); menuShowHelp = document.getElementById('menu-show-help'); logoutButton = document.getElementById('logout-button'); editModalElement = document.getElementById('editEventModal'); if (editModalElement) { try { editModal = new bootstrap.Modal(editModalElement); } catch(e) { console.error("Error init bootstrap modal:", e); editModal = null; }} else { editModal = null; } editForm = document.getElementById('editEventForm'); saveEventButton = document.getElementById('saveEventButton'); saveSpinner = saveEventButton?.querySelector('.spinner-border'); editFormFeedback = document.getElementById('edit-form-feedback'); editImagePreview = document.getElementById('edit-image-preview'); noEditImageText = document.getElementById('no-edit-image'); editEventIdInput = document.getElementById('edit-id'); editGanzerRaumCheckbox = document.getElementById('edit-res-ganzer-raum'); editEventImageInput = document.getElementById('edit-event-image'); editDeleteImageButton = document.getElementById('edit-delete-image-button'); deleteEventButton = document.getElementById('deleteEventButton'); deleteSpinner = deleteEventButton?.querySelector('.spinner-border');
+
+    // Check critical elements
+    const criticalIds = ['event-view', 'add-form-view', 'help-view', 'event-liste', 'loading', 'error-message', 'success-message', 'search-term', 'month-filter', 'year-filter', 'reset-filters', 'type-filter', 'addEventForm', 'addEventButton', 'add-form-feedback', 'add-event-image', 'add-image-preview', 'add-res-ganzer-raum', 'add-delete-preview-button', 'menu-show-list', 'menu-show-add-form', 'menu-show-help', 'logout-button', 'editEventModal', 'editEventForm', 'saveEventButton', 'edit-form-feedback', 'edit-image-preview', 'no-edit-image', 'edit-id', 'edit-res-ganzer-raum', 'edit-event-image', 'edit-delete-image-button', 'deleteEventButton', 'login-view', 'login-password', 'login-button', 'login-feedback'];
+    let missingIds = []; criticalIds.forEach(id => { if (!document.getElementById(id)) missingIds.push(id); });
+    if (missingIds.length > 0 || !editModal) { console.error("Critical UI elements missing! Check HTML IDs:", missingIds); showError({ message: `Initialization Error: ${missingIds.length} critical UI element(s) missing or Modal init failed. Check console.` }); return; }
+
+    // Register Event Listeners
+    menuShowList.addEventListener('click', (e) => { e.preventDefault(); showView('event-view'); });
+    menuShowAddForm.addEventListener('click', (e) => { e.preventDefault(); if(isLoggedIn) showView('add-form-view'); else showView('login-view'); });
+    menuShowHelp.addEventListener('click', (e) => { e.preventDefault(); showView('help-view'); });
+    logoutButton.addEventListener('click', (e) => { e.preventDefault(); logoutApi(); });
+    loginButton.addEventListener('click', async () => { const password = loginPasswordInput.value; if (!password) { showLoginFeedback("Please enter the password.", false); return; } const success = await loginApi(password); if(success) { isLoggedIn = true; hideLoginFeedback(); showView('event-view'); updateUIAfterLoginStateChange(); refreshData(); } });
+    searchTermInput.addEventListener('input', applyFiltersAndRender); monthFilterSelect.addEventListener('change', applyFiltersAndRender); yearFilterSelect.addEventListener('change', applyFiltersAndRender); typeFilterSelect.addEventListener('change', applyFiltersAndRender); resetFiltersButton.addEventListener('click', resetAllFilters);
+    addForm.addEventListener('submit', handleAddEventSubmit);
+    saveEventButton.addEventListener('click', handleSaveChanges);
+    deleteEventButton.addEventListener('click', handleDeleteEvent);
+    editDeleteImageButton.addEventListener('click', handleDeleteImage);
+    listElement.addEventListener('click', handleTileClick);
+    addGanzerRaumCheckbox.addEventListener('change', () => toggleResourceCheckboxes(addGanzerRaumCheckbox, '#add-resources-checkboxes'));
+    editGanzerRaumCheckbox.addEventListener('change', () => toggleResourceCheckboxes(editGanzerRaumCheckbox, '#edit-resources-checkboxes'));
+    addEventImageInput.addEventListener('change', function(e) { const file = e.target.files[0]; if (file && file.type.startsWith('image/')) { const reader = new FileReader(); reader.onload = function(loadEvent) { addImagePreview.src = loadEvent.target.result; addImagePreview.style.display = 'block'; addDeletePreviewButton.style.display = 'inline-block'; }; reader.readAsDataURL(file); } else { addEventImageInput.value = null; addImagePreview.src = '#'; addImagePreview.style.display = 'none'; addDeletePreviewButton.style.display = 'none'; } });
+    addDeletePreviewButton.addEventListener('click', () => { addEventImageInput.value = null; addImagePreview.src = '#'; addImagePreview.style.display = 'none'; addDeletePreviewButton.style.display = 'none'; });
+
+     // Initial Application Setup
+     console.log("DOM loaded. Initializing application...");
+     isLoggedIn = await checkAuthStatusApi();
+     console.log("Initial login state:", isLoggedIn);
+     updateUIAfterLoginStateChange();
+     // Always show event view first, data load happens next
+     showView('event-view');
+     refreshData(); // Always load data
+
+ }); // End DOMContentLoaded Listener
 
     </script>
 
