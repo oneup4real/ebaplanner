@@ -815,75 +815,190 @@ function handleSaveChanges() {
         };
 
         // --- Initialization and Event Listeners ---
-        document.addEventListener('DOMContentLoaded', function () {
-            // Get DOM references (ensure all new IDs are included)
-            eventView = document.getElementById('event-view'); addFormView = document.getElementById('add-form-view'); helpView = document.getElementById('help-view'); listElement = document.getElementById('event-liste'); loadingElement = document.getElementById('loading'); errorElement = document.getElementById('error-message'); successElement = document.getElementById('success-message'); searchTermInput = document.getElementById('search-term'); monthFilterSelect = document.getElementById('month-filter'); yearFilterSelect = document.getElementById('year-filter'); resetFiltersButton = document.getElementById('reset-filters'); typeFilterSelect = document.getElementById('type-filter'); addForm = document.getElementById('addEventForm'); addEventButton = document.getElementById('addEventButton'); addSpinner = addEventButton?.querySelector('.spinner-border'); addFormFeedback = document.getElementById('add-form-feedback'); addEventImageInput = document.getElementById('add-event-image'); addImagePreview = document.getElementById('add-image-preview'); menuShowList = document.getElementById('menu-show-list'); menuShowAddForm = document.getElementById('menu-show-add-form'); menuShowHelp = document.getElementById('menu-show-help'); editModalElement = document.getElementById('editEventModal'); if (editModalElement) editModal = new bootstrap.Modal(editModalElement); editForm = document.getElementById('editEventForm'); saveEventButton = document.getElementById('saveEventButton'); saveSpinner = saveEventButton?.querySelector('.spinner-border'); editFormFeedback = document.getElementById('edit-form-feedback'); editImagePreview = document.getElementById('edit-image-preview'); noEditImageText = document.getElementById('no-edit-image'); editEventIdInput = document.getElementById('edit-id'); deleteEventButton = document.getElementById('deleteEventButton'); deleteSpinner = deleteEventButton?.querySelector('.spinner-border'); addDeletePreviewButton = document.getElementById('add-delete-preview-button'); editDeleteImageButton = document.getElementById('edit-delete-image-button');editEventImageInput = document.getElementById('edit-event-image'); addGanzerRaumCheckbox = document.getElementById('add-res-ganzer-raum');editGanzerRaumCheckbox = document.getElementById('edit-res-ganzer-raum');
-            // Check critical elements
-            if (!listElement || !editModalElement || !addForm || !editForm || !deleteEventButton || !addEventImageInput || !addImagePreview || !editImagePreview || !editEventIdInput || !noEditImageText || !addDeletePreviewButton || !editDeleteImageButton || !editEventImageInput) {
-                console.error("Critical UI elements missing! Check HTML IDs for forms, modals, image previews, and hidden ID input.");
-                showError({ message: "Initialization Error: Core UI elements missing." }); return;
-            }
+        document.addEventListener('DOMContentLoaded', async function () { // Added async for initial auth check
 
-            // Register Event Listeners (unchanged)
-            menuShowList.addEventListener('click', (e)=>{ e.preventDefault(); showView('event-view'); });
-            menuShowAddForm.addEventListener('click', (e)=>{ e.preventDefault(); promptForAddPassword(); });
-            menuShowHelp.addEventListener('click', (e)=> { e.preventDefault(); showView('help-view'); });
-            searchTermInput.addEventListener('input', applyFiltersAndRender); monthFilterSelect.addEventListener('change', applyFiltersAndRender); yearFilterSelect.addEventListener('change', applyFiltersAndRender); typeFilterSelect.addEventListener('change', applyFiltersAndRender);
-            resetFiltersButton.addEventListener('click', resetAllFilters);
-            addForm.addEventListener('submit', handleAddEventSubmit);
-            saveEventButton.addEventListener('click', handleSaveChanges);
-            deleteEventButton.addEventListener('click', handleDeleteEvent);
-            listElement.addEventListener('click', handleTileClick);
-            if (editDeleteImageButton) {
-                editDeleteImageButton.addEventListener('click', handleDeleteImage);
-            }
-            if (addGanzerRaumCheckbox) {
-                addGanzerRaumCheckbox.addEventListener('change', () => toggleResourceCheckboxes(addGanzerRaumCheckbox, '#add-resources-checkboxes'));
-            }
-            if (editGanzerRaumCheckbox) {
-                editGanzerRaumCheckbox.addEventListener('change', () => toggleResourceCheckboxes(editGanzerRaumCheckbox, '#edit-resources-checkboxes'));
-            }
-            
+// --- Get DOM References ---
+// Views
+eventView = document.getElementById('event-view');
+addFormView = document.getElementById('add-form-view');
+helpView = document.getElementById('help-view');
 
-             // Image preview listener for Add form
-             if (addEventImageInput && addImagePreview && addDeletePreviewButton) {
+// Event List & Feedback
+listElement = document.getElementById('event-liste');
+loadingElement = document.getElementById('loading');
+errorElement = document.getElementById('error-message');
+successElement = document.getElementById('success-message');
+
+// Filters
+searchTermInput = document.getElementById('search-term');
+monthFilterSelect = document.getElementById('month-filter');
+yearFilterSelect = document.getElementById('year-filter');
+resetFiltersButton = document.getElementById('reset-filters');
+typeFilterSelect = document.getElementById('type-filter');
+
+// Add Form Elements
+addForm = document.getElementById('addEventForm');
+addEventButton = document.getElementById('addEventButton');
+addSpinner = addEventButton?.querySelector('.spinner-border'); // Use optional chaining
+addFormFeedback = document.getElementById('add-form-feedback');
+addEventImageInput = document.getElementById('add-event-image');
+addImagePreview = document.getElementById('add-image-preview');
+addGanzerRaumCheckbox = document.getElementById('add-res-ganzer-raum');
+addDeletePreviewButton = document.getElementById('add-delete-preview-button');
+
+// Menu Items
+menuShowList = document.getElementById('menu-show-list');
+menuShowAddForm = document.getElementById('menu-show-add-form');
+menuShowHelp = document.getElementById('menu-show-help');
+
+// Edit Modal Elements
+editModalElement = document.getElementById('editEventModal');
+if (editModalElement) { // Initialize Bootstrap Modal only if element exists
+   try {
+     editModal = new bootstrap.Modal(editModalElement);
+   } catch (e) {
+     console.error("Error initializing Bootstrap Modal:", e);
+     editModal = null; // Ensure editModal is null if init fails
+   }
+} else {
+    editModal = null;
+}
+editForm = document.getElementById('editEventForm');
+saveEventButton = document.getElementById('saveEventButton');
+saveSpinner = saveEventButton?.querySelector('.spinner-border');
+editFormFeedback = document.getElementById('edit-form-feedback');
+editImagePreview = document.getElementById('edit-image-preview');
+noEditImageText = document.getElementById('no-edit-image');
+editEventIdInput = document.getElementById('edit-id'); // Hidden input for ID
+editGanzerRaumCheckbox = document.getElementById('edit-res-ganzer-raum');
+editEventImageInput = document.getElementById('edit-event-image'); // File input in edit modal
+editDeleteImageButton = document.getElementById('edit-delete-image-button'); // Button to delete saved image
+
+// Delete Event Button (in Edit Modal Footer)
+deleteEventButton = document.getElementById('deleteEventButton');
+deleteSpinner = deleteEventButton?.querySelector('.spinner-border');
+
+// --- Check if Critical UI Elements Were Found ---
+// List elements crucial for basic operation or event handling logic
+ const criticalElements = [
+    eventView, addFormView, helpView, listElement, loadingElement, errorElement, successElement,
+    searchTermInput, monthFilterSelect, yearFilterSelect, resetFiltersButton, typeFilterSelect,
+    addForm, addEventButton, addFormFeedback, addEventImageInput, addImagePreview, addGanzerRaumCheckbox, addDeletePreviewButton,
+    menuShowList, menuShowAddForm, menuShowHelp,
+    editModalElement, editForm, saveEventButton, editFormFeedback, editImagePreview, noEditImageText, editEventIdInput, editGanzerRaumCheckbox, editEventImageInput, editDeleteImageButton,
+    deleteEventButton
+ ];
+ const missingElements = criticalElements.filter(el => !el);
+
+ if (missingElements.length > 0) {
+     console.error("Critical UI elements missing! Check HTML IDs. Failed elements:", missingElements);
+     // Attempt to identify which ones are missing by checking the variable names in the debugger or logging them
+     // Example: if(!eventView) console.error("Element with ID 'event-view' not found!");
+     showError({ message: `Initialization Error: ${missingElements.length} critical UI element(s) missing. Check console.` });
+     return; // Stop initialization if critical elements are missing
+ }
+ // Also check if modal init worked
+ if (!editModal) {
+     console.error("Edit Modal could not be initialized (likely missing #editEventModal element).");
+     // Decide if this is critical enough to stop, or just disable edit functionality
+     // For now, let's allow proceeding but edit will fail.
+ }
+
+
+// --- Register Event Listeners ---
+
+// Menu Navigation
+menuShowList.addEventListener('click', (e) => { e.preventDefault(); showView('event-view'); });
+menuShowAddForm.addEventListener('click', (e) => { e.preventDefault(); promptForAddPassword(); }); // Checks login status internally now
+menuShowHelp.addEventListener('click', (e) => { e.preventDefault(); showView('help-view'); });
+
+// Filters
+searchTermInput.addEventListener('input', applyFiltersAndRender);
+monthFilterSelect.addEventListener('change', applyFiltersAndRender);
+yearFilterSelect.addEventListener('change', applyFiltersAndRender);
+typeFilterSelect.addEventListener('change', applyFiltersAndRender);
+resetFiltersButton.addEventListener('click', resetAllFilters);
+
+// Add Form
+addForm.addEventListener('submit', handleAddEventSubmit);
+if (addGanzerRaumCheckbox) {
+    addGanzerRaumCheckbox.addEventListener('change', () => toggleResourceCheckboxes(addGanzerRaumCheckbox, '#add-resources-checkboxes'));
+}
+if (addDeletePreviewButton && addEventImageInput && addImagePreview) {
+    addDeletePreviewButton.addEventListener('click', () => {
+        addEventImageInput.value = null; // Clear the file input
+        addImagePreview.src = '#';
+        addImagePreview.style.display = 'none'; // Hide preview
+        addDeletePreviewButton.style.display = 'none'; // Hide self
+    });
+}
+ // Add Form Image Preview Listener
+ if (addEventImageInput && addImagePreview && addDeletePreviewButton) {
     addEventImageInput.addEventListener('change', function(e) {
         const file = e.target.files[0];
-        // currentAddFile = file; // Behalte ggf. Referenz, falls gebraucht
-
         if (file && file.type.startsWith('image/')) {
             const reader = new FileReader();
             reader.onload = function(loadEvent) {
                 addImagePreview.src = loadEvent.target.result;
                 addImagePreview.style.display = 'block';
-                addDeletePreviewButton.style.display = 'inline-block'; // Zeige Knopf
+                addDeletePreviewButton.style.display = 'inline-block'; // Show delete button
             }
-            reader.readAsDataURL(file);
+            reader.readAsDataURL(file); // Read file for preview
         } else {
-            // Kein Bild oder ungültiger Typ
-            addEventImageInput.value = null; // Wichtig: Auswahl zurücksetzen
-            // currentAddFile = null;
+            addEventImageInput.value = null; // Clear selection if not image
             addImagePreview.src = '#';
             addImagePreview.style.display = 'none';
-            addDeletePreviewButton.style.display = 'none'; // Verstecke Knopf
+            addDeletePreviewButton.style.display = 'none'; // Hide delete button
         }
-    });
-
-    // Listener für den "Vorschau Löschen"-Knopf im Add-Formular
-    addDeletePreviewButton.addEventListener('click', () => {
-        addEventImageInput.value = null; // Löscht die Dateiauswahl
-        // currentAddFile = null;
-        addImagePreview.src = '#';
-        addImagePreview.style.display = 'none'; // Versteckt Vorschau
-        addDeletePreviewButton.style.display = 'none'; // Versteckt sich selbst
     });
  }
 
-            // Initial Setup
-            console.log("DOM loaded. Initializing application...");
-            showView('event-view');
-            refreshData();
-        });
+// Edit Modal Buttons & Inputs
+if (saveEventButton) saveEventButton.addEventListener('click', handleSaveChanges);
+if (deleteEventButton) deleteEventButton.addEventListener('click', handleDeleteEvent); // Delete the whole event
+if (editDeleteImageButton) editDeleteImageButton.addEventListener('click', handleDeleteImage); // Delete just the image
+if (editGanzerRaumCheckbox) {
+    editGanzerRaumCheckbox.addEventListener('change', () => toggleResourceCheckboxes(editGanzerRaumCheckbox, '#edit-resources-checkboxes'));
+}
+// Optional: Listener for editEventImageInput 'change' to update preview (add if needed)
+
+// Event List (for tile clicks - expand/collapse and triggering edit)
+listElement.addEventListener('click', handleTileClick);
+
+
+// --- Initial Application Setup ---
+console.log("DOM loaded. Initializing application...");
+showView('event-view'); // Show event list initially
+
+// Check initial authentication status
+try {
+    const response = await fetch(`${API_BASE_URL}/api/auth/status`); // Use async function for listener
+    if (!response.ok) {
+        // Handle non-OK response during status check if needed, but likely indicates backend issue
+        console.error(`Auth status check failed with status: ${response.status}`);
+        isLoggedIn = false;
+    } else {
+        const data = await response.json();
+        if (data.loggedIn) {
+            isLoggedIn = true;
+            console.log("User is logged in via session.");
+        } else {
+            isLoggedIn = false;
+            console.log("User is not logged in.");
+        }
+    }
+} catch(error) {
+    console.error("Error checking auth status:", error);
+    isLoggedIn = false; // Assume not logged in if status check fails
+}
+
+updateUIAfterLoginStateChange(); // Update UI based on initial loggedIn state
+
+// Fetch initial data (refreshData might check isLoggedIn internally if needed,
+// or GET /api/events might just be public)
+refreshData();
+
+}); // End DOMContentLoaded Listener
 
         /** Behandelt den Klick auf den Bild-Löschen-Knopf im Edit-Modal */
 async function handleDeleteImage() {
