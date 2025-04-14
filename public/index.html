@@ -816,6 +816,7 @@ function handleSaveChanges() {
 
         // --- Initialization and Event Listeners ---
 <<<<<<< HEAD
+<<<<<<< HEAD
 document.addEventListener('DOMContentLoaded', async function () { // Added async for initial auth check
 
     // --- Get DOM References ---
@@ -1095,11 +1096,80 @@ refreshData();
     });
  }
 
+=======
+        document.addEventListener('DOMContentLoaded', function () {
+            // Get DOM references (ensure all new IDs are included)
+            eventView = document.getElementById('event-view'); addFormView = document.getElementById('add-form-view'); helpView = document.getElementById('help-view'); listElement = document.getElementById('event-liste'); loadingElement = document.getElementById('loading'); errorElement = document.getElementById('error-message'); successElement = document.getElementById('success-message'); searchTermInput = document.getElementById('search-term'); monthFilterSelect = document.getElementById('month-filter'); yearFilterSelect = document.getElementById('year-filter'); resetFiltersButton = document.getElementById('reset-filters'); typeFilterSelect = document.getElementById('type-filter'); addForm = document.getElementById('addEventForm'); addEventButton = document.getElementById('addEventButton'); addSpinner = addEventButton?.querySelector('.spinner-border'); addFormFeedback = document.getElementById('add-form-feedback'); addEventImageInput = document.getElementById('add-event-image'); addImagePreview = document.getElementById('add-image-preview'); menuShowList = document.getElementById('menu-show-list'); menuShowAddForm = document.getElementById('menu-show-add-form'); menuShowHelp = document.getElementById('menu-show-help'); editModalElement = document.getElementById('editEventModal'); if (editModalElement) editModal = new bootstrap.Modal(editModalElement); editForm = document.getElementById('editEventForm'); saveEventButton = document.getElementById('saveEventButton'); saveSpinner = saveEventButton?.querySelector('.spinner-border'); editFormFeedback = document.getElementById('edit-form-feedback'); editImagePreview = document.getElementById('edit-image-preview'); noEditImageText = document.getElementById('no-edit-image'); editEventIdInput = document.getElementById('edit-id'); deleteEventButton = document.getElementById('deleteEventButton'); deleteSpinner = deleteEventButton?.querySelector('.spinner-border'); addDeletePreviewButton = document.getElementById('add-delete-preview-button'); editDeleteImageButton = document.getElementById('edit-delete-image-button');editEventImageInput = document.getElementById('edit-event-image'); addGanzerRaumCheckbox = document.getElementById('add-res-ganzer-raum');editGanzerRaumCheckbox = document.getElementById('edit-res-ganzer-raum');
+            // Check critical elements
+            if (!listElement || !editModalElement || !addForm || !editForm || !deleteEventButton || !addEventImageInput || !addImagePreview || !editImagePreview || !editEventIdInput || !noEditImageText || !addDeletePreviewButton || !editDeleteImageButton || !editEventImageInput) {
+                console.error("Critical UI elements missing! Check HTML IDs for forms, modals, image previews, and hidden ID input.");
+                showError({ message: "Initialization Error: Core UI elements missing." }); return;
+            }
+
+            // Register Event Listeners (unchanged)
+            menuShowList.addEventListener('click', (e)=>{ e.preventDefault(); showView('event-view'); });
+            menuShowAddForm.addEventListener('click', (e)=>{ e.preventDefault(); promptForAddPassword(); });
+            menuShowHelp.addEventListener('click', (e)=> { e.preventDefault(); showView('help-view'); });
+            searchTermInput.addEventListener('input', applyFiltersAndRender); monthFilterSelect.addEventListener('change', applyFiltersAndRender); yearFilterSelect.addEventListener('change', applyFiltersAndRender); typeFilterSelect.addEventListener('change', applyFiltersAndRender);
+            resetFiltersButton.addEventListener('click', resetAllFilters);
+            addForm.addEventListener('submit', handleAddEventSubmit);
+            saveEventButton.addEventListener('click', handleSaveChanges);
+            deleteEventButton.addEventListener('click', handleDeleteEvent);
+            listElement.addEventListener('click', handleTileClick);
+            if (editDeleteImageButton) {
+                editDeleteImageButton.addEventListener('click', handleDeleteImage);
+            }
+            if (addGanzerRaumCheckbox) {
+                addGanzerRaumCheckbox.addEventListener('change', () => toggleResourceCheckboxes(addGanzerRaumCheckbox, '#add-resources-checkboxes'));
+            }
+            if (editGanzerRaumCheckbox) {
+                editGanzerRaumCheckbox.addEventListener('change', () => toggleResourceCheckboxes(editGanzerRaumCheckbox, '#edit-resources-checkboxes'));
+            }
+            
+
+             // Image preview listener for Add form
+             if (addEventImageInput && addImagePreview && addDeletePreviewButton) {
+    addEventImageInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        // currentAddFile = file; // Behalte ggf. Referenz, falls gebraucht
+
+        if (file && file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = function(loadEvent) {
+                addImagePreview.src = loadEvent.target.result;
+                addImagePreview.style.display = 'block';
+                addDeletePreviewButton.style.display = 'inline-block'; // Zeige Knopf
+            }
+            reader.readAsDataURL(file);
+        } else {
+            // Kein Bild oder ungültiger Typ
+            addEventImageInput.value = null; // Wichtig: Auswahl zurücksetzen
+            // currentAddFile = null;
+            addImagePreview.src = '#';
+            addImagePreview.style.display = 'none';
+            addDeletePreviewButton.style.display = 'none'; // Verstecke Knopf
+        }
+    });
+
+    // Listener für den "Vorschau Löschen"-Knopf im Add-Formular
+    addDeletePreviewButton.addEventListener('click', () => {
+        addEventImageInput.value = null; // Löscht die Dateiauswahl
+        // currentAddFile = null;
+        addImagePreview.src = '#';
+        addImagePreview.style.display = 'none'; // Versteckt Vorschau
+        addDeletePreviewButton.style.display = 'none'; // Versteckt sich selbst
+    });
+ }
+
+>>>>>>> parent of d987ff4 (DomContentLoader fix)
             // Initial Setup
             console.log("DOM loaded. Initializing application...");
             showView('event-view');
             refreshData();
         });
+<<<<<<< HEAD
+>>>>>>> parent of d987ff4 (DomContentLoader fix)
+=======
 >>>>>>> parent of d987ff4 (DomContentLoader fix)
 
         /** Behandelt den Klick auf den Bild-Löschen-Knopf im Edit-Modal */
