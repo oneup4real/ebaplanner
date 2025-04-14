@@ -606,7 +606,7 @@
     }
 
     // Fetch an Backend senden (PUT mit FormData)
-    fetch(`<span class="math-inline">\{API\_BASE\_URL\}/api/events/</span>{eventId}`, { // Verwende Firestore ID
+    fetch(`${API_BASE_URL}/api/events/${eventId}`, { // Verwende Firestore ID
         method: 'PUT',
         body: formData // Sende das FormData Objekt
         // KEINEN 'Content-Type' Header setzen, der Browser macht das für FormData korrekt!
