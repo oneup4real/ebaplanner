@@ -1,14 +1,14 @@
-// server.js (Single Container Version with Firestore, GCS, Static Serving)
+// server.js (Complete Single Container Version - Firestore/GCS Backend + Static Frontend)
 
 // Load .env file for local development environment variables (must be the first line)
 require('dotenv').config();
 
 const express = require('express');
-const path = require('path'); // Required for serving static files
-const { Firestore, FieldValue, Timestamp } = require('@google-cloud/firestore'); // Firestore Client
+const path = require('path'); // Required for serving static files and catch-all route
+const { Firestore, FieldValue, Timestamp } = require('@google-cloud/firestore'); // Firestore Client + Helpers
 const { Storage } = require('@google-cloud/storage'); // Google Cloud Storage Client
 const Multer = require('multer'); // Middleware for handling multipart/form-data (file uploads)
-const { format } = require('util'); // Node.js utility
+const { format } = require('util'); // Node.js utility (used for formatting GCS URL)
 
 // --- Configuration ---
 const PORT = process.env.PORT || 8080; // Port to listen on (Cloud Run sets this automatically)
@@ -36,13 +36,15 @@ const app = express();
 
 // --- Middleware ---
 
-// ** NO CORS needed here ** because frontend and backend are served from the same origin.
+// ** NO CORS needed for single-container setup **
 
-// JSON Parser (needed for PUT /api/events/:id and POST /api/auth/check)
+// JSON Body Parser (needed for PUT /api/events/:id and POST /api/auth/check)
+// Place before routes that need to parse JSON bodies
 app.use(express.json());
 
 // *** Static File Serving ***
-// Serve static files (index.html, stylesheet.css) from the 'public' directory
+// Serve static files (index.html, stylesheet.css, etc.) from the 'public' directory
+// Assumes 'public' folder is at the same level as server.js
 app.use(express.static(path.join(__dirname, 'public')));
 
 // --- Helper Functions ---
@@ -56,7 +58,6 @@ app.use(express.static(path.join(__dirname, 'public')));
  */
 async function uploadToGcs(buffer, originalname, mimetype) {
   return new Promise((resolve, reject) => {
-    // Create a unique filename to avoid overwriting
     const uniqueFilename = `${Date.now()}-${originalname.replace(/ /g, '_')}`;
     const blob = bucket.file(uniqueFilename);
     const blobStream = blob.createWriteStream({
@@ -69,32 +70,30 @@ async function uploadToGcs(buffer, originalname, mimetype) {
       reject(`Error uploading to GCS: ${err.message}`);
     });
 
-  blobStream.on('finish', async () => {
-    try {
-      // await blob.makePublic(); // <--- DELETE THIS LINE
-  
-      // Construct the public URL (this part stays the same)
-      const publicUrl = format(`https://storage.googleapis.com/<span class="math-inline">\{bucket\.name\}/</span>{blob.name}`);
-      console.log("GCS Upload successful, public URL:", publicUrl);
-      resolve(publicUrl); // Resolve with the standard URL
-    } catch (err) {
-      console.error("Error getting public URL (makePublic was removed):", err);
-      // If makePublic was the only thing failing, this reject might not be needed,
-      // but keep it for other potential errors getting the URL.
-      reject(`Error finalizing GCS upload: ${err.message}`);
-    }
-  });
+    blobStream.on('finish', async () => {
+      try {
+        // Make the file publicly readable (Requires correct IAM/Bucket settings)
+        await blob.makePublic();
+        const publicUrl = format(`https://storage.googleapis.com/${bucket.name}/${blob.name}`);
+        console.log("GCS Upload successful, public URL:", publicUrl);
+        resolve(publicUrl);
+      } catch (err) {
+        console.error("Error making file public or getting URL:", err);
+        reject(`Error finalizing GCS upload: ${err.message}`);
+      }
+    });
 
+    blobStream.end(buffer);
+  });
 }
 
 /**
  * Deletes an object from Google Cloud Storage using its public URL.
- * Logs errors but does not throw to prevent blocking event deletion if GCS fails.
+ * Logs errors but does not throw, to avoid blocking event deletion if GCS fails.
  * @param {string} fileUrl The public URL of the file (must start with gs://<bucket-name>/).
  * @returns {Promise<void>}
  */
 async function deleteFromGcs(fileUrl) {
-    // Ensure the URL points to the correct bucket before attempting deletion
     const gcsPrefix = `https://storage.googleapis.com/${bucket.name}/`;
     if (!fileUrl || !fileUrl.startsWith(gcsPrefix)) {
         console.warn(`Invalid or non-matching GCS URL provided for deletion: ${fileUrl}`);
@@ -110,7 +109,6 @@ async function deleteFromGcs(fileUrl) {
         await bucket.file(fileName).delete();
         console.log(`Successfully deleted GCS object: ${fileName}`);
     } catch (error) {
-        // Log error but don't fail the entire request (e.g., if file already deleted)
         console.error(`Failed to delete GCS object ${fileUrl}:`, error.message);
         // Optionally check error.code === 404 to specifically ignore "Not Found"
     }
@@ -123,14 +121,14 @@ app.get('/api/events', async (req, res) => {
   console.log('API GET /api/events called');
   try {
     const snapshot = await eventsCollection
-      .orderBy('eventDate', 'asc') // Use the Firestore Timestamp field for sorting
-      .orderBy('startTime', 'asc') // Secondary sort by string
+      .orderBy('eventDate', 'asc') // Order by Firestore Timestamp
+      .orderBy('startTime', 'asc') // Secondary sort by time string
       .get();
 
     const events = [];
     snapshot.forEach(doc => {
       const data = doc.data();
-      // Convert Firestore Timestamps back to YYYY-MM-DD for the frontend date input
+      // Convert Firestore Timestamps back to YYYY-MM-DD for the frontend
       events.push({
         id: doc.id, // Include Firestore document ID
         ...data,
@@ -138,7 +136,6 @@ app.get('/api/events', async (req, res) => {
         createdAt: data.createdAt?.toDate()?.toISOString() || null
       });
     });
-
     console.log(`${events.length} events fetched from Firestore.`);
     res.json(events);
   } catch (error) {
@@ -150,7 +147,7 @@ app.get('/api/events', async (req, res) => {
 // POST /api/events - Adds a new event (with optional image upload)
 // Uses multer middleware *only* for this route to handle multipart/form-data
 app.post('/api/events', multer.single('eventImage'), async (req, res) => {
-  // 'eventImage' must match the 'name' attribute of the <input type="file"> in the frontend form
+  // 'eventImage' must match the 'name' attribute of the file input in the frontend form
   console.log('API POST /api/events called');
   try {
     const eventData = req.body; // Text fields are parsed by multer into req.body
@@ -188,11 +185,9 @@ app.post('/api/events', multer.single('eventImage'), async (req, res) => {
             eventDateTimestamp = Timestamp.fromDate(new Date(eventData[FIELD_DATE] + 'T00:00:00Z'));
         } catch(e) {
              console.warn(`Could not parse date from frontend: ${eventData[FIELD_DATE]}`);
-             // Return a specific error if date parsing fails
              return res.status(400).json({ success: false, message: 'Invalid date format. Please use YYYY-MM-DD.' });
         }
     } else {
-         // This case should be caught by the initial validation, but belts and suspenders
          return res.status(400).json({ success: false, message: 'Date is a required field.' });
     }
 
@@ -358,12 +353,11 @@ app.post('/api/auth/check', (req, res) => {
 });
 
 
-// *** ADDED CATCH-ALL ROUTE FOR FRONTEND ***
+// *** Catch-All Route for Frontend ***
 // This MUST be AFTER all your API routes.
-// It serves the main index.html for any GET request that doesn't match an API route or a static file in the /public folder.
-// This is important for handling browser refreshes or direct links if you were using frontend routing (though less critical for the current simple view switching).
+// It serves the main index.html for any GET request that didn't match an API route or a static file in the /public folder.
 app.get('/*splat', (req, res) => {
-  // Ensure the path points correctly to your index.html within the public folder
+  // Assumes index.html is in the 'public' directory at the project root
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
@@ -371,7 +365,7 @@ app.get('/*splat', (req, res) => {
 // --- Server Start ---
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
-  // Startup Warnings (unchanged)
+  // Startup Warnings
   if (!process.env.GOOGLE_APPLICATION_CREDENTIALS && !process.env.GOOGLE_CLOUD_PROJECT) {
       console.warn('WARNING: Application Default Credentials (ADC) not found / configured. Authentication with GCP services will likely fail unless running on GCP (like Cloud Run with a service account).');
   }
