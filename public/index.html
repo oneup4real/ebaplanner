@@ -8,7 +8,8 @@
     <title>EBA-BAR Event List & Entry</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="/stylesheet.css"> </head>
+    <link rel="stylesheet" href="/stylesheet.css">
+</head>
 
 <body>
 
@@ -36,7 +37,7 @@
 
         <div id="login-view" class="d-none">
              <h1 class="mb-4">Login Required</h1>
-             <div class="add-form-container p-4 rounded mx-auto" style="max-width: 500px;"> <p>Please enter the password to add or edit events.</p>
+             <div class="login-view-container p-4 rounded mx-auto" style="max-width: 500px;"> <p>Please enter the password to add or edit events.</p>
                   <div class="mb-3">
                       <label for="login-password" class="form-label">Password</label>
                       <input type="password" class="form-control" id="login-password" required>
@@ -53,23 +54,9 @@
             <h1 class="mb-4">EBA-BAR Event List</h1>
             <div id="filter-bar">
                 <div class="row g-3 align-items-end">
-                    <div class="col-md-4 col-sm-12"> <label for="search-term" class="form-label">Search (Title/Description)</label>
-                        <input type="text" class="form-control form-control-sm" id="search-term" placeholder="Enter search term...">
-                    </div>
-                    <div class="col-md-2 col-sm-6">
-                        <label for="type-filter" class="form-label">Type</label>
-                        <select class="form-select form-select-sm" id="type-filter">
-                            <option value="" selected>All</option>
-                            <option value="Öffentlich">Public</option>
-                            <option value="Privat">Private</option>
-                        </select>
-                    </div>
-                    <div class="col-md-5 col-sm-6"> <label class="form-label">Month / Year</label>
-                        <div class="input-group input-group-sm">
-                            <select class="form-select form-select-sm" id="month-filter"> <option value="" selected>Month (All)</option> <option value="01">January</option><option value="02">February</option><option value="03">March</option><option value="04">April</option><option value="05">May</option><option value="06">June</option><option value="07">July</option><option value="08">August</option><option value="09">September</option><option value="10">October</option><option value="11">November</option><option value="12">December</option> </select>
-                            <select class="form-select form-select-sm" id="year-filter"> <option value="" selected>Year (All)</option> </select>
-                        </div>
-                    </div>
+                    <div class="col-md-4 col-sm-12"> <label for="search-term" class="form-label">Search (Title/Description)</label> <input type="text" class="form-control form-control-sm" id="search-term" placeholder="Enter search term..."> </div>
+                    <div class="col-md-2 col-sm-6"> <label for="type-filter" class="form-label">Type</label> <select class="form-select form-select-sm" id="type-filter"> <option value="" selected>All</option> <option value="Öffentlich">Public</option> <option value="Privat">Private</option> </select> </div>
+                    <div class="col-md-5 col-sm-6"> <label class="form-label">Month / Year</label> <div class="input-group input-group-sm"> <select class="form-select form-select-sm" id="month-filter"> <option value="" selected>Month (All)</option> <option value="01">January</option><option value="02">February</option><option value="03">March</option><option value="04">April</option><option value="05">May</option><option value="06">June</option><option value="07">July</option><option value="08">August</option><option value="09">September</option><option value="10">October</option><option value="11">November</option><option value="12">December</option> </select> <select class="form-select form-select-sm" id="year-filter"> <option value="" selected>Year (All)</option> </select> </div> </div>
                     <div class="col-md-1 col-sm-12 d-grid"> <button class="btn btn-secondary btn-sm" id="reset-filters" type="button">Reset</button> </div>
                 </div>
             </div>
@@ -83,22 +70,12 @@
             <div class="add-form-container p-4 rounded">
                 <form id="addEventForm" novalidate>
                     <div class="mb-3"> <label for="add-title" class="form-label">Event Title*</label> <input type="text" class="form-control" id="add-title" required> </div>
-                    <div class="row mb-3">
-                        <div class="col-md-4"> <label for="add-date" class="form-label">Date*</label> <input type="date" class="form-control" id="add-date" required> </div>
-                        <div class="col-md-4"> <label for="add-startTime" class="form-label">Start Time (HH:MM)</label> <input type="time" class="form-control" id="add-startTime"> </div>
-                        <div class="col-md-4"> <label for="add-endTime" class="form-label">End Time (HH:MM)</label> <input type="time" class="form-control" id="add-endTime"> </div>
-                    </div>
+                    <div class="row mb-3"> <div class="col-md-4"> <label for="add-date" class="form-label">Date*</label> <input type="date" class="form-control" id="add-date" required> </div> <div class="col-md-4"> <label for="add-startTime" class="form-label">Start Time (HH:MM)</label> <input type="time" class="form-control" id="add-startTime"> </div> <div class="col-md-4"> <label for="add-endTime" class="form-label">End Time (HH:MM)</label> <input type="time" class="form-control" id="add-endTime"> </div> </div>
                     <div class="mb-3"> <label for="add-description" class="form-label">Description</label> <textarea class="form-control" id="add-description" rows="3"></textarea> </div>
-                    <div class="mb-3"> <label class="form-label">Event Type*</label>
-                        <div>
-                            <div class="form-check form-check-inline"> <input class="form-check-input" type="radio" name="add-event-type" id="add-type-public" value="Öffentlich" checked required> <label class="form-check-label" for="add-type-public">Public</label> </div>
-                            <div class="form-check form-check-inline"> <input class="form-check-input" type="radio" name="add-event-type" id="add-type-private" value="Privat" required> <label class="form-check-label" for="add-type-private">Private</label> </div>
-                        </div>
-                    </div>
+                    <div class="mb-3"> <label class="form-label">Event Type*</label> <div> <div class="form-check form-check-inline"> <input class="form-check-input" type="radio" name="add-event-type" id="add-type-public" value="Öffentlich" checked required> <label class="form-check-label" for="add-type-public">Public</label> </div> <div class="form-check form-check-inline"> <input class="form-check-input" type="radio" name="add-event-type" id="add-type-private" value="Privat" required> <label class="form-check-label" for="add-type-private">Private</label> </div> </div> </div>
                     <div class="mb-3"> <label class="form-label">Required Resources <small class="text-muted">(Selection disabled if "Entire Room" checked)</small></label>
                         <div id="add-resources-checkboxes">
-                            <div class="form-check"><input class="form-check-input" type="checkbox" value="Ganzer Raum" id="add-res-ganzer-raum"><label class="form-check-label fw-bold" for="add-res-ganzer-raum">Entire Room</label></div>
-                            <hr class="my-2">
+                            <div class="form-check"><input class="form-check-input" type="checkbox" value="Ganzer Raum" id="add-res-ganzer-raum"><label class="form-check-label fw-bold" for="add-res-ganzer-raum">Entire Room</label></div> <hr class="my-2">
                             <div class="form-check"><input class="form-check-input resource-checkbox" type="checkbox" name="add-resources" value="Retro Game Station" id="add-res-retro"><label class="form-check-label" for="add-res-retro">Retro Game Station</label></div>
                             <div class="form-check"><input class="form-check-input resource-checkbox" type="checkbox" name="add-resources" value="Beamer und Sofa" id="add-res-beamersofa"><label class="form-check-label" for="add-res-beamersofa">Projector and Sofa</label></div>
                             <div class="form-check"><input class="form-check-input resource-checkbox" type="checkbox" name="add-resources" value="Flipperkasten" id="add-res-flipper"><label class="form-check-label" for="add-res-flipper">Pinball Machine</label></div>
@@ -135,11 +112,7 @@
                 <div class="modal-body">
                     <form id="editEventForm" novalidate>
                         <input type="hidden" id="edit-id"> <div class="mb-3"> <label for="edit-title" class="form-label">Event Title*</label> <input type="text" class="form-control" id="edit-title" required> </div>
-                        <div class="row mb-3">
-                            <div class="col-md-4"> <label for="edit-date" class="form-label">Date*</label> <input type="date" class="form-control" id="edit-date" required> </div>
-                            <div class="col-md-4"> <label for="edit-startTime" class="form-label">Start Time (HH:MM)</label> <input type="time" class="form-control" id="edit-startTime"> </div>
-                            <div class="col-md-4"> <label for="edit-endTime" class="form-label">End Time (HH:MM)</label> <input type="time" class="form-control" id="edit-endTime"> </div>
-                        </div>
+                        <div class="row mb-3"> <div class="col-md-4"> <label for="edit-date" class="form-label">Date*</label> <input type="date" class="form-control" id="edit-date" required> </div> <div class="col-md-4"> <label for="edit-startTime" class="form-label">Start Time (HH:MM)</label> <input type="time" class="form-control" id="edit-startTime"> </div> <div class="col-md-4"> <label for="edit-endTime" class="form-label">End Time (HH:MM)</label> <input type="time" class="form-control" id="edit-endTime"> </div> </div>
                         <div class="mb-3"> <label for="edit-description" class="form-label">Description</label> <textarea class="form-control" id="edit-description" rows="3"></textarea> </div>
                         <div class="mb-3"> <label class="form-label">Event Type*</label> <div> <div class="form-check form-check-inline"> <input class="form-check-input" type="radio" name="edit-event-type" id="edit-type-public" value="Öffentlich" required> <label class="form-check-label" for="edit-type-public">Public</label> </div> <div class="form-check form-check-inline"> <input class="form-check-input" type="radio" name="edit-event-type" id="edit-type-private" value="Privat" required> <label class="form-check-label" for="edit-type-private">Private</label> </div> </div> </div>
                         <div class="mb-3"> <label class="form-label">Required Resources <small class="text-muted">(Selection disabled if "Entire Room" checked)</small></label>
@@ -172,14 +145,15 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // --- Constants for Backend Field Names ---
-        const FIELD_DATE = 'eventDate'; // Expects YYYY-MM-DD format for PUT/POST body
+        // Use keys expected by the backend API (lowercase often preferred for JSON/Firestore)
+        const FIELD_DATE = 'eventDate'; // Expects/Sends YYYY-MM-DD format
         const FIELD_TITLE = 'title';
         const FIELD_START_TIME = 'startTime';
         const FIELD_END_TIME = 'endTime';
         const FIELD_DESCRIPTION = 'description';
         const FIELD_RESOURCES = 'resources'; // Comma-separated string or 'Ganzer Raum'
         const FIELD_RESPONSIBLE = 'responsible';
-        const FIELD_EVENT_TYPE = 'eventType';
+        const FIELD_EVENT_TYPE = 'eventType'; // Stores 'Öffentlich' or 'Privat'
         const FIELD_PARTICIPANT_INFO = 'participantInfo';
         const FIELD_IMAGE_URL = 'imageUrl'; // Field name for the image URL from GCS
 
@@ -188,16 +162,16 @@
         let isLoggedIn = false; // Track login state
 
         // --- DOM References ---
-        // Declare all variables that will hold DOM elements
+        // Declare all variables that will hold DOM elements globally or module-scoped
         let eventView, addFormView, helpView, listElement, loadingElement, errorElement, successElement;
         let searchTermInput, monthFilterSelect, yearFilterSelect, resetFiltersButton, typeFilterSelect;
         let addForm, addEventButton, addSpinner, addFormFeedback, addEventImageInput, addImagePreview, addGanzerRaumCheckbox, addDeletePreviewButton;
-        let menuShowList, menuShowAddForm, menuShowHelp, logoutButton; // Added logoutButton
+        let menuShowList, menuShowAddForm, menuShowHelp, logoutButton;
         let editModalElement, editModal, editForm, saveEventButton, saveSpinner, editFormFeedback, editImagePreview, noEditImageText, editEventIdInput, editGanzerRaumCheckbox, editEventImageInput, editDeleteImageButton;
         let deleteEventButton, deleteSpinner;
-        let loginView, loginPasswordInput, loginButton, loginFeedback; // Added Login UI elements
+        let loginView, loginPasswordInput, loginButton, loginFeedback;
 
-        // Backend API Base URL (Empty for same-origin deployment)
+        // Backend API Base URL (Empty for same-origin deployment in monolith)
         const API_BASE_URL = '';
 
         // --- UI Helper Functions ---
@@ -206,21 +180,15 @@
         function showView(viewId) {
             const views = [loginView, eventView, addFormView, helpView];
             views.forEach(view => {
-                if (view) { // Check if element exists
-                    if (view.id === viewId) {
-                        view.classList.remove('d-none');
-                    } else {
-                        view.classList.add('d-none');
-                    }
-                } else {
-                  console.warn(`View element with potential ID ${viewId} not found during showView call.`);
-                }
+                if (view) {
+                    if (view.id === viewId) { view.classList.remove('d-none'); }
+                    else { view.classList.add('d-none'); }
+                } else { console.warn(`View element for ${viewId} not found.`); }
             });
-            hideMessages(); // Hide global messages when changing views
-            // Special handling for add form reset
+            hideMessages();
             if (viewId === 'add-form-view') {
                  if (addForm) addForm.reset();
-                 clearAddFormFeedback(); // Also reset checkboxes/preview
+                 clearAddFormFeedback();
             }
         }
 
@@ -229,47 +197,29 @@
              if (!errorElement) return;
              console.error("Error displayed:", error);
              let t = "An unknown error occurred.";
-             if (typeof error === 'string') t = error;
-             else if (error && error.message) t = error.message; // Prefer error.message
-             else if (error && error.error) t = error.error; // Check for { error: '...' } object
-             else if (error && error.name) t = `Error: ${error.name}`;
-             hideMessages();
-             errorElement.textContent = `Error: ${t}`;
-             errorElement.classList.remove('d-none');
+             if (typeof error === 'string') t = error; else if (error && error.message) t = error.message; else if (error && error.error) t = error.error; else if (error && error.name) t = `Error: ${error.name}`;
+             hideMessages(); errorElement.textContent = `Error: ${t}`; errorElement.classList.remove('d-none');
          }
         /** Shows a global success message */
          function showSuccess(message) {
              if (!successElement) return;
-             hideMessages();
-             successElement.textContent = message;
-             successElement.classList.remove('d-none');
-             setTimeout(hideMessages, 4000); // Auto-hide after 4 seconds
+             hideMessages(); successElement.textContent = message; successElement.classList.remove('d-none');
+             setTimeout(hideMessages, 4000);
          }
         /** Shows a global loading/info message */
          function showLoadingFeedback(message) {
              if (!successElement) return;
-             hideMessages();
-             successElement.textContent = message;
-             successElement.classList.remove('alert-success'); // Make it look different
-             successElement.classList.add('alert-info');
-             successElement.classList.remove('d-none');
+             hideMessages(); successElement.textContent = message; successElement.classList.remove('alert-success'); successElement.classList.add('alert-info'); successElement.classList.remove('d-none');
          }
         /** Hides global messages */
          function hideMessages() {
              if (errorElement) errorElement.classList.add('d-none');
-             if (successElement) {
-                 successElement.classList.add('d-none');
-                 successElement.classList.remove('alert-info'); // Reset style
-                 successElement.classList.add('alert-success');
-             }
-            // Also clear form-specific feedback if needed (handled elsewhere now)
+             if (successElement) { successElement.classList.add('d-none'); successElement.classList.remove('alert-info'); successElement.classList.add('alert-success'); }
+             hideLoginFeedback(); // Also hide login specific feedback
          }
         /** Resets all filters */
          function resetAllFilters() {
-             if (searchTermInput) searchTermInput.value = '';
-             if (monthFilterSelect) monthFilterSelect.value = '';
-             if (yearFilterSelect) yearFilterSelect.value = '';
-             if (typeFilterSelect) typeFilterSelect.value = '';
+             if (searchTermInput) searchTermInput.value = ''; if (monthFilterSelect) monthFilterSelect.value = ''; if (yearFilterSelect) yearFilterSelect.value = ''; if (typeFilterSelect) typeFilterSelect.value = '';
              applyFiltersAndRender();
          }
 
@@ -283,11 +233,10 @@
             addOtherCheckboxes.forEach(cb => { cb.checked = false; cb.disabled = false; });
             if (addGanzerRaumCheckbox) {
                 addGanzerRaumCheckbox.checked = false;
-                // Explicitly enable others in case it was left disabled
-                toggleResourceCheckboxes(addGanzerRaumCheckbox, '#add-resources-checkboxes');
+                toggleResourceCheckboxes(addGanzerRaumCheckbox, '#add-resources-checkboxes'); // Ensure others are enabled
             }
             const addTypePublic = document.getElementById('add-type-public');
-            if (addTypePublic) addTypePublic.checked = true; // Default to public
+            if (addTypePublic) addTypePublic.checked = true;
          }
 
          /** Clears feedback and resets specific edit form elements */
@@ -295,9 +244,9 @@
              if (editFormFeedback) { editFormFeedback.textContent = ''; editFormFeedback.className = 'mt-3'; }
              if (editImagePreview) { editImagePreview.style.display = 'none'; editImagePreview.src = '#'; }
              if (noEditImageText) { noEditImageText.style.display = 'none'; }
-             if (editDeleteImageButton) { editDeleteImageButton.style.display = 'none';}
-             if (editEventImageInput) { editEventImageInput.value = null; } // Clear potential new file selection
-             // Checkboxes are reset when modal is opened by openEditModal
+             if (editDeleteImageButton) { editDeleteImageButton.style.display = 'none'; }
+             if (editEventImageInput) { editEventImageInput.value = null; }
+             // Checkboxes are reset when modal is opened by openEditModal based on saved data
          }
 
          /** Shows feedback message within the login UI */
@@ -317,52 +266,41 @@
              }
          }
 
+         /** Toggles resource checkboxes based on 'Ganzer Raum' state */
+         function toggleResourceCheckboxes(ganzerRaumCheckbox, containerSelector) {
+             const container = document.querySelector(containerSelector);
+             if (!container || !ganzerRaumCheckbox) return;
+             const otherCheckboxes = container.querySelectorAll('.resource-checkbox');
+             const shouldBeDisabled = ganzerRaumCheckbox.checked;
+             otherCheckboxes.forEach(cb => { cb.disabled = shouldBeDisabled; if (shouldBeDisabled) { cb.checked = false; } });
+         }
+
         // --- Authentication and Session Functions ---
 
-        /** Checks password against the backend API */
+        /** Calls backend to login and create session */
         async function loginApi(password) {
-            hideLoginFeedback(); // Hide previous messages
-            showLoadingFeedback("Attempting login..."); // Use global loading
+            hideLoginFeedback(); showLoadingFeedback("Attempting login...");
             if (loginButton) loginButton.disabled = true;
-
             try {
-                const response = await fetch(`${API_BASE_URL}/api/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ password: password })
-                });
-                const data = await response.json(); // Always parse JSON
-                hideMessages(); // Hide loading message
-                if (!response.ok || !data.success) {
-                    throw new Error(data.message || "Login failed.");
-                }
-                return true; // Indicate success
+                const response = await fetch(`${API_BASE_URL}/api/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: password }) });
+                const data = await response.json(); hideMessages();
+                if (!response.ok || !data.success) { throw new Error(data.message || "Login failed."); }
+                return true; // Success
             } catch (error) {
-                hideMessages();
-                console.error("Error during login API call:", error);
-                showLoginFeedback("Login failed: " + error.message, false); // Show error in login area
-                if (loginPasswordInput) loginPasswordInput.value = ''; // Clear password field on error
-                if (loginPasswordInput) loginPasswordInput.focus();
-                return false; // Indicate failure
-            } finally {
-                 if (loginButton) loginButton.disabled = false;
-            }
+                hideMessages(); console.error("Error during login API call:", error);
+                showLoginFeedback("Login failed: " + error.message, false);
+                if (loginPasswordInput) { loginPasswordInput.value = ''; loginPasswordInput.focus(); }
+                return false; // Failure
+            } finally { if (loginButton) loginButton.disabled = false; }
         }
 
         /** Checks current session status with the backend */
         async function checkAuthStatusApi() {
             try {
                 const response = await fetch(`${API_BASE_URL}/api/auth/status`);
-                if (!response.ok) {
-                    console.error(`Auth status check failed with status: ${response.status}`);
-                    return false; // Not logged in if status fails
-                }
-                const data = await response.json();
-                return data.loggedIn; // Return true or false from API
-            } catch (error) {
-                console.error("Error checking auth status:", error);
-                return false; // Assume not logged in if API call fails
-            }
+                if (!response.ok) { console.error(`Auth status check failed with status: ${response.status}`); return false; }
+                const data = await response.json(); return data.loggedIn;
+            } catch (error) { console.error("Error checking auth status:", error); return false; }
         }
 
         /** Calls the logout endpoint */
@@ -370,37 +308,33 @@
             try {
                  const response = await fetch(`${API_BASE_URL}/api/logout`, { method: 'POST' });
                  if (!response.ok) { console.warn("Logout API call failed, clearing session locally anyway."); }
-            } catch(e) { console.error("Logout API call failed:", e); } // Log error but proceed
+            } catch(e) { console.error("Logout API call failed:", e); }
             isLoggedIn = false;
-            updateUIAfterLoginStateChange(); // Update UI immediately
-            showView('event-view'); // Go back to main view (or login view)
+            updateUIAfterLoginStateChange();
+            showView('event-view'); // Go back to overview after logout
             showSuccess("You have been logged out.");
         }
 
         /** Updates UI elements based on loggedIn state */
         function updateUIAfterLoginStateChange() {
-            const protectedMenuItems = [menuShowAddForm]; // Items to show only when logged in
-            const publicMenuItems = [menuShowList, menuShowHelp];
-            const loginViewElements = [loginView]; // The login form container
-            const nonLoginViews = [eventView, addFormView, helpView]; // Views hidden when showing login
+            const protectedMenuItems = [menuShowAddForm];
+            const publicMenuItems = [menuShowList, menuShowHelp]; // Login button is handled separately
+            const loginViewElements = [loginView];
+            const mainViews = [eventView, addFormView, helpView]; // Views hidden when showing login
 
             if (isLoggedIn) {
                 protectedMenuItems.forEach(el => { if(el) el.style.display = 'block'; });
-                if (logoutButton) logoutButton.style.display = 'block';
+                if (logoutButton) logoutButton.style.display = 'block'; // Show logout
                 if (loginView) loginView.classList.add('d-none'); // Hide login form
+                // Ensure main view area is potentially visible (showView handles specifics)
 
             } else {
                 protectedMenuItems.forEach(el => { if(el) el.style.display = 'none'; });
-                if (logoutButton) logoutButton.style.display = 'none';
-                // Decide if login view should be shown automatically - maybe not, let user navigate?
-                // if (loginView) loginView.classList.remove('d-none');
-                // nonLoginViews.forEach(view => { if(view) view.classList.add('d-none'); });
+                if (logoutButton) logoutButton.style.display = 'none'; // Hide logout
+                // Don't automatically show login view here, let initial load or navigation handle it
             }
-            // Show/Hide Edit/Delete buttons on already rendered tiles (needs re-render ideally)
-            // This is tricky without a framework; easiest is to control access before *opening* the modal
-            // We can hide the buttons on render though:
-            document.querySelectorAll('.edit-event-btn').forEach(btn => btn.style.display = isLoggedIn ? '' : 'none');
-
+            // Update edit buttons on existing tiles (if rendered)
+            document.querySelectorAll('.edit-event-btn').forEach(btn => btn.style.display = isLoggedIn ? 'inline-block' : 'none');
         }
 
 
@@ -408,8 +342,7 @@
 
         /** Populates year filter dropdown */
         function populateFilters(events) {
-             if (!yearFilterSelect) return;
-             const years = new Set();
+             if (!yearFilterSelect) return; const years = new Set();
              events.forEach(event => { const dateStr = event[FIELD_DATE]; if (dateStr) { try { years.add(dateStr.substring(0, 4)); } catch(e) {} } });
              const sortedYears = Array.from(years).sort((a, b) => b.localeCompare(a)); yearFilterSelect.innerHTML = '<option value="" selected>Year (All)</option>';
              sortedYears.forEach(year => { const opt = document.createElement('option'); opt.value = year; opt.textContent = year; yearFilterSelect.appendChild(opt); });
@@ -456,7 +389,8 @@
                     ${typeBadgeHTML ? `<div class="mb-2">${typeBadgeHTML}</div>` : ''}
                     <div class="d-flex justify-content-between align-items-start">
                         <h5 class="mb-1 flex-grow-1">${title || 'Untitled Event'}</h5>
-                        <button type="button" class="btn btn-sm btn-outline-secondary ms-2 edit-event-btn" data-id="${event.id}" aria-label="Edit" style="display: ${isLoggedIn ? 'inline-block' : 'none'};"><i class="bi bi-pencil"></i></button> </div>
+                        <button type="button" class="btn btn-sm btn-outline-secondary ms-2 edit-event-btn" data-id="${event.id}" aria-label="Edit" style="display: ${isLoggedIn ? 'inline-block' : 'none'};"><i class="bi bi-pencil"></i></button>
+                    </div>
                     <div class="row align-items-center mt-2">
                         <div class="col-md-6"> <div class="d-flex flex-column"> <small class="fw-bold">${displayDate}</small> <small class="mb-2">${timeString}</small> <small>${responsible ? `<strong class="me-1">Responsible:</strong>${responsible}` : ''}</small> </div> </div>
                         <div class="col-md-6 border-start ps-md-3"> <div class="d-flex flex-column"> ${description ? `<p class="mb-1 small"><strong class="me-1">Description:</strong>${description}</p>` : '<p class="mb-1 small">&nbsp;</p>'} <small>${resources ? `<strong class="me-1">Resources:</strong>${resources}` : ''}</small> </div> </div>
@@ -470,194 +404,218 @@
              });
         }
 
-         /** Toggles resource checkboxes based on 'Ganzer Raum' state */
-         function toggleResourceCheckboxes(ganzerRaumCheckbox, containerSelector) {
-             const container = document.querySelector(containerSelector);
-             if (!container || !ganzerRaumCheckbox) return;
-             const otherCheckboxes = container.querySelectorAll('.resource-checkbox');
-             const shouldBeDisabled = ganzerRaumCheckbox.checked;
-             otherCheckboxes.forEach(cb => { cb.disabled = shouldBeDisabled; if (shouldBeDisabled) { cb.checked = false; } });
-         }
-
-         /** Handles clicks within the event list for expand/collapse or edit trigger */
-         function handleTileClick(event) {
+        /** Handles clicks within the event list for expand/collapse or edit trigger */
+        function handleTileClick(event) {
             const clickedEditButton = event.target.closest('.edit-event-btn');
             const clickedTile = event.target.closest('.event-kachel');
             const clickedLink = event.target.closest('a');
 
-            // Click on Edit Button
-            if (clickedEditButton) {
+            if (clickedEditButton) { // Handle edit button click
                 event.stopPropagation();
-                if (isLoggedIn) { // Only proceed if logged in
+                if (isLoggedIn) {
                      const eventId = clickedEditButton.getAttribute('data-id');
-                     if (eventId) { openEditModal(eventId); } // Open modal directly (no password prompt here)
+                     if (eventId) { openEditModal(eventId); } // Open modal directly if logged in
                 } else {
-                     alert("Please log in to edit events."); // Inform user
-                     showView('login-view'); // Optionally show login view
+                     alert("Please log in to edit events.");
+                     showView('login-view');
                 }
                 return;
             }
-            // Click on Link
-            if (clickedLink) { return; }
-            // Click on Tile area
-            if (clickedTile) {
+            if (clickedLink) { return; } // Allow links to work normally
+
+            if (clickedTile) { // Handle tile expand/collapse
                 const currentlyExpanded = listElement.querySelector('.event-kachel.expanded');
                 if (currentlyExpanded && currentlyExpanded !== clickedTile) { currentlyExpanded.classList.remove('expanded'); }
                 clickedTile.classList.toggle('expanded');
             }
         };
 
-        /** Fetches events data from the backend API */
-        async function refreshData() {
-            console.log("Loading data via API endpoint /api/events...");
-            if (loadingElement) loadingElement.classList.remove('d-none');
-            if (listElement) listElement.innerHTML = '';
-            hideMessages();
+        // --- Add/Edit/Delete Function Implementations ---
 
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/events`);
-                if (!response.ok) {
-                     const errData = await response.json().catch(() => ({ error: `HTTP Error ${response.status}` }));
-                     throw new Error(errData.error || `HTTP Error ${response.status}`);
-                 }
-                const data = await response.json();
-                if (!Array.isArray(data)) { throw new Error("Unexpected data format from server."); }
+        /** Handles the submission of the "Add Event" form */
+        function handleAddEventSubmit(submitEvent) {
+            submitEvent.preventDefault();
+            if (!addEventButton || !addSpinner || !addFormFeedback || !addEventImageInput || !addGanzerRaumCheckbox) return;
+            addSpinner.classList.remove('d-none'); addEventButton.disabled = true; clearAddFormFeedback(); hideMessages();
 
-                allEvents = data; // Store events globally
-                console.log("Events stored:", allEvents.length);
-                populateFilters(allEvents);
-                applyFiltersAndRender(); // This calls displayEvents
-                updateUIAfterLoginStateChange(); // Ensure buttons visibility is correct after render
-                console.log("Render complete.");
+            const formData = new FormData();
+            let resourcesString = '';
+            if (addGanzerRaumCheckbox.checked) { resourcesString = 'Ganzer Raum'; }
+            else { const nodes = document.querySelectorAll('#add-resources-checkboxes .resource-checkbox:checked'); resourcesString = Array.from(nodes).map(cb => cb.value).join(', '); }
 
-            } catch(err) {
-                console.error("Error loading events:", err);
-                showError(err); // Show error in UI
-            } finally {
-                 if (loadingElement) loadingElement.classList.add('d-none');
+            formData.append(FIELD_TITLE, document.getElementById('add-title').value.trim());
+            formData.append(FIELD_DATE, document.getElementById('add-date').value);
+            formData.append(FIELD_START_TIME, document.getElementById('add-startTime').value);
+            formData.append(FIELD_END_TIME, document.getElementById('add-endTime').value);
+            formData.append(FIELD_DESCRIPTION, document.getElementById('add-description').value.trim());
+            formData.append(FIELD_RESOURCES, resourcesString);
+            formData.append(FIELD_RESPONSIBLE, document.getElementById('add-responsible').value.trim());
+            const typeEl = document.querySelector('input[name="add-event-type"]:checked');
+            formData.append(FIELD_EVENT_TYPE, typeEl ? typeEl.value : 'Öffentlich');
+            formData.append(FIELD_PARTICIPANT_INFO, document.getElementById('add-participantInfo').value.trim());
+            const imageFile = addEventImageInput.files[0];
+
+            if (!formData.get(FIELD_TITLE) || !formData.get(FIELD_DATE)) { showAddFormFeedback("Title and Date are required fields.", false); addSpinner.classList.add('d-none'); addEventButton.disabled = false; return; }
+            if (imageFile) { formData.append('eventImage', imageFile, imageFile.name); }
+
+            fetch(`${API_BASE_URL}/api/events`, { method: 'POST', body: formData })
+            .then(response => response.json().then(data => ({ ok: response.ok, status: response.status, data })))
+            .then(({ ok, status, data }) => {
+                addSpinner.classList.add('d-none'); addEventButton.disabled = false;
+                if (ok && data.success) { if (addForm) addForm.reset(); clearAddFormFeedback(); showAddFormFeedback("Event created successfully.", true, "Redirecting to overview..."); setTimeout(() => { showView('event-view'); refreshData(); }, 3000); }
+                else { throw new Error(data.message || data.error || `Error ${status}`); }
+            })
+            .catch(err => { addSpinner.classList.add('d-none'); addEventButton.disabled = false; console.error("Error adding event:", err); showAddFormFeedback("Communication error: " + err.message, false); });
+        }
+
+        /** Populates and opens the Edit Event modal */
+        function openEditModal(eventId) {
+            if (!editModal || !allEvents || !editFormFeedback || !editImagePreview || !noEditImageText || !editEventIdInput || !editGanzerRaumCheckbox || !editEventImageInput) { console.error("Edit Modal elements or event data not ready"); showError({ message: "Cannot open edit form. UI elements missing." }); return; }
+            const event = allEvents.find(e => e.id === eventId);
+            if (!event) { showError({ message: "Event not found for editing." }); return; }
+            clearEditFormFeedback();
+
+            editEventIdInput.value = event.id;
+            document.getElementById('edit-title').value = event[FIELD_TITLE] || '';
+            document.getElementById('edit-date').value = event[FIELD_DATE] || '';
+            document.getElementById('edit-startTime').value = event[FIELD_START_TIME] || '';
+            document.getElementById('edit-endTime').value = event[FIELD_END_TIME] || '';
+            document.getElementById('edit-description').value = event[FIELD_DESCRIPTION] || '';
+            document.getElementById('edit-responsible').value = event[FIELD_RESPONSIBLE] || '';
+            document.getElementById('edit-participantInfo').value = event[FIELD_PARTICIPANT_INFO] || '';
+
+            const savedResources = String(event[FIELD_RESOURCES] || '');
+            const otherResourceCheckboxes = document.querySelectorAll('#edit-resources-checkboxes .resource-checkbox');
+            if (savedResources === 'Ganzer Raum') { editGanzerRaumCheckbox.checked = true; otherResourceCheckboxes.forEach(cb => { cb.checked = false; cb.disabled = true; }); }
+            else { editGanzerRaumCheckbox.checked = false; const eventResourcesArray = savedResources.split(',').map(r => r.trim()).filter(r => r); otherResourceCheckboxes.forEach(cb => { cb.disabled = false; cb.checked = eventResourcesArray.includes(cb.value); }); }
+
+            const eventTypeEdit = String(event[FIELD_EVENT_TYPE] || '').trim();
+            if (eventTypeEdit === 'Privat') { document.getElementById('edit-type-private').checked = true; } else { document.getElementById('edit-type-public').checked = true; }
+
+            if (event[FIELD_IMAGE_URL]) { editImagePreview.src = event[FIELD_IMAGE_URL]; editImagePreview.style.display = 'block'; noEditImageText.style.display = 'none'; if(editDeleteImageButton) editDeleteImageButton.style.display = 'inline-block'; }
+            else { editImagePreview.style.display = 'none'; editImagePreview.src = '#'; noEditImageText.style.display = 'block'; if(editDeleteImageButton) editDeleteImageButton.style.display = 'none'; }
+
+            editEventImageInput.value = null; // Reset file input
+
+            document.getElementById('editEventModalLabel').textContent = `Edit Event: ${event[FIELD_TITLE] || 'Untitled'}`;
+            editModal.show();
+        }
+
+        /** Handles saving changes from the "Edit Event" modal */
+        function handleSaveChanges() {
+            if (!saveEventButton || !saveSpinner || !editFormFeedback || !editEventImageInput || !editGanzerRaumCheckbox) return;
+            saveSpinner.classList.remove('d-none'); saveEventButton.disabled = true; clearEditFormFeedback(); hideMessages();
+
+            const eventId = document.getElementById('edit-id').value;
+            const newImageFile = editEventImageInput.files[0];
+            const formData = new FormData(); // Use FormData for potential image update
+
+            let resourcesString = '';
+            if (editGanzerRaumCheckbox.checked) { resourcesString = 'Ganzer Raum'; }
+            else { const selectedResourcesNodes = document.querySelectorAll('#edit-resources-checkboxes .resource-checkbox:checked'); resourcesString = Array.from(selectedResourcesNodes).map(checkbox => checkbox.value).join(', '); }
+
+            formData.append(FIELD_TITLE, document.getElementById('edit-title').value.trim());
+            formData.append(FIELD_DATE, document.getElementById('edit-date').value);
+            formData.append(FIELD_START_TIME, document.getElementById('edit-startTime').value);
+            formData.append(FIELD_END_TIME, document.getElementById('edit-endTime').value);
+            formData.append(FIELD_DESCRIPTION, document.getElementById('edit-description').value.trim());
+            formData.append(FIELD_RESOURCES, resourcesString);
+            formData.append(FIELD_RESPONSIBLE, document.getElementById('edit-responsible').value.trim());
+            const typeElEdit = document.querySelector('input[name="edit-event-type"]:checked');
+            formData.append(FIELD_EVENT_TYPE, typeElEdit ? typeElEdit.value : 'Öffentlich');
+            formData.append(FIELD_PARTICIPANT_INFO, document.getElementById('edit-participantInfo').value.trim());
+
+            if (!formData.get(FIELD_TITLE) || !formData.get(FIELD_DATE) || !eventId) { showEditFormFeedback("Title and Date are required fields.", false); saveSpinner.classList.add('d-none'); saveEventButton.disabled = false; return; }
+            if (newImageFile) { formData.append('eventImage', newImageFile, newImageFile.name); }
+
+            fetch(`${API_BASE_URL}/api/events/${eventId}`, { method: 'PUT', body: formData })
+            .then(response => response.json().then(data => ({ ok: response.ok, status: response.status, data })))
+            .then(({ ok, status, data }) => {
+                saveSpinner.classList.add('d-none'); saveEventButton.disabled = false;
+                if (ok && data.success) { editModal.hide(); showSuccess(data.message || "Event updated successfully."); refreshData(); }
+                else { throw new Error(data.message || data.error || `Error ${status}`); }
+            })
+            .catch(err => { saveSpinner.classList.add('d-none'); saveEventButton.disabled = false; console.error("Error updating event:", err); showEditFormFeedback("Communication error: " + err.message, false); });
+        }
+
+        /** Handles deleting only the image from the Edit modal */
+        async function handleDeleteImage() {
+            if (!editDeleteImageButton) return;
+            const eventId = document.getElementById('edit-id')?.value;
+            const currentImageUrl = editImagePreview.src;
+            if (!eventId || !currentImageUrl || currentImageUrl.endsWith('#')) { showEditFormFeedback("No saved image to delete or Event ID missing.", false); return; }
+
+            if (confirm(`Are you sure you want to delete the image for this event?\nThe event itself will remain.`)) {
+                editDeleteImageButton.disabled = true; hideMessages(); clearEditFormFeedback(); // Add spinner logic if desired
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/events/${eventId}/image`, { method: 'DELETE' });
+                    const data = await response.json();
+                    if (!response.ok) { throw new Error(data.message || data.error || `HTTP Error ${response.status}`); }
+                    editImagePreview.src = '#'; editImagePreview.style.display = 'none'; editDeleteImageButton.style.display = 'none'; if(noEditImageText) noEditImageText.style.display = 'block';
+                    showSuccess("Image deleted successfully.");
+                    const eventIndex = allEvents.findIndex(e => e.id === eventId); if (eventIndex > -1) { allEvents[eventIndex][FIELD_IMAGE_URL] = null; }
+                } catch (error) { console.error("Error deleting image:", error); showEditFormFeedback("Error deleting image: " + error.message, false); }
+                finally { editDeleteImageButton.disabled = false; }
             }
         }
 
-        // --- Add/Edit/Delete Function Implementations ---
-        // (Include the final versions of handleAddEventSubmit, openEditModal,
-        // handleSaveChanges, handleDeleteEvent, handleDeleteImage here from previous steps,
-        // ensuring they use the correct FIELD_* constants and API_BASE_URL)
-        // ... (These functions were provided in previous responses) ...
-        // Make sure handleAddEventSubmit and handleSaveChanges use the FIELD_* constants
-        // when creating the FormData or JSON payload respectively.
-        // Make sure openEditModal uses FIELD_* constants when reading event data.
+        /** Handles deleting the entire event from the Edit modal */
+        async function handleDeleteEvent() {
+            if (!deleteEventButton || !deleteSpinner || !editModal) return;
+            const eventId = document.getElementById('edit-id')?.value;
+            const title = document.getElementById('edit-title')?.value || 'this event';
+            if (!eventId) { showEditFormFeedback("Error: Event ID not found for deletion.", false); return; }
+
+            if (confirm(`Are you sure you want to permanently delete the event "${title}"? (Associated image will also be deleted!)`)) {
+                deleteSpinner.classList.remove('d-none'); deleteEventButton.disabled = true; if (saveEventButton) saveEventButton.disabled = true; clearEditFormFeedback(); hideMessages();
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/events/${eventId}`, { method: 'DELETE' });
+                    const data = await response.json();
+                    if (!response.ok) { throw new Error(data.message || data.error || `HTTP Error ${response.status}`); }
+                    deleteSpinner.classList.add('d-none'); editModal.hide(); showSuccess(data.message || "Event deleted successfully."); refreshData();
+                } catch (error) {
+                    console.error("Error deleting event:", error); deleteSpinner.classList.add('d-none'); deleteEventButton.disabled = false; if (saveEventButton) saveEventButton.disabled = false;
+                    showEditFormFeedback("Error deleting event: " + error.message, false);
+                }
+            } else { console.log("Delete operation cancelled."); }
+        }
 
 
         // --- Initialization ---
         document.addEventListener('DOMContentLoaded', async function () {
-             // Get DOM references (Assign to the globally declared variables)
-             loginView = document.getElementById('login-view');
-             loginPasswordInput = document.getElementById('login-password');
-             loginButton = document.getElementById('login-button');
-             loginFeedback = document.getElementById('login-feedback');
-             eventView = document.getElementById('event-view');
-             addFormView = document.getElementById('add-form-view');
-             helpView = document.getElementById('help-view');
-             listElement = document.getElementById('event-liste');
-             loadingElement = document.getElementById('loading');
-             errorElement = document.getElementById('error-message');
-             successElement = document.getElementById('success-message');
-             searchTermInput = document.getElementById('search-term');
-             monthFilterSelect = document.getElementById('month-filter');
-             yearFilterSelect = document.getElementById('year-filter');
-             resetFiltersButton = document.getElementById('reset-filters');
-             typeFilterSelect = document.getElementById('type-filter');
-             addForm = document.getElementById('addEventForm');
-             addEventButton = document.getElementById('addEventButton');
-             addSpinner = addEventButton?.querySelector('.spinner-border');
-             addFormFeedback = document.getElementById('add-form-feedback');
-             addEventImageInput = document.getElementById('add-event-image');
-             addImagePreview = document.getElementById('add-image-preview');
-             addGanzerRaumCheckbox = document.getElementById('add-res-ganzer-raum');
-             addDeletePreviewButton = document.getElementById('add-delete-preview-button');
-             menuShowList = document.getElementById('menu-show-list');
-             menuShowAddForm = document.getElementById('menu-show-add-form');
-             menuShowHelp = document.getElementById('menu-show-help');
-             logoutButton = document.getElementById('logout-button'); // Get logout button
-             editModalElement = document.getElementById('editEventModal');
-             if (editModalElement) { try { editModal = new bootstrap.Modal(editModalElement); } catch(e) { console.error("Error init bootstrap modal:", e); editModal = null; }} else { editModal = null; }
-             editForm = document.getElementById('editEventForm');
-             saveEventButton = document.getElementById('saveEventButton');
-             saveSpinner = saveEventButton?.querySelector('.spinner-border');
-             editFormFeedback = document.getElementById('edit-form-feedback');
-             editImagePreview = document.getElementById('edit-image-preview');
-             noEditImageText = document.getElementById('no-edit-image');
-             editEventIdInput = document.getElementById('edit-id');
-             editGanzerRaumCheckbox = document.getElementById('edit-res-ganzer-raum');
-             editEventImageInput = document.getElementById('edit-event-image');
-             editDeleteImageButton = document.getElementById('edit-delete-image-button');
-             deleteEventButton = document.getElementById('deleteEventButton');
-             deleteSpinner = deleteEventButton?.querySelector('.spinner-border');
+             // Get DOM references
+             loginView = document.getElementById('login-view'); loginPasswordInput = document.getElementById('login-password'); loginButton = document.getElementById('login-button'); loginFeedback = document.getElementById('login-feedback'); eventView = document.getElementById('event-view'); addFormView = document.getElementById('add-form-view'); helpView = document.getElementById('help-view'); listElement = document.getElementById('event-liste'); loadingElement = document.getElementById('loading'); errorElement = document.getElementById('error-message'); successElement = document.getElementById('success-message'); searchTermInput = document.getElementById('search-term'); monthFilterSelect = document.getElementById('month-filter'); yearFilterSelect = document.getElementById('year-filter'); resetFiltersButton = document.getElementById('reset-filters'); typeFilterSelect = document.getElementById('type-filter'); addForm = document.getElementById('addEventForm'); addEventButton = document.getElementById('addEventButton'); addSpinner = addEventButton?.querySelector('.spinner-border'); addFormFeedback = document.getElementById('add-form-feedback'); addEventImageInput = document.getElementById('add-event-image'); addImagePreview = document.getElementById('add-image-preview'); addGanzerRaumCheckbox = document.getElementById('add-res-ganzer-raum'); addDeletePreviewButton = document.getElementById('add-delete-preview-button'); menuShowList = document.getElementById('menu-show-list'); menuShowAddForm = document.getElementById('menu-show-add-form'); menuShowHelp = document.getElementById('menu-show-help'); logoutButton = document.getElementById('logout-button'); editModalElement = document.getElementById('editEventModal'); if (editModalElement) { try { editModal = new bootstrap.Modal(editModalElement); } catch(e) { console.error("Error init bootstrap modal:", e); editModal = null; }} else { editModal = null; } editForm = document.getElementById('editEventForm'); saveEventButton = document.getElementById('saveEventButton'); saveSpinner = saveEventButton?.querySelector('.spinner-border'); editFormFeedback = document.getElementById('edit-form-feedback'); editImagePreview = document.getElementById('edit-image-preview'); noEditImageText = document.getElementById('no-edit-image'); editEventIdInput = document.getElementById('edit-id'); editGanzerRaumCheckbox = document.getElementById('edit-res-ganzer-raum'); editEventImageInput = document.getElementById('edit-event-image'); editDeleteImageButton = document.getElementById('edit-delete-image-button'); deleteEventButton = document.getElementById('deleteEventButton'); deleteSpinner = deleteEventButton?.querySelector('.spinner-border');
 
-            // Simple check if critical elements are missing
-            if (!listElement || !editModalElement || !addForm || !editForm || !deleteEventButton || !loginView || !loginButton || !logoutButton) {
-                console.error("Critical UI elements missing! Check HTML IDs for forms, modals, login/logout buttons.");
-                showError({ message: "Initialization Error: Core UI elements missing." });
-                return;
-            }
+            // Check critical elements
+            const criticalIds = ['event-view', 'add-form-view', 'help-view', 'event-liste', 'loading', 'error-message', 'success-message', 'search-term', 'month-filter', 'year-filter', 'reset-filters', 'type-filter', 'addEventForm', 'addEventButton', 'add-form-feedback', 'add-event-image', 'add-image-preview', 'add-res-ganzer-raum', 'add-delete-preview-button', 'menu-show-list', 'menu-show-add-form', 'menu-show-help', 'logout-button', 'editEventModal', 'editEventForm', 'saveEventButton', 'edit-form-feedback', 'edit-image-preview', 'no-edit-image', 'edit-id', 'edit-res-ganzer-raum', 'edit-event-image', 'edit-delete-image-button', 'deleteEventButton', 'login-view', 'login-password', 'login-button', 'login-feedback'];
+            let missingIds = [];
+            criticalIds.forEach(id => { if (!document.getElementById(id)) missingIds.push(id); });
+            if (missingIds.length > 0 || !editModal) { console.error("Critical UI elements missing! Check HTML IDs:", missingIds); showError({ message: `Initialization Error: ${missingIds.length} critical UI element(s) missing or Modal init failed. Check console.` }); return; }
 
             // Register Event Listeners
             menuShowList.addEventListener('click', (e) => { e.preventDefault(); showView('event-view'); });
             menuShowAddForm.addEventListener('click', (e) => { e.preventDefault(); if(isLoggedIn) showView('add-form-view'); else showView('login-view'); });
             menuShowHelp.addEventListener('click', (e) => { e.preventDefault(); showView('help-view'); });
-            if (logoutButton) logoutButton.addEventListener('click', (e) => { e.preventDefault(); logoutApi(); });
-            if (loginButton) loginButton.addEventListener('click', async () => {
-                 const password = loginPasswordInput.value;
-                 if (!password) { showLoginFeedback("Please enter the password.", false); return; }
-                 const success = await loginApi(password);
-                 if(success) {
-                     isLoggedIn = true;
-                     hideLoginFeedback();
-                     showView('event-view'); // Go to list view after login
-                     updateUIAfterLoginStateChange();
-                     refreshData();
-                 } // Error is handled within loginApi by showing feedback
-            });
-
-            searchTermInput.addEventListener('input', applyFiltersAndRender);
-            monthFilterSelect.addEventListener('change', applyFiltersAndRender);
-            yearFilterSelect.addEventListener('change', applyFiltersAndRender);
-            typeFilterSelect.addEventListener('change', applyFiltersAndRender);
-            resetFiltersButton.addEventListener('click', resetAllFilters);
+            logoutButton.addEventListener('click', (e) => { e.preventDefault(); logoutApi(); });
+            loginButton.addEventListener('click', async () => { const password = loginPasswordInput.value; if (!password) { showLoginFeedback("Please enter the password.", false); return; } const success = await loginApi(password); if(success) { isLoggedIn = true; hideLoginFeedback(); showView('event-view'); updateUIAfterLoginStateChange(); refreshData(); } });
+            searchTermInput.addEventListener('input', applyFiltersAndRender); monthFilterSelect.addEventListener('change', applyFiltersAndRender); yearFilterSelect.addEventListener('change', applyFiltersAndRender); typeFilterSelect.addEventListener('change', applyFiltersAndRender); resetFiltersButton.addEventListener('click', resetAllFilters);
             addForm.addEventListener('submit', handleAddEventSubmit);
-            if (saveEventButton) saveEventButton.addEventListener('click', handleSaveChanges);
-            if (deleteEventButton) deleteEventButton.addEventListener('click', handleDeleteEvent);
-            if (editDeleteImageButton) editDeleteImageButton.addEventListener('click', handleDeleteImage);
-            listElement.addEventListener('click', handleTileClick); // Handles tile expand and edit button clicks
+            saveEventButton.addEventListener('click', handleSaveChanges);
+            deleteEventButton.addEventListener('click', handleDeleteEvent);
+            editDeleteImageButton.addEventListener('click', handleDeleteImage);
+            listElement.addEventListener('click', handleTileClick);
+            addGanzerRaumCheckbox.addEventListener('change', () => toggleResourceCheckboxes(addGanzerRaumCheckbox, '#add-resources-checkboxes'));
+            editGanzerRaumCheckbox.addEventListener('change', () => toggleResourceCheckboxes(editGanzerRaumCheckbox, '#edit-resources-checkboxes'));
+            addEventImageInput.addEventListener('change', function(e) { const file = e.target.files[0]; if (file && file.type.startsWith('image/')) { const reader = new FileReader(); reader.onload = function(loadEvent) { addImagePreview.src = loadEvent.target.result; addImagePreview.style.display = 'block'; addDeletePreviewButton.style.display = 'inline-block'; }; reader.readAsDataURL(file); } else { addEventImageInput.value = null; addImagePreview.src = '#'; addImagePreview.style.display = 'none'; addDeletePreviewButton.style.display = 'none'; } });
+            addDeletePreviewButton.addEventListener('click', () => { addEventImageInput.value = null; addImagePreview.src = '#'; addImagePreview.style.display = 'none'; addDeletePreviewButton.style.display = 'none'; });
 
-            // Ganzer Raum Checkbox listeners
-            if (addGanzerRaumCheckbox) { addGanzerRaumCheckbox.addEventListener('change', () => toggleResourceCheckboxes(addGanzerRaumCheckbox, '#add-resources-checkboxes')); }
-            if (editGanzerRaumCheckbox) { editGanzerRaumCheckbox.addEventListener('change', () => toggleResourceCheckboxes(editGanzerRaumCheckbox, '#edit-resources-checkboxes')); }
-
-             // Add Form Image Preview Listener
-             if (addEventImageInput && addImagePreview && addDeletePreviewButton) {
-                addEventImageInput.addEventListener('change', function(e) { /* ... preview logic ... */ });
-                addDeletePreviewButton.addEventListener('click', () => { /* ... clear preview logic ... */ });
-             }
-             // Optional: Add change listener for editEventImageInput to show preview of NEW file
-
-             // --- Initial Application Setup ---
+             // Initial Application Setup
              console.log("DOM loaded. Initializing application...");
-
-             // Check initial auth status
              isLoggedIn = await checkAuthStatusApi();
              console.log("Initial login state:", isLoggedIn);
-
-             updateUIAfterLoginStateChange(); // Set initial UI state based on login
-
-             if (!isLoggedIn && !document.location.hash) { // Show login first if not logged in, unless deep linking?
-                showView('login-view');
-                // Optionally still load events in background if list is public
-                // refreshData();
-             } else {
-                showView('event-view'); // Start with event list if logged in
-                refreshData(); // Fetch initial data
-             }
+             updateUIAfterLoginStateChange();
+             if (!isLoggedIn) { showView('login-view'); }
+             else { showView('event-view'); refreshData(); }
          }); // End DOMContentLoaded Listener
 
     </script>
