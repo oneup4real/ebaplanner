@@ -114,15 +114,37 @@
                                     class="form-check-label" for="add-type-private">Private</label> </div>
                         </div>
                     </div>
-                    <div class="mb-3"> <label class="form-label">Required Resources <small
-                                class="text-muted">(Multiple selection possible)</small></label>
+                    <div class="mb-3">
+                        <label class="form-label">Benötigte Ressourcen <small class="text-muted">(Auswahl wird deaktiviert, wenn "Ganzer Raum" gewählt)</small></label>
                         <div id="add-resources-checkboxes">
-                            <div class="form-check"><input class="form-check-input" type="checkbox" name="add-resources" value="Retro Game Station" id="add-res-retro"><label class="form-check-label" for="add-res-retro">Retro Game Station</label></div>
-                            <div class="form-check"><input class="form-check-input" type="checkbox" name="add-resources" value="Beamer und Sofa" id="add-res-beamersofa"><label class="form-check-label" for="add-res-beamersofa">Projector and Sofa</label></div>
-                            <div class="form-check"><input class="form-check-input" type="checkbox" name="add-resources" value="Flipperkasten" id="add-res-flipper"><label class="form-check-label" for="add-res-flipper">Pinball Machine</label></div>
-                            <div class="form-check"><input class="form-check-input" type="checkbox" name="add-resources" value="1-2 Tische" id="add-res-tische12"><label class="form-check-label" for="add-res-tische12">1-2 Tables</label></div>
-                            <div class="form-check"><input class="form-check-input" type="checkbox" name="add-resources" value="2-4 Tische" id="add-res-tische24"><label class="form-check-label" for="add-res-tische24">2-4 Tables</label></div>
-                            <div class="form-check"><input class="form-check-input" type="checkbox" name="add-resources" value="4-6 Tische" id="add-res-tische46"><label class="form-check-label" for="add-res-tische46">4-6 Tables</label></div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="Ganzer Raum" id="add-res-ganzer-raum">
+                                <label class="form-check-label fw-bold" for="add-res-ganzer-raum">Ganzer Raum</label>
+                            </div>
+                            <hr class="my-2"> <div class="form-check">
+                                <input class="form-check-input resource-checkbox" type="checkbox" name="add-resources" value="Retro Game Station" id="add-res-retro">
+                                <label class="form-check-label" for="add-res-retro">Retro Game Station</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input resource-checkbox" type="checkbox" name="add-resources" value="Beamer und Sofa" id="add-res-beamersofa">
+                                <label class="form-check-label" for="add-res-beamersofa">Beamer und Sofa</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input resource-checkbox" type="checkbox" name="add-resources" value="Flipperkasten" id="add-res-flipper">
+                                <label class="form-check-label" for="add-res-flipper">Flipperkasten</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input resource-checkbox" type="checkbox" name="add-resources" value="1-2 Tische" id="add-res-tische12">
+                                <label class="form-check-label" for="add-res-tische12">1-2 Tische</label>
+                            </div>
+                             <div class="form-check">
+                                <input class="form-check-input resource-checkbox" type="checkbox" name="add-resources" value="2-4 Tische" id="add-res-tische24">
+                                <label class="form-check-label" for="add-res-tische24">2-4 Tische</label>
+                            </div>
+                             <div class="form-check">
+                                <input class="form-check-input resource-checkbox" type="checkbox" name="add-resources" value="4-6 Tische" id="add-res-tische46">
+                                <label class="form-check-label" for="add-res-tische46">4-6 Tische</label>
+                            </div>
                         </div>
                     </div>
                     <div class="mb-3"> <label for="add-responsible" class="form-label">Responsible Person</label> <input
@@ -155,7 +177,7 @@
              <h1 class="mb-4">Principles and Help</h1>
              <div class="help-view-container p-4 rounded">
                  <h2>Genossenschaftsraum - Unsere Vision</h2>
-                 <p>Der Genossenschaftsraum ist unser gemeinsames Wohnzimmer...</p>
+                 <p>Der Genossenschaftsraum ist unser gemeinsames Wohnzimmer – ein Treffpunkt, wo wir uns begegnen, austauschen und zusammen aktiv sein können. Er soll Gemeinschaft, Kreativität und ein faires Miteinander fördern. Offenheit und Respekt sind uns dabei wichtig.</p>
                  <h3 class="mt-4">Die wichtigsten Regeln - Einfach und klar</h3>
                  <h4>Immer offen für alle</h4>
                  <p>Der Genossenschaftsraum gehört uns allen...</p>
@@ -199,14 +221,36 @@
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Required Resources <small class="text-muted">(Multiple selection possible)</small></label>
-                            <div id="edit-resources-checkboxes">
-                                <div class="form-check"><input class="form-check-input" type="checkbox" name="edit-resources" value="Retro Game Station" id="edit-res-retro"><label class="form-check-label" for="edit-res-retro">Retro Game Station</label></div>
-                                <div class="form-check"><input class="form-check-input" type="checkbox" name="edit-resources" value="Beamer und Sofa" id="edit-res-beamersofa"><label class="form-check-label" for="edit-res-beamersofa">Projector and Sofa</label></div>
-                                <div class="form-check"><input class="form-check-input" type="checkbox" name="edit-resources" value="Flipperkasten" id="edit-res-flipper"><label class="form-check-label" for="edit-res-flipper">Pinball Machine</label></div>
-                                <div class="form-check"><input class="form-check-input" type="checkbox" name="edit-resources" value="1-2 Tische" id="edit-res-tische12"><label class="form-check-label" for="edit-res-tische12">1-2 Tables</label></div>
-                                <div class="form-check"><input class="form-check-input" type="checkbox" name="edit-resources" value="2-4 Tische" id="edit-res-tische24"><label class="form-check-label" for="edit-res-tische24">2-4 Tables</label></div>
-                                <div class="form-check"><input class="form-check-input" type="checkbox" name="edit-resources" value="4-6 Tische" id="edit-res-tische46"><label class="form-check-label" for="edit-res-tische46">4-6 Tables</label></div>
+                            <label class="form-label">Benötigte Ressourcen <small class="text-muted">(Auswahl wird deaktiviert, wenn "Ganzer Raum" gewählt)</small></label>
+                            <div id="add-resources-checkboxes">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="Ganzer Raum" id="add-res-ganzer-raum">
+                                    <label class="form-check-label fw-bold" for="add-res-ganzer-raum">Ganzer Raum</label>
+                                </div>
+                                <hr class="my-2"> <div class="form-check">
+                                    <input class="form-check-input resource-checkbox" type="checkbox" name="add-resources" value="Retro Game Station" id="add-res-retro">
+                                    <label class="form-check-label" for="add-res-retro">Retro Game Station</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input resource-checkbox" type="checkbox" name="add-resources" value="Beamer und Sofa" id="add-res-beamersofa">
+                                    <label class="form-check-label" for="add-res-beamersofa">Beamer und Sofa</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input resource-checkbox" type="checkbox" name="add-resources" value="Flipperkasten" id="add-res-flipper">
+                                    <label class="form-check-label" for="add-res-flipper">Flipperkasten</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input resource-checkbox" type="checkbox" name="add-resources" value="1-2 Tische" id="add-res-tische12">
+                                    <label class="form-check-label" for="add-res-tische12">1-2 Tische</label>
+                                </div>
+                                 <div class="form-check">
+                                    <input class="form-check-input resource-checkbox" type="checkbox" name="add-resources" value="2-4 Tische" id="add-res-tische24">
+                                    <label class="form-check-label" for="add-res-tische24">2-4 Tische</label>
+                                </div>
+                                 <div class="form-check">
+                                    <input class="form-check-input resource-checkbox" type="checkbox" name="add-resources" value="4-6 Tische" id="add-res-tische46">
+                                    <label class="form-check-label" for="add-res-tische46">4-6 Tische</label>
+                                </div>
                             </div>
                         </div>
                         <div class="mb-3"> <label for="edit-responsible" class="form-label">Responsible Person</label>
@@ -279,6 +323,7 @@
         let deleteEventButton, deleteSpinner;
         let addDeletePreviewButton, editDeleteImageButton;
         let editEventImageInput;
+        let addGanzerRaumCheckbox, editGanzerRaumCheckbox;
 
         // Backend API Base URL (Empty for same-origin deployment)
         const API_BASE_URL = '';
@@ -466,170 +511,235 @@
 
         // --- Add Event Form Handling (Using FormData) ---
         function handleAddEventSubmit(submitEvent) {
-            submitEvent.preventDefault();
-            if (!addEventButton || !addSpinner || !addFormFeedback || !addEventImageInput) return;
-            addSpinner.classList.remove('d-none'); addEventButton.disabled = true; clearAddFormFeedback(); hideMessages();
+    submitEvent.preventDefault(); // Prevent default browser form submission
+    // Ensure required elements exist
+    if (!addEventButton || !addSpinner || !addFormFeedback || !addEventImageInput || !addGanzerRaumCheckbox) {
+        console.error("Add form elements missing.");
+        return;
+    }
 
-            const formData = new FormData(); // Use FormData
-            formData.append('title', document.getElementById('add-title').value.trim());
-            formData.append('eventDate', document.getElementById('add-date').value); // YYYY-MM-DD
-            formData.append('startTime', document.getElementById('add-startTime').value);
-            formData.append('endTime', document.getElementById('add-endTime').value);
-            formData.append('description', document.getElementById('add-description').value.trim());
-            const resourcesNodes = document.querySelectorAll('input[name="add-resources"]:checked');
-            formData.append('resources', Array.from(resourcesNodes).map(cb => cb.value).join(', '));
-            formData.append('responsible', document.getElementById('add-responsible').value.trim());
-            const typeEl = document.querySelector('input[name="add-event-type"]:checked');
-            formData.append('eventType', typeEl ? typeEl.value : 'Öffentlich');
-            formData.append('participantInfo', document.getElementById('add-participantInfo').value.trim());
-            const imageFile = addEventImageInput.files[0];
+    // Show loading state
+    addSpinner.classList.remove('d-none');
+    addEventButton.disabled = true;
+    clearAddFormFeedback();
+    hideMessages();
 
-            if (!formData.get('title') || !formData.get('eventDate')) {
-                showAddFormFeedback("Title and Date are required fields.", false); addSpinner.classList.add('d-none'); addEventButton.disabled = false; return;
-            }
-            if (imageFile) {
-                formData.append('eventImage', imageFile, imageFile.name); // Key 'eventImage'
-            }
+    // --- Collect form data ---
+    const formData = new FormData(); // Use FormData for potential file upload
 
-            // Fetch with FormData
-            fetch(`${API_BASE_URL}/api/events`, { method: 'POST', body: formData })
-            .then(response => response.json().then(data => ({ ok: response.ok, status: response.status, data })))
-            .then(({ ok, status, data }) => {
-                addSpinner.classList.add('d-none'); addEventButton.disabled = false;
-                if (ok && data.success) {
-                    if (addForm) addForm.reset();
-                    if (addImagePreview) { addImagePreview.style.display = 'none'; addImagePreview.src = '#';}
-                    clearAddFormFeedback();
-                    showAddFormFeedback("Event created successfully.", true, "Redirecting to overview...");
-                    setTimeout(() => { showView('event-view'); refreshData(); }, 3000);
-                } else { throw new Error(data.message || data.error || `Error ${status}`); }
-            })
-            .catch(err => {
-                addSpinner.classList.add('d-none'); addEventButton.disabled = false; console.error("Error adding event:", err);
-                showAddFormFeedback("Communication error: " + err.message, false);
-            });
+    // Determine resources based on "Ganzer Raum" checkbox
+    let resourcesString = '';
+    if (addGanzerRaumCheckbox.checked) {
+        resourcesString = 'Ganzer Raum'; // Use the special value
+    } else {
+        const nodes = document.querySelectorAll('#add-resources-checkboxes .resource-checkbox:checked');
+        resourcesString = Array.from(nodes).map(cb => cb.value).join(', ');
+    }
+
+    // Append text fields using FIELD_* constants (or keys expected by backend)
+    formData.append(FIELD_TITLE, document.getElementById('add-title').value.trim());
+    formData.append(FIELD_DATE, document.getElementById('add-date').value); // Send YYYY-MM-DD
+    formData.append(FIELD_START_TIME, document.getElementById('add-startTime').value);
+    formData.append(FIELD_END_TIME, document.getElementById('add-endTime').value);
+    formData.append(FIELD_DESCRIPTION, document.getElementById('add-description').value.trim());
+    formData.append(FIELD_RESOURCES, resourcesString); // Append determined resource string
+    formData.append(FIELD_RESPONSIBLE, document.getElementById('add-responsible').value.trim());
+    const typeEl = document.querySelector('input[name="add-event-type"]:checked');
+    formData.append(FIELD_EVENT_TYPE, typeEl ? typeEl.value : 'Öffentlich'); // Send German value if backend expects it
+    formData.append(FIELD_PARTICIPANT_INFO, document.getElementById('add-participantInfo').value.trim());
+
+    // Basic validation
+    if (!formData.get(FIELD_TITLE) || !formData.get(FIELD_DATE)) {
+        showAddFormFeedback("Title and Date are required fields.", false);
+        addSpinner.classList.add('d-none'); addEventButton.disabled = false;
+        return;
+    }
+
+    // Append image file if selected
+    const imageFile = addEventImageInput.files[0];
+    if (imageFile) {
+        // Use 'eventImage' as key, must match multer.single('eventImage') in backend
+        formData.append('eventImage', imageFile, imageFile.name);
+    }
+
+    // --- Send data to backend ---
+    fetch(`${API_BASE_URL}/api/events`, {
+        method: 'POST',
+        body: formData // Send FormData object
+        // Browser sets Content-Type to multipart/form-data automatically
+    })
+    .then(response => response.json().then(data => ({ ok: response.ok, status: response.status, data }))) // Always parse JSON
+    .then(({ ok, status, data }) => {
+        addSpinner.classList.add('d-none'); addEventButton.disabled = false;
+        if (ok && data.success) {
+            if (addForm) addForm.reset(); // Reset the form fields
+            clearAddFormFeedback(); // Resets checkboxes and image preview
+            showAddFormFeedback("Event created successfully.", true, "Redirecting to overview...");
+            setTimeout(() => {
+                showView('event-view');
+                refreshData(); // Refresh list to show the new event
+             }, 3000);
+        } else {
+            // Handle error reported by server
+            throw new Error(data.message || data.error || `Error ${status}`);
         }
+    })
+    .catch(err => {
+        // Handle network errors or errors thrown above
+        addSpinner.classList.add('d-none'); addEventButton.disabled = false;
+        console.error("Error adding event:", err);
+        showAddFormFeedback("Communication error: " + err.message, false);
+    });
+}
         function showAddFormFeedback(message, isSuccess, secondaryMessage = null) { /* ... implement or keep ... */ }
         function clearAddFormFeedback() { /* ... implement or keep, ensure preview resets ... */ }
 
 
         // --- Edit Event Form Handling ---
-        function openEditModal(eventId) { // Uses Firestore ID
-            if (!editModal || !allEvents || !editFormFeedback || !editImagePreview || !noEditImageText) { console.error("Edit Modal or elements not ready"); return; }
-            const event = allEvents.find(e => e.id === eventId); // Find by Firestore ID
-            if (!event) { showError({ message: "Event not found." }); return; }
-            clearEditFormFeedback();
+ function openEditModal(eventId) {
+    // Ensure modal elements and event data are available
+    if (!editModal || !allEvents || !editFormFeedback || !editImagePreview || !noEditImageText || !editEventIdInput || !editGanzerRaumCheckbox) {
+        console.error("Edit Modal elements or event data not ready");
+        showError({ message: "Cannot open edit form. UI elements missing." });
+        return;
+    }
+    // Find the specific event using the Firestore ID
+    const event = allEvents.find(e => e.id === eventId);
+    if (!event) {
+        showError({ message: "Event not found for editing." });
+        return;
+    }
+    clearEditFormFeedback(); // Clear previous feedback
 
-            document.getElementById('edit-id').value = event.id; // Set Firestore ID
-            document.getElementById('edit-title').value = event[FIELD_TITLE] || '';
-            document.getElementById('edit-date').value = event[FIELD_DATE] || ''; // Uses YYYY-MM-DD
-            document.getElementById('edit-startTime').value = event[FIELD_START_TIME] || '';
-            document.getElementById('edit-endTime').value = event[FIELD_END_TIME] || '';
-            document.getElementById('edit-description').value = event[FIELD_DESCRIPTION] || '';
-            document.getElementById('edit-responsible').value = event[FIELD_RESPONSIBLE] || '';
-            document.getElementById('edit-participantInfo').value = event[FIELD_PARTICIPANT_INFO] || '';
+    // --- Populate standard text fields ---
+    editEventIdInput.value = event.id; // Set the hidden Firestore ID input
+    document.getElementById('edit-title').value = event[FIELD_TITLE] || '';
+    document.getElementById('edit-date').value = event[FIELD_DATE] || ''; // Uses YYYY-MM-DD format
+    document.getElementById('edit-startTime').value = event[FIELD_START_TIME] || '';
+    document.getElementById('edit-endTime').value = event[FIELD_END_TIME] || '';
+    document.getElementById('edit-description').value = event[FIELD_DESCRIPTION] || '';
+    document.getElementById('edit-responsible').value = event[FIELD_RESPONSIBLE] || '';
+    document.getElementById('edit-participantInfo').value = event[FIELD_PARTICIPANT_INFO] || '';
 
-            const resourcesCheckboxes = document.querySelectorAll('#edit-resources-checkboxes input[type="checkbox"]');
-            const eventResources = (event[FIELD_RESOURCES] || '').split(',').map(r => r.trim()).filter(r => r);
-            resourcesCheckboxes.forEach(checkbox => { checkbox.checked = eventResources.includes(checkbox.value); });
+    // --- Populate Resource Checkboxes including "Ganzer Raum" logic ---
+    const savedResources = String(event[FIELD_RESOURCES] || '');
+    const otherResourceCheckboxes = document.querySelectorAll('#edit-resources-checkboxes .resource-checkbox');
 
-            const eventTypeEdit = String(event[FIELD_EVENT_TYPE] || '').trim();
-            if (eventTypeEdit === 'Privat') { document.getElementById('edit-type-private').checked = true; }
-            else { document.getElementById('edit-type-public').checked = true; }
+    if (savedResources === 'Ganzer Raum') {
+        // Set "Ganzer Raum" checkbox and disable/uncheck others
+        editGanzerRaumCheckbox.checked = true;
+        otherResourceCheckboxes.forEach(cb => {
+            cb.checked = false;
+            cb.disabled = true;
+        });
+    } else {
+         // Unset "Ganzer Raum" checkbox and enable/set others
+         editGanzerRaumCheckbox.checked = false;
+         const eventResourcesArray = savedResources.split(',').map(r => r.trim()).filter(r => r); // Get array of saved resources
+         otherResourceCheckboxes.forEach(cb => {
+            cb.disabled = false; // Ensure they are enabled
+            cb.checked = eventResourcesArray.includes(cb.value); // Check if this resource was saved
+        });
+    }
 
-            // Image Preview
-            if (event[FIELD_IMAGE_URL]) {
-                editImagePreview.src = event[FIELD_IMAGE_URL]; editImagePreview.style.display = 'block'; noEditImageText.style.display = 'none';
-            } else {
-                editImagePreview.style.display = 'none'; editImagePreview.src = '#'; noEditImageText.style.display = 'block';
-            }
+    // --- Populate Event Type Radio Buttons ---
+    const eventTypeEdit = String(event[FIELD_EVENT_TYPE] || '').trim();
+    if (eventTypeEdit === 'Privat') { // Assuming backend stores German value
+        document.getElementById('edit-type-private').checked = true;
+    } else {
+        document.getElementById('edit-type-public').checked = true; // Default to public
+    }
 
-            if (event[FIELD_IMAGE_URL]) {
-                 editImagePreview.src = event[FIELD_IMAGE_URL];
-                 editImagePreview.style.display = 'block';
-                 noEditImageText.style.display = 'none';
-            if(editDeleteImageButton) editDeleteImageButton.style.display = 'inline-block'; // Zeige X-Knopf
-            } else {
-                 editImagePreview.style.display = 'none';
-                 editImagePreview.src = '#';
-                 noEditImageText.style.display = 'block';
-             if(editDeleteImageButton) editDeleteImageButton.style.display = 'none'; // Verstecke X-Knopf
-             }
+    // --- Populate Image Preview & Delete Button visibility ---
+    if (event[FIELD_IMAGE_URL]) {
+        editImagePreview.src = event[FIELD_IMAGE_URL];
+        editImagePreview.style.display = 'block';
+        noEditImageText.style.display = 'none';
+        if(editDeleteImageButton) editDeleteImageButton.style.display = 'inline-block'; // Show delete 'x'
+    } else {
+        editImagePreview.style.display = 'none';
+        editImagePreview.src = '#';
+        noEditImageText.style.display = 'block';
+        if(editDeleteImageButton) editDeleteImageButton.style.display = 'none'; // Hide delete 'x'
+    }
 
-             if (editEventImageInput) {
-                editEventImageInput.value = null;
-            }
+    // --- Reset the *new* file input field ---
+    if (editEventImageInput) {
+       editEventImageInput.value = null; // Clear any previously selected file for upload
+    }
 
-            document.getElementById('editEventModalLabel').textContent = `Event bearbeiten: ${event[FIELD_TITLE] || 'Unbenannt'}`;
-            editModal.show();
-        }
+    // Set modal title and show it
+    document.getElementById('editEventModalLabel').textContent = `Edit Event: ${event[FIELD_TITLE] || 'Untitled'}`;
+    editModal.show();
+}
 
-        function handleSaveChanges() {
-    // Prüfung auf benötigte Elemente (inkl. neuem Input)
-    if (!saveEventButton || !saveSpinner || !editFormFeedback || !editEventImageInput) return;
-    saveSpinner.classList.remove('d-none'); saveEventButton.disabled = true; clearEditFormFeedback(); hideMessages();
 
-    const eventId = document.getElementById('edit-id').value; // Firestore ID holen
-    const newImageFile = editEventImageInput.files[0]; // Prüfe, ob eine NEUE Datei ausgewählt wurde
+function handleSaveChanges() {
+    // Ensure required elements exist
+    if (!saveEventButton || !saveSpinner || !editFormFeedback || !editGanzerRaumCheckbox) {
+        console.error("Edit form elements missing.");
+        return;
+    }
+    // Show loading state
+    saveSpinner.classList.remove('d-none');
+    saveEventButton.disabled = true;
+    clearEditFormFeedback();
+    hideMessages();
 
-    // FormData erstellen, da potenziell eine Datei dabei ist
-    const formData = new FormData();
+    const eventId = document.getElementById('edit-id').value; // Get Firestore ID
 
-    // Textfelder und Ressourcen-Checkboxen zu FormData hinzufügen
-    const dateValue = document.getElementById('edit-date').value; // Format YYYY-MM-DD
-    const typeElEdit = document.querySelector('input[name="edit-event-type"]:checked');
-    const selectedResources = Array.from(document.querySelectorAll('#edit-resources-checkboxes input[type="checkbox"]:checked')).map(checkbox => checkbox.value).join(', ');
+    // Determine resources based on "Ganzer Raum" checkbox
+    let resourcesString = '';
+    if (editGanzerRaumCheckbox.checked) {
+        resourcesString = 'Ganzer Raum';
+    } else {
+        const selectedResourcesNodes = document.querySelectorAll('#edit-resources-checkboxes .resource-checkbox:checked');
+        resourcesString = Array.from(selectedResourcesNodes).map(checkbox => checkbox.value).join(', ');
+    }
 
-    // Verwende die FIELD_* Konstanten als Schlüssel für FormData
-    formData.append(FIELD_TITLE, document.getElementById('edit-title').value.trim());
-    formData.append(FIELD_DATE, dateValue);
-    formData.append(FIELD_START_TIME, document.getElementById('edit-startTime').value);
-    formData.append(FIELD_END_TIME, document.getElementById('edit-endTime').value);
-    formData.append(FIELD_DESCRIPTION, document.getElementById('edit-description').value.trim());
-    formData.append(FIELD_RESOURCES, selectedResources);
-    formData.append(FIELD_RESPONSIBLE, document.getElementById('edit-responsible').value.trim());
-    formData.append(FIELD_EVENT_TYPE, typeElEdit ? typeElEdit.value : 'Öffentlich'); // Backend erwartet diesen Wert evtl.
-    formData.append(FIELD_PARTICIPANT_INFO, document.getElementById('edit-participantInfo').value.trim());
+    // Create JSON payload for the update (NO image data sent)
+    const updatedData = {
+        [FIELD_TITLE]: document.getElementById('edit-title').value.trim(),
+        [FIELD_DATE]: document.getElementById('edit-date').value, // Send YYYY-MM-DD
+        [FIELD_START_TIME]: document.getElementById('edit-startTime').value,
+        [FIELD_END_TIME]: document.getElementById('edit-endTime').value,
+        [FIELD_DESCRIPTION]: document.getElementById('edit-description').value.trim(),
+        [FIELD_RESOURCES]: resourcesString, // Send determined resource string
+        [FIELD_RESPONSIBLE]: document.getElementById('edit-responsible').value.trim(),
+        [FIELD_EVENT_TYPE]: document.querySelector('input[name="edit-event-type"]:checked')?.value || 'Öffentlich',
+        [FIELD_PARTICIPANT_INFO]: document.getElementById('edit-participantInfo').value.trim()
+    };
 
-    // Validierung der Pflichtfelder
-    if (!formData.get(FIELD_TITLE) || !formData.get(FIELD_DATE) || !eventId) {
-        showEditFormFeedback("Titel und Datum sind Pflichtfelder.", false);
-        saveSpinner.classList.add('d-none');
-        saveEventButton.disabled = false;
+    // Basic validation
+    if (!updatedData[FIELD_TITLE] || !updatedData[FIELD_DATE] || !eventId) {
+        showEditFormFeedback("Title and Date are required fields.", false);
+        saveSpinner.classList.add('d-none'); saveEventButton.disabled = false;
         return;
     }
 
-    // Füge die NEUE Bilddatei nur hinzu, wenn eine ausgewählt wurde
-    if (newImageFile) {
-        // Der Schlüssel 'eventImage' muss mit multer.single('eventImage') im Backend übereinstimmen
-        formData.append('eventImage', newImageFile, newImageFile.name);
-    }
-
-    // Fetch an Backend senden (PUT mit FormData)
-    fetch(`${API_BASE_URL}/api/events/${eventId}`, { // Verwende Firestore ID
+    // --- Send JSON data to backend ---
+    fetch(`${API_BASE_URL}/api/events/${eventId}`, { // Use Firestore ID in URL
         method: 'PUT',
-        body: formData // Sende das FormData Objekt
-        // KEINEN 'Content-Type' Header setzen, der Browser macht das für FormData korrekt!
+        headers: { 'Content-Type': 'application/json' }, // Set header for JSON
+        body: JSON.stringify(updatedData) // Send JSON payload
     })
-    .then(response => response.json().then(data => ({ ok: response.ok, status: response.status, data }))) // Parse JSON immer
+    .then(response => response.json().then(data => ({ ok: response.ok, status: response.status, data })))
     .then(({ ok, status, data }) => {
         saveSpinner.classList.add('d-none'); saveEventButton.disabled = false;
         if (ok && data.success) {
             editModal.hide();
-            showSuccess(data.message || "Event erfolgreich aktualisiert.");
-            refreshData(); // Daten neu laden, um die Änderungen (auch neues Bild) anzuzeigen
+            showSuccess(data.message || "Event updated successfully.");
+            refreshData(); // Refresh list to show updated data
         } else {
-            // Fehler vom Server
-            throw new Error(data.message || data.error || `Fehler ${status}`);
+            throw new Error(data.message || data.error || `Error ${status}`);
         }
     })
     .catch(err => {
-        // Netzwerkfehler oder Fehler vom Server
         saveSpinner.classList.add('d-none'); saveEventButton.disabled = false;
-        console.error("Fehler beim Aktualisieren:", err);
-        showEditFormFeedback("Kommunikationsfehler: " + err.message, false);
+        console.error("Error updating event:", err);
+        showEditFormFeedback("Communication error: " + err.message, false);
     });
-    }   
+}
         function showEditFormFeedback(message, isSuccess) { /* ... implement or keep ... */ }
         function clearEditFormFeedback() { /* ... implement or keep, clear preview ... */ }
 
@@ -707,7 +817,7 @@
         // --- Initialization and Event Listeners ---
         document.addEventListener('DOMContentLoaded', function () {
             // Get DOM references (ensure all new IDs are included)
-            eventView = document.getElementById('event-view'); addFormView = document.getElementById('add-form-view'); helpView = document.getElementById('help-view'); listElement = document.getElementById('event-liste'); loadingElement = document.getElementById('loading'); errorElement = document.getElementById('error-message'); successElement = document.getElementById('success-message'); searchTermInput = document.getElementById('search-term'); monthFilterSelect = document.getElementById('month-filter'); yearFilterSelect = document.getElementById('year-filter'); resetFiltersButton = document.getElementById('reset-filters'); typeFilterSelect = document.getElementById('type-filter'); addForm = document.getElementById('addEventForm'); addEventButton = document.getElementById('addEventButton'); addSpinner = addEventButton?.querySelector('.spinner-border'); addFormFeedback = document.getElementById('add-form-feedback'); addEventImageInput = document.getElementById('add-event-image'); addImagePreview = document.getElementById('add-image-preview'); menuShowList = document.getElementById('menu-show-list'); menuShowAddForm = document.getElementById('menu-show-add-form'); menuShowHelp = document.getElementById('menu-show-help'); editModalElement = document.getElementById('editEventModal'); if (editModalElement) editModal = new bootstrap.Modal(editModalElement); editForm = document.getElementById('editEventForm'); saveEventButton = document.getElementById('saveEventButton'); saveSpinner = saveEventButton?.querySelector('.spinner-border'); editFormFeedback = document.getElementById('edit-form-feedback'); editImagePreview = document.getElementById('edit-image-preview'); noEditImageText = document.getElementById('no-edit-image'); editEventIdInput = document.getElementById('edit-id'); deleteEventButton = document.getElementById('deleteEventButton'); deleteSpinner = deleteEventButton?.querySelector('.spinner-border'); addDeletePreviewButton = document.getElementById('add-delete-preview-button'); editDeleteImageButton = document.getElementById('edit-delete-image-button');editEventImageInput = document.getElementById('edit-event-image');
+            eventView = document.getElementById('event-view'); addFormView = document.getElementById('add-form-view'); helpView = document.getElementById('help-view'); listElement = document.getElementById('event-liste'); loadingElement = document.getElementById('loading'); errorElement = document.getElementById('error-message'); successElement = document.getElementById('success-message'); searchTermInput = document.getElementById('search-term'); monthFilterSelect = document.getElementById('month-filter'); yearFilterSelect = document.getElementById('year-filter'); resetFiltersButton = document.getElementById('reset-filters'); typeFilterSelect = document.getElementById('type-filter'); addForm = document.getElementById('addEventForm'); addEventButton = document.getElementById('addEventButton'); addSpinner = addEventButton?.querySelector('.spinner-border'); addFormFeedback = document.getElementById('add-form-feedback'); addEventImageInput = document.getElementById('add-event-image'); addImagePreview = document.getElementById('add-image-preview'); menuShowList = document.getElementById('menu-show-list'); menuShowAddForm = document.getElementById('menu-show-add-form'); menuShowHelp = document.getElementById('menu-show-help'); editModalElement = document.getElementById('editEventModal'); if (editModalElement) editModal = new bootstrap.Modal(editModalElement); editForm = document.getElementById('editEventForm'); saveEventButton = document.getElementById('saveEventButton'); saveSpinner = saveEventButton?.querySelector('.spinner-border'); editFormFeedback = document.getElementById('edit-form-feedback'); editImagePreview = document.getElementById('edit-image-preview'); noEditImageText = document.getElementById('no-edit-image'); editEventIdInput = document.getElementById('edit-id'); deleteEventButton = document.getElementById('deleteEventButton'); deleteSpinner = deleteEventButton?.querySelector('.spinner-border'); addDeletePreviewButton = document.getElementById('add-delete-preview-button'); editDeleteImageButton = document.getElementById('edit-delete-image-button');editEventImageInput = document.getElementById('edit-event-image'); addGanzerRaumCheckbox = document.getElementById('add-res-ganzer-raum');editGanzerRaumCheckbox = document.getElementById('edit-res-ganzer-raum');
             // Check critical elements
             if (!listElement || !editModalElement || !addForm || !editForm || !deleteEventButton || !addEventImageInput || !addImagePreview || !editImagePreview || !editEventIdInput || !noEditImageText || !addDeletePreviewButton || !editDeleteImageButton || !editEventImageInput) {
                 console.error("Critical UI elements missing! Check HTML IDs for forms, modals, image previews, and hidden ID input.");
@@ -726,6 +836,12 @@
             listElement.addEventListener('click', handleTileClick);
             if (editDeleteImageButton) {
                 editDeleteImageButton.addEventListener('click', handleDeleteImage);
+            }
+            if (addGanzerRaumCheckbox) {
+                addGanzerRaumCheckbox.addEventListener('change', () => toggleResourceCheckboxes(addGanzerRaumCheckbox, '#add-resources-checkboxes'));
+            }
+            if (editGanzerRaumCheckbox) {
+                editGanzerRaumCheckbox.addEventListener('change', () => toggleResourceCheckboxes(editGanzerRaumCheckbox, '#edit-resources-checkboxes'));
             }
             
 
@@ -823,6 +939,27 @@ async function handleDeleteImage() {
             // Optional: Remove spinner class from button
         }
     }
+}
+
+/**
+ * Aktiviert/Deaktiviert andere Ressourcen-Checkboxes basierend auf dem Status von "Ganzer Raum".
+ * @param {HTMLInputElement} ganzerRaumCheckbox Die "Ganzer Raum"-Checkbox.
+ * @param {string} containerSelector CSS-Selektor für den Container der *anderen* Ressourcen-Checkboxes (z.B. '#add-resources-checkboxes').
+ */
+ function toggleResourceCheckboxes(ganzerRaumCheckbox, containerSelector) {
+    const container = document.querySelector(containerSelector); // QuerySelector statt getElementById
+    if (!container || !ganzerRaumCheckbox) return;
+    // Finde alle Checkboxen mit der Klasse 'resource-checkbox' INNERHALB des Containers
+    const otherCheckboxes = container.querySelectorAll('.resource-checkbox');
+    const shouldBeDisabled = ganzerRaumCheckbox.checked;
+
+    otherCheckboxes.forEach(cb => {
+        cb.disabled = shouldBeDisabled;
+        if (shouldBeDisabled) {
+            cb.checked = false; // Abwählen, wenn "Ganzer Raum" gewählt ist
+        }
+        // Das CSS kümmert sich um das Ausgrauen über :disabled
+    });
 }
 
     </script>

@@ -313,3 +313,19 @@ h1 {
  #edit-delete-image-button:hover {
     opacity: 0.8;
  }
+
+ .form-check-input.resource-checkbox:disabled {
+   opacity: 0.5;
+   cursor: not-allowed;
+   background-color: #e9ecef; /* Helleres Grau als Hintergrund */
+   border-color: #ced4da;
+}
+/* Deaktiviertes Label auch ausgrauen */
+.form-check-input.resource-checkbox:disabled + .form-check-label {
+   opacity: 0.65;
+   cursor: not-allowed;
+   color: #6c757d; /* Graue Textfarbe */
+}
+.form-check-input.resource-checkbox:checked:disabled {
+   background-image: none; /* Kein Haken anzeigen */
+}
