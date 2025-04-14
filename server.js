@@ -124,10 +124,12 @@ async function deleteFromGcs(fileUrl) {
 app.get('/api/events', async (req, res) => {
   console.log('API GET /api/events called');
   try {
+    console.log('HEEELLLOOOOIIIIAAMMMHEEEEERRRREEE');
     const snapshot = await eventsCollection
       .orderBy('eventDate', 'asc') // Order by Firestore Timestamp
       .orderBy('startTime', 'asc') // Secondary sort by time string
       .get();
+      console.log('HEEELLLOOOOIIIIAAMMMHEEEEERRRREEE IAAM THEEERREE');
 
     const events = [];
     snapshot.forEach(doc => {
