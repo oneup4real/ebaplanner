@@ -69,21 +69,22 @@ async function uploadToGcs(buffer, originalname, mimetype) {
       reject(`Error uploading to GCS: ${err.message}`);
     });
 
-    blobStream.on('finish', async () => {
-      try {
-        // Make the file publicly readable. Consider Signed URLs for more security.
-        await blob.makePublic();
-        const publicUrl = format(`https://storage.googleapis.com/${bucket.name}/${blob.name}`);
-        console.log("GCS Upload successful:", publicUrl);
-        resolve(publicUrl);
-      } catch (err) {
-        console.error("Error making file public or getting URL:", err);
-        reject(`Error finalizing GCS upload: ${err.message}`);
-      }
-    });
-
-    blobStream.end(buffer);
+  blobStream.on('finish', async () => {
+    try {
+      // await blob.makePublic(); // <--- DELETE THIS LINE
+  
+      // Construct the public URL (this part stays the same)
+      const publicUrl = format(`https://storage.googleapis.com/<span class="math-inline">\{bucket\.name\}/</span>{blob.name}`);
+      console.log("GCS Upload successful, public URL:", publicUrl);
+      resolve(publicUrl); // Resolve with the standard URL
+    } catch (err) {
+      console.error("Error getting public URL (makePublic was removed):", err);
+      // If makePublic was the only thing failing, this reject might not be needed,
+      // but keep it for other potential errors getting the URL.
+      reject(`Error finalizing GCS upload: ${err.message}`);
+    }
   });
+
 }
 
 /**
