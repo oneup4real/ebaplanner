@@ -970,6 +970,8 @@ document.addEventListener('DOMContentLoaded', async function () { // Added async
     console.log("DOM loaded. Initializing application...");
     showView('event-view'); // Show event list initially
 
+}); // End DOMContentLoaded Listener
+
     // Check initial authentication status
     try {
         const response = await fetch(`${API_BASE_URL}/api/auth/status`); // Use async function for listener
@@ -997,8 +999,6 @@ document.addEventListener('DOMContentLoaded', async function () { // Added async
     // Fetch initial data (refreshData might check isLoggedIn internally if needed,
     // or GET /api/events might just be public)
     refreshData();
-
-}); // End DOMContentLoaded Listener
 
 // Check initial authentication status
 try {
