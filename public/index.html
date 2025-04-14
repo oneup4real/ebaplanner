@@ -760,7 +760,7 @@ async function handleDeleteImage() {
 
         try {
             // Rufe den NEUEN Backend-Endpunkt auf
-            const response = await fetch(`<span class="math-inline">\{API\_BASE\_URL\}/api/events/</span>{eventId}/image`, {
+            const response = await fetch(`${API_BASE_URL}/api/events/${eventId}/image`, {
                 method: 'DELETE'
             });
             const data = await response.json(); // Immer JSON parsen
