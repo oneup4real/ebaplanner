@@ -12,7 +12,11 @@ const { format } = require('util'); // Node.js utility (used for formatting GCS 
 
 // --- Configuration ---
 const PORT = process.env.PORT || 8080; // Port to listen on (Cloud Run sets this automatically)
-const db = new Firestore(); // Initialize Firestore client (uses ADC)
+//const db = new Firestore(); // Initialize Firestore client (uses ADC)
+const db = new Firestore({
+  projectId: 'eba-bar-event-planner',
+});
+console.log(`DEBUG: Explicitly using Firestore project: ${db.projectId}`); // Log it
 const eventsCollection = db.collection('events'); // Reference to your Firestore 'events' collection
 
 // Google Cloud Storage Configuration
